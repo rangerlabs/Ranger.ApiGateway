@@ -11,4 +11,4 @@ case "$TRAVIS_BRANCH" in
 esac
 
 docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-docker push $DOCKER_USERNAME/ranger.apigateway:$DOCKER_TAG
+docker push rangerlabs/ranger.apigateway:$DOCKER_TAG
