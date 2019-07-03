@@ -1,0 +1,14 @@
+version: "3.5"
+services:
+    api:
+        image: ranger.apigateway:dev
+        container_name: apigateway
+        ports:
+            - "8081:8081"
+        networks:
+            - ranger
+
+networks:
+    ranger:
+        name: ranger-network
+        external: true
