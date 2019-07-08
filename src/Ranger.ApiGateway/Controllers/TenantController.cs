@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
@@ -36,12 +37,13 @@ namespace Ranger.ApiGateway {
                 Retries = 0
             };
 
-            var createTenantMsg = new CreateTenant {
-                CorrelationContext = correlationContext,
-                Domain = tenantModel.DomainForm.Domain,
-                OrganizationName = tenantModel.DomainForm.OrganizationName
-            };
-            busPublisher.SendAsync<CreateTenant> (createTenantMsg);
+            var domain = new Domain (tenantModel.DomainForm.Domain, tenantModel.DomainForm.OrganizationName);
+
+            var passwordHasher = new PasswordHasher<UserForm> ();
+            var user = new User (tenantModel.UserForm.Email, tenantModel.UserForm.FirstName, tenantModel.UserForm.LastName, passwordHasher.HashPassword (tenantModel.UserForm, tenantModel.UserForm.Password));
+
+            var createTenantMsg = new CreateTenant (correlationContext, domain, user);
+            busPublisher.Send<CreateTenant> (createTenantMsg);
             response = new AcceptedResult ();
             return response;
         }

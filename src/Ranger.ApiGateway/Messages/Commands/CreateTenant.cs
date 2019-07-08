@@ -4,8 +4,14 @@ namespace Ranger.ApiGateway {
 
     [MessageNamespace ("tenants")]
     public class CreateTenant : ICommand {
-        public CorrelationContext CorrelationContext { get; set; }
-        public string OrganizationName { get; set; }
-        public string Domain { get; set; }
+        public CreateTenant (CorrelationContext correlationContext, Domain domain, User user) {
+            this.CorrelationContext = correlationContext;
+            this.Domain = domain;
+            this.User = user;
+
+        }
+        public CorrelationContext CorrelationContext { get; }
+        public Domain Domain { get; }
+        public User User { get; }
     }
 }
