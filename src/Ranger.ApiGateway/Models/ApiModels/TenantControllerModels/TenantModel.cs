@@ -41,7 +41,7 @@ namespace Ranger.ApiGateway {
         public string Domain { get; set; }
 
         [Required]
-        [RegularExpression (@"^[a-zA-Z0-9]{1}[a-zA-Z0-9_ ]{1,26}[a-zA-Z0-9]{1}$")]
+        [RegularExpression (@"^[a-zA-Z0-9]{1}[a-zA-Z0-9_- ]{1,26}[a-zA-Z0-9]{1}$")]
         [StringLength (48)]
 
         public string OrganizationName { get; set; }
