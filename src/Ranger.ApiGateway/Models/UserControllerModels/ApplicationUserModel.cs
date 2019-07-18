@@ -9,7 +9,7 @@ namespace Ranger.ApiGateway {
         public string LastName { get; set; }
         public string PasswordHash { get; set; }
         public string TenantDomain { get; set; }
-        public Role Role { get; set; }
+        public string Role { get; set; }
         public string PhoneNumber { get; set; }
     }
 }

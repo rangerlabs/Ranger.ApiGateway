@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
+using Ranger.Common;
 using Ranger.InternalHttpClient;
 
 namespace Ranger.ApiGateway {
@@ -21,17 +23,28 @@ namespace Ranger.ApiGateway {
         public async Task<IActionResult> Index (string email) {
             IActionResult response = new StatusCodeResult (StatusCodes.Status500InternalServerError);
             await identityClient.SetClientToken ();
-            var apiResponse = await identityClient.GetUserAsync<ApplicationUserApiResponseModel> (email);
-            if (apiResponse.IsSuccessStatusCode) {
-                var userResponseModel = new ApplicationUserApiResponseModel {
-                    Email = apiResponse.ResponseObject.Email,
-                    FirstName = apiResponse.ResponseObject.FirstName,
-                    LastName = apiResponse.ResponseObject.LastName,
-                    Role = apiResponse.ResponseObject.Role,
-                };
-                response = Ok (userResponseModel);
+
+            StringValues domain;
+            bool success = Request.Headers.TryGetValue ("domain", out domain);
+            if (success) {
+                if (domain.Count == 1) {
+                    var apiResponse = await identityClient.GetAllUsersAsync<ApplicationUserApiResponseModel> (domain);
+                    if (apiResponse.IsSuccessStatusCode) {
+                        var userResponseModel = new ApplicationUserApiResponseModel {
+                            Email = apiResponse.ResponseObject.Email,
+                            FirstName = apiResponse.ResponseObject.FirstName,
+                            LastName = apiResponse.ResponseObject.LastName,
+                            Role = apiResponse.ResponseObject.Role,
+                        };
+                        response = Ok (userResponseModel);
+                    } else {
+                        response = BadRequest (new { errors = new { serverErrors = apiResponse.Errors } });
+                    }
+                } else {
+                    response = BadRequest (new { errors = new { serverErrors = "Multiple header values were found for X-Tenant-Domain." } });
+                }
             } else {
-                response = BadRequest (new { errors = new { serverErrors = apiResponse.Errors } });
+                response = BadRequest (new { errors = new { serverErrors = "No domain header value was found." } });
             }
             return response;
         }
@@ -40,21 +53,33 @@ namespace Ranger.ApiGateway {
         public async Task<IActionResult> All () {
             IActionResult response = new StatusCodeResult (StatusCodes.Status500InternalServerError);
             await identityClient.SetClientToken ();
-            var apiResponse = await identityClient.GetAllUsersAsync<IEnumerable<ApplicationUserApiResponseModel>> ();
-            if (apiResponse.IsSuccessStatusCode) {
-                var userResponseCollection = new List<ApplicationUserApiResponseModel> ();
-                foreach (var user in apiResponse.ResponseObject) {
-                    var userResponseModel = new ApplicationUserApiResponseModel {
-                        Email = user.Email,
-                        FirstName = user.FirstName,
-                        LastName = user.LastName,
-                        Role = user.Role,
-                    };
-                    userResponseCollection.Add (userResponseModel);
+
+            StringValues domain;
+            bool success = Request.Headers.TryGetValue ("domain", out domain);
+            if (success) {
+                if (domain.Count == 1) {
+                    var apiResponse = await identityClient.GetAllUsersAsync<IEnumerable<ApplicationUserApiResponseModel>> (domain);
+                    if (apiResponse.IsSuccessStatusCode) {
+                        var userResponseCollection = new List<ApplicationUserApiResponseModel> ();
+                        foreach (var user in apiResponse.ResponseObject) {
+                            var userResponseModel = new ApplicationUserApiResponseModel {
+                                Email = user.Email,
+                                FirstName = user.FirstName,
+                                LastName = user.LastName,
+                                Role = user.Role,
+                            };
+                            userResponseCollection.Add (userResponseModel);
+                        }
+                        response = Ok (userResponseCollection);
+                    } else {
+                        response = BadRequest (new { errors = new { serverErrors = apiResponse.Errors } });
+                    }
+                } else {
+                    response = BadRequest (new { errors = new { serverErrors = "Multiple header values were found for X-Tenant-Domain." } });
+                    throw new DomainNotFoundException ();
                 }
-                response = Ok (userResponseCollection);
             } else {
-                response = BadRequest (new { errors = new { serverErrors = apiResponse.Errors } });
+                response = BadRequest (new { errors = new { serverErrors = "No domain header value was found." } });
             }
             return response;
         }
@@ -66,34 +91,7 @@ namespace Ranger.ApiGateway {
             }
 
             IActionResult response = new StatusCodeResult (StatusCodes.Status500InternalServerError);
-            await identityClient.SetClientToken ();
 
-            var apiRoleResponse = await identityClient.GetRoleAsync<Role> (Enum.GetName (typeof (Role), userModel.Role));
-
-            var user = new ApplicationUserRequestModel {
-                Email = userModel.Email,
-                FirstName = userModel.FirstName,
-                LastName = userModel.LastName,
-                Role = apiRoleResponse.ResponseObject,
-            };
-            var passwordHasher = new PasswordHasher<ApplicationUserRequestModel> ();
-
-            // user.PasswordHash = passwordHasher.HashPassword (user, Common.Utilities.Cryptography.Crypto.GenerateSudoRandomPasswordString ());
-            user.PasswordHash = passwordHasher.HashPassword (user, "password");
-            user.TenantDomain = "testtenant";
-
-            var apiCreateUserResponse = await identityClient.CreateUser (user);
-            if (apiCreateUserResponse.IsSuccessStatusCode) {
-                var userResponseModel = new ApplicationUserApiResponseModel {
-                    Email = userModel.Email,
-                    FirstName = userModel.FirstName,
-                    LastName = userModel.LastName,
-                    Role = Enum.GetName (typeof (Role), userModel.Role),
-                };
-                response = Created ("/app/user", userResponseModel);
-            } else {
-                response = BadRequest (new { errors = new { serverErrors = apiCreateUserResponse.Errors } });
-            }
             return response;
         }
     }
