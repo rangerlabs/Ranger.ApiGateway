@@ -37,7 +37,7 @@ namespace Ranger.ApiGateway {
                 Retries = 0
             };
 
-            var domain = new Domain (tenantModel.DomainForm.Domain, tenantModel.DomainForm.OrganizationName);
+            var domain = new Domain (tenantModel.DomainForm.Domain.ToLower (), tenantModel.DomainForm.OrganizationName);
             var user = new User (tenantModel.UserForm.Email, tenantModel.UserForm.FirstName, tenantModel.UserForm.LastName, tenantModel.UserForm.Password);
 
             var createTenantMsg = new CreateTenant (correlationContext, domain, user);
