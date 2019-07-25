@@ -10,7 +10,7 @@ namespace Ranger.ApiGateway {
     [ApiController]
     [Authorize (Roles = "User")]
     public class AppController : ControllerBase {
-        [HttpGet ("/app/app")]
+        [HttpGet ("")]
         public async Task<IActionResult> Index (string name) {
             IActionResult response = new StatusCodeResult (202);
             var appModel = new ApplicationApiResponseModel () {
@@ -21,7 +21,7 @@ namespace Ranger.ApiGateway {
             return Ok (appModel);
         }
 
-        [HttpGet ("/app/app/all")]
+        [HttpGet ("/all")]
         public async Task<IActionResult> All (string email) {
             IActionResult response = new StatusCodeResult (202);
             var appResponseCollection = new List<ApplicationApiResponseModel> ();
@@ -40,7 +40,7 @@ namespace Ranger.ApiGateway {
             return Ok (appResponseCollection);
         }
 
-        [HttpPost ("/app/app")]
+        [HttpPost ("")]
         public async Task<IActionResult> Post (ApplicationModel applicationModel) {
             if (applicationModel == null) {
                 throw new ArgumentNullException (nameof (applicationModel));
@@ -49,7 +49,7 @@ namespace Ranger.ApiGateway {
                 Name = applicationModel.Name,
                 Description = applicationModel.Description
             };
-            return Created ("/app/app", applicationApiResponseModel);
+            return Created ("", applicationApiResponseModel);
         }
     }
 }

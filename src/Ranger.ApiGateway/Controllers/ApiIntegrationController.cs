@@ -10,7 +10,7 @@ namespace Ranger.ApiGateway {
     [ApiController]
     [Authorize (Roles = "User")]
     public class ApiIntegrationController : IntegrationBaseController<ApiIntegrationApiResponseModel> {
-        [HttpGet ("/app/integration/api")]
+        [HttpGet ("/integration/api")]
         public async Task<IActionResult> Index (string name) {
             IActionResult response = new StatusCodeResult (202);
             var appModel = new ApiIntegrationApiResponseModel () {
@@ -22,7 +22,7 @@ namespace Ranger.ApiGateway {
             return Ok (appModel);
         }
 
-        [HttpGet ("/app/integration/api/all")]
+        [HttpGet ("/integration/api/all")]
         public async Task<IActionResult> All (string email) {
             IActionResult response = new StatusCodeResult (202);
             var appResponseCollection = new List<ApiIntegrationApiResponseModel> ();
@@ -45,7 +45,7 @@ namespace Ranger.ApiGateway {
             return Ok (appResponseCollection);
         }
 
-        [HttpPost ("/app/integration/api")]
+        [HttpPost ("/integration/api")]
         public async Task<IActionResult> Post (ApiIntegrationModel apiIntegrationModel) {
             if (apiIntegrationModel == null) {
                 throw new ArgumentNullException (nameof (apiIntegrationModel));
@@ -57,7 +57,7 @@ namespace Ranger.ApiGateway {
                 HttpEndpoint = apiIntegrationModel.HttpEndpoint,
                 AuthKey = apiIntegrationModel.AuthKey
             };
-            return Created ("/app/integration/api", apiIntegrationResponseModel);
+            return Created ("/integration/api", apiIntegrationResponseModel);
         }
     }
 

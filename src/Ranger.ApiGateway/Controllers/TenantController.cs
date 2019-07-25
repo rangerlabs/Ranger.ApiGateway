@@ -18,7 +18,7 @@ namespace Ranger.ApiGateway {
             this.busPublisher = busPublisher;
         }
 
-        [HttpPost ("/app/tenant")]
+        [HttpPost ("/tenant")]
         [AllowAnonymous]
         public async Task<IActionResult> Post (TenantModel tenantModel) {
             IActionResult response = new StatusCodeResult (StatusCodes.Status500InternalServerError);
@@ -46,7 +46,7 @@ namespace Ranger.ApiGateway {
             return response;
         }
 
-        [HttpGet ("/app/tenant/exists")]
+        [HttpGet ("/tenant/exists")]
         [AllowAnonymous]
         public async Task<IActionResult> Exists (string domain) {
             IActionResult response = new StatusCodeResult (StatusCodes.Status500InternalServerError);

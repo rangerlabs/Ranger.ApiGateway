@@ -22,7 +22,7 @@ namespace Ranger.ApiGateway {
             }
             public async Task OnActionExecutionAsync (ActionExecutingContext context, ActionExecutionDelegate next) {
 
-                string domain = context.HttpContext.Request.Headers["Domain"];
+                string domain = context.HttpContext.Request.Headers["X-Tenant-Domain"];
                 await tenantsClient.SetClientToken ();
                 var tenantExistsResponse = await tenantsClient.ExistsAsync (domain);
                 if (tenantExistsResponse.IsSuccessStatusCode && tenantExistsResponse.ResponseObject) {

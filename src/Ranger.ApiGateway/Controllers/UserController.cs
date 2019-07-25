@@ -19,13 +19,13 @@ namespace Ranger.ApiGateway {
             this.identityClient = identityClient;
         }
 
-        [HttpGet ("/app/user")]
+        [HttpGet ("/user")]
         public async Task<IActionResult> Index (string email) {
             IActionResult response = new StatusCodeResult (StatusCodes.Status500InternalServerError);
             await identityClient.SetClientToken ();
 
             StringValues domain;
-            bool success = Request.Headers.TryGetValue ("domain", out domain);
+            bool success = Request.Headers.TryGetValue ("X-Tenant-Domain", out domain);
             if (success) {
                 if (domain.Count == 1) {
                     var apiResponse = await identityClient.GetAllUsersAsync<ApplicationUserApiResponseModel> (domain);
@@ -49,13 +49,13 @@ namespace Ranger.ApiGateway {
             return response;
         }
 
-        [HttpGet ("/app/user/all")]
+        [HttpGet ("/user/all")]
         public async Task<IActionResult> All () {
             IActionResult response = new StatusCodeResult (StatusCodes.Status500InternalServerError);
             await identityClient.SetClientToken ();
 
             StringValues domain;
-            bool success = Request.Headers.TryGetValue ("domain", out domain);
+            bool success = Request.Headers.TryGetValue ("X-Tenant-Domain", out domain);
             if (success) {
                 if (domain.Count == 1) {
                     var apiResponse = await identityClient.GetAllUsersAsync<IEnumerable<ApplicationUserApiResponseModel>> (domain);
@@ -84,7 +84,7 @@ namespace Ranger.ApiGateway {
             return response;
         }
 
-        [HttpPost ("/app/user")]
+        [HttpPost ("/user")]
         public async Task<IActionResult> Post (ApplicationUserModel userModel) {
             if (userModel == null) {
                 throw new ArgumentNullException (nameof (userModel));

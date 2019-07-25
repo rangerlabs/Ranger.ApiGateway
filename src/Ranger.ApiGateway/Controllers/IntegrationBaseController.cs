@@ -11,12 +11,12 @@ namespace Ranger.ApiGateway {
 
         //     }
 
-        //     [HttpGet ("/app/app/all")]
+        //     [HttpGet ("/all")]
         //     public async Task<IActionResult> All (string email) {
 
         //     }
 
-        //     [HttpPost ("/app/app")]
+        //     [HttpPost ("")]
         //     public async Task<IActionResult> Post (ApplicationModel applicationModel) { }
 
     }

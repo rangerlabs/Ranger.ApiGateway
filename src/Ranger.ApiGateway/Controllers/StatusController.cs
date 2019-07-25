@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Ranger.ApiGateway {
     public class StatusController : ControllerBase {
 
-        [HttpGet ("/app/status")]
+        [HttpGet ("/status")]
         [ProducesResponseType (200)]
         [AllowAnonymous]
         public IActionResult Index () {
@@ -14,7 +14,7 @@ namespace Ranger.ApiGateway {
         }
 
         [Authorize (Roles = "Admin")]
-        [HttpGet ("/app/status/identity")]
+        [HttpGet ("/status/identity")]
         [ProducesResponseType (200)]
         public IActionResult GetIdentity () {
             var result = new JsonResult (from c in User.Claims select new { c.Type, c.Value });

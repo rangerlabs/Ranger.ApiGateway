@@ -9,7 +9,7 @@ namespace Ranger.ApiGateway {
     [ApiController]
     [Authorize (Roles = "User")]
     public class GeoFenceController : ControllerBase {
-        [HttpGet ("/app/geofence")]
+        [HttpGet ("/geofence")]
         public async Task<IActionResult> Index (string name) {
             IActionResult response = new StatusCodeResult (200);
             var geoFenceModel = new CircularGeoFenceApiResponseModel () {
@@ -24,7 +24,7 @@ namespace Ranger.ApiGateway {
             return Ok (geoFenceModel);
         }
 
-        [HttpGet ("/app/geofence/all")]
+        [HttpGet ("/geofence/all")]
         public async Task<IActionResult> All (string name) {
             IActionResult response = new StatusCodeResult (200);
             var geoFenceResponseCollection = new List<IGeoFenceApiResponseModel> ();
@@ -73,7 +73,7 @@ namespace Ranger.ApiGateway {
             return Ok (geoFenceResponseCollection);
         }
 
-        [HttpPost ("/app/geofence/circle")]
+        [HttpPost ("/geofence/circle")]
         public async Task<IActionResult> Post (CircularGeoFenceModel geoFenceModel) {
             if (geoFenceModel == null) {
                 throw new ArgumentNullException (nameof (geoFenceModel));
@@ -85,10 +85,10 @@ namespace Ranger.ApiGateway {
                 OnEnter = geoFenceModel.OnEnter,
                 OnExit = geoFenceModel.OnExit
             };
-            return Created ("/app/geofence", geoFenceModel);
+            return Created ("/geofence", geoFenceModel);
         }
 
-        [HttpPost ("/app/geofence/polygon")]
+        [HttpPost ("/geofence/polygon")]
         public async Task<IActionResult> Post (PolygonGeoFenceModel geoFenceModel) {
             if (geoFenceModel == null) {
                 throw new ArgumentNullException (nameof (geoFenceModel));
@@ -100,7 +100,7 @@ namespace Ranger.ApiGateway {
                 OnEnter = geoFenceModel.OnEnter,
                 OnExit = geoFenceModel.OnExit
             };
-            return Created ("/app/geofence", geoFenceModel);
+            return Created ("/geofence", geoFenceModel);
         }
 
     }

@@ -8,7 +8,7 @@ namespace Ranger.ApiGateway {
     [ApiController]
     [Authorize (Roles = "User")]
     public class IntegrationController : ControllerBase {
-        [HttpGet ("/app/integration/all")]
+        [HttpGet ("/integration/all")]
         public async Task<IActionResult> All (string email) {
             IActionResult response = new StatusCodeResult (202);
             var appResponseCollection = new List<ApiIntegrationApiResponseModel> ();
