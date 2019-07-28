@@ -27,11 +27,13 @@ using Ranger.RabbitMQ;
 namespace Ranger.ApiGateway {
     public class Startup {
         private readonly IConfiguration configuration;
+        private readonly ILoggerFactory loggerFactory;
         private readonly ILogger<Startup> logger;
         private IContainer container;
 
-        public Startup (IConfiguration configuration, ILogger<Startup> logger) {
+        public Startup (IConfiguration configuration, ILoggerFactory loggerFactory, ILogger<Startup> logger) {
             this.configuration = configuration;
+            this.loggerFactory = loggerFactory;
             this.logger = logger;
         }
 
@@ -66,7 +68,7 @@ namespace Ranger.ApiGateway {
 
             var builder = new ContainerBuilder ();
             builder.Populate (services);
-            builder.AddRabbitMq ();
+            builder.AddRabbitMq (loggerFactory);
             container = builder.Build ();
             return new AutofacServiceProvider (container);
         }
