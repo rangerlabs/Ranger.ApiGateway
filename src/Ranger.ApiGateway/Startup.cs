@@ -77,7 +77,8 @@ namespace Ranger.ApiGateway {
             app.UseCors (builder => {
                 builder.AllowAnyHeader ()
                     .AllowAnyMethod ()
-                    .AllowAnyOrigin ();
+                    .AllowAnyOrigin ()
+                    .WithExposedHeaders ("X-Operation");
             });
 
             if (env.IsProduction ()) {
