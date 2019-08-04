@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Ranger.RabbitMQ;
@@ -8,7 +8,7 @@ using Ranger.RabbitMQ;
 namespace Ranger.ApiGateway {
     [Route ("[controller]")]
     [ApiController]
-    public class BaseController<TController> : ControllerBase {
+    public class BaseController : ControllerBase {
         private static readonly string AcceptLanguageHeader = "accept-language";
         private static readonly string OperationHeader = "X-Operation";
         private static readonly string ResourceHeader = "X-Resource";
@@ -16,18 +16,22 @@ namespace Ranger.ApiGateway {
         private static readonly string DefaultCulture = "en-us";
         private static readonly string PageLink = "page";
         private readonly IBusPublisher busPublisher;
-        private readonly ILogger<TController> logger;
+        protected readonly ILogger Logger;
 
-        public BaseController (IBusPublisher busPublisher, ILogger<TController> logger) {
+        public BaseController (IBusPublisher busPublisher, ILogger logger) {
             this.busPublisher = busPublisher;
-            this.logger = logger;
+            this.Logger = logger;
         }
 
         protected IActionResult Send<T> (T command, Guid? resourceId = null, string resource = "") where T : ICommand {
             var context = GetContext<T> (resourceId, resource);
-            busPublisher.Send (command, context);
-
-            return Accepted (context);
+            try {
+                busPublisher.Send (command, context);
+                return Accepted (context);
+            } catch (Exception ex) {
+                Logger.LogError (ex, "An exception occurred publishing a command. Ensure the service is connect to a running RabbitMQ instance.");
+                return InternalServerError ();
+            }
         }
 
         protected IActionResult Accepted (ICorrelationContext context) {
@@ -37,6 +41,10 @@ namespace Ranger.ApiGateway {
             }
 
             return base.Accepted ();
+        }
+
+        protected IActionResult InternalServerError (string errors = "") {
+            return StatusCode (StatusCodes.Status500InternalServerError, new { errors = errors });
         }
 
         private ICorrelationContext GetContext<T> (Guid? resourceId, string resource) {
@@ -65,6 +73,12 @@ namespace Ranger.ApiGateway {
         protected string Culture {
             get {
                 return Request.Headers.ContainsKey (AcceptLanguageHeader) ? Request.Headers[AcceptLanguageHeader].First ().ToLowerInvariant () : DefaultCulture;
+            }
+        }
+
+        protected string Domain {
+            get {
+                return Request.Headers["X-Tenant-Domain"].First ();
             }
         }
     }

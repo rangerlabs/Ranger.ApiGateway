@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -10,43 +11,38 @@ using Ranger.RabbitMQ;
 
 namespace Ranger.ApiGateway {
     [ApiController]
-    public class TenantController : BaseController<TenantController> {
+    public class TenantController : BaseController {
         private readonly ITenantsClient tenantsClient;
-        private readonly IBusPublisher busPublisher;
-        private readonly ILogger<TenantController> logger;
 
-        public TenantController (ITenantsClient tenantsClient, IBusPublisher busPublisher, ILogger<TenantController> logger) : base (busPublisher, logger)
-
-        {
+        public TenantController (ITenantsClient tenantsClient, IBusPublisher busPublisher, ILogger<TenantController> logger) : base (busPublisher, logger) {
             this.tenantsClient = tenantsClient;
-            this.busPublisher = busPublisher;
-            this.logger = logger;
         }
 
         [HttpPost ("/tenant")]
         [AllowAnonymous]
         public async Task<IActionResult> Post (TenantModel tenantModel) {
-            IActionResult response = new StatusCodeResult (StatusCodes.Status500InternalServerError);
-
             var domain = new Domain (tenantModel.DomainForm.Domain.ToLower (), tenantModel.DomainForm.OrganizationName);
-            var user = new User (tenantModel.UserForm.Email, tenantModel.UserForm.FirstName, tenantModel.UserForm.LastName, tenantModel.UserForm.Password);
+            var owner = new NewTenantOwner (tenantModel.UserForm.Email, tenantModel.UserForm.FirstName, tenantModel.UserForm.LastName, tenantModel.UserForm.Password);
 
-            var createTenantMsg = new CreateTenant (domain, user);
-            Send (createTenantMsg);
-            response = new AcceptedResult ();
-            return response;
+            var createTenantMsg = new CreateTenant (domain, owner);
+            return await Task.Run (() => Send (createTenantMsg));
         }
 
-        [HttpGet ("/tenant/exists")]
+        [HttpGet ("/tenant/exists/{domain}")]
         [AllowAnonymous]
         public async Task<IActionResult> Exists (string domain) {
-            IActionResult response = new StatusCodeResult (StatusCodes.Status500InternalServerError);
-            await tenantsClient.SetClientToken ();
-            var apiResponse = await tenantsClient.ExistsAsync (domain);
-            if (apiResponse.IsSuccessStatusCode) {
-                response = Ok (apiResponse.ResponseObject);
+            var exists = false;
+            try {
+                exists = await tenantsClient.ExistsAsync (domain);
+                if (exists) {
+                    return Ok ();
+                } else {
+                    return NotFound ();
+                }
+            } catch (Exception ex) {
+                Logger.LogError (ex, $"An exception occurred validating whether the domain '{domain}' exists.");
+                return InternalServerError ();
             }
-            return response;
         }
     }
 }

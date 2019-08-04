@@ -4,12 +4,11 @@ namespace Ranger.ApiGateway {
 
     [MessageNamespace ("tenants")]
     public class CreateTenant : ICommand {
-        public CreateTenant (Domain domain, User user) {
+        public CreateTenant (Domain domain, NewTenantOwner owner) {
             this.Domain = domain;
-            this.User = user;
-
+            this.Owner = owner;
         }
         public Domain Domain { get; }
-        public User User { get; }
+        public NewTenantOwner Owner { get; }
     }
 }

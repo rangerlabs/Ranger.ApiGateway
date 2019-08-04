@@ -1,98 +1,69 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Primitives;
-using Ranger.Common;
+using Microsoft.Extensions.Logging;
 using Ranger.InternalHttpClient;
+using Ranger.RabbitMQ;
 
 namespace Ranger.ApiGateway {
     [ApiController]
+    [TenantDomainRequired]
     [Authorize (Roles = "Admin")]
-    public class UserController : ControllerBase {
+    public class UserController : BaseController {
         private readonly IIdentityClient identityClient;
 
-        public UserController (IIdentityClient identityClient) {
+        public UserController (IBusPublisher busPublisher, IIdentityClient identityClient, ILogger<UserController> logger) : base (busPublisher, logger) {
             this.identityClient = identityClient;
         }
 
-        [HttpGet ("/user")]
+        [HttpGet ("/user/{email}")]
         public async Task<IActionResult> Index (string email) {
-            IActionResult response = new StatusCodeResult (StatusCodes.Status500InternalServerError);
-            await identityClient.SetClientToken ();
-
-            StringValues domain;
-            bool success = Request.Headers.TryGetValue ("X-Tenant-Domain", out domain);
-            if (success) {
-                if (domain.Count == 1) {
-                    var apiResponse = await identityClient.GetAllUsersAsync<ApplicationUserApiResponseModel> (domain);
-                    if (apiResponse.IsSuccessStatusCode) {
-                        var userResponseModel = new ApplicationUserApiResponseModel {
-                            Email = apiResponse.ResponseObject.Email,
-                            FirstName = apiResponse.ResponseObject.FirstName,
-                            LastName = apiResponse.ResponseObject.LastName,
-                            Role = apiResponse.ResponseObject.Role,
-                        };
-                        response = Ok (userResponseModel);
-                    } else {
-                        response = BadRequest (new { errors = new { serverErrors = apiResponse.Errors } });
-                    }
-                } else {
-                    response = BadRequest (new { errors = new { serverErrors = "Multiple header values were found for X-Tenant-Domain." } });
-                }
-            } else {
-                response = BadRequest (new { errors = new { serverErrors = "No domain header value was found." } });
+            ApplicationUserApiResponseModel applicationUserApiResponse = null;
+            try {
+                applicationUserApiResponse = await identityClient.GetAllUsersAsync<ApplicationUserApiResponseModel> (Domain);
+            } catch (Exception ex) {
+                Logger.LogError (ex, $"An exception occurred retrieving the retrieving the application user for email '{email}'.");
+                return InternalServerError ($"An error occurred retrieving the retrieving the application user for email '{email}'.");
             }
-            return response;
+
+            var userResponseModel = new ApplicationUserApiResponseModel {
+                Email = applicationUserApiResponse.Email,
+                FirstName = applicationUserApiResponse.FirstName,
+                LastName = applicationUserApiResponse.LastName,
+                Role = applicationUserApiResponse.Role,
+            };
+            return Ok (userResponseModel);
         }
 
         [HttpGet ("/user/all")]
         public async Task<IActionResult> All () {
-            IActionResult response = new StatusCodeResult (StatusCodes.Status500InternalServerError);
-            await identityClient.SetClientToken ();
-
-            StringValues domain;
-            bool success = Request.Headers.TryGetValue ("X-Tenant-Domain", out domain);
-            if (success) {
-                if (domain.Count == 1) {
-                    var apiResponse = await identityClient.GetAllUsersAsync<IEnumerable<ApplicationUserApiResponseModel>> (domain);
-                    if (apiResponse.IsSuccessStatusCode) {
-                        var userResponseCollection = new List<ApplicationUserApiResponseModel> ();
-                        foreach (var user in apiResponse.ResponseObject) {
-                            var userResponseModel = new ApplicationUserApiResponseModel {
-                                Email = user.Email,
-                                FirstName = user.FirstName,
-                                LastName = user.LastName,
-                                Role = user.Role,
-                            };
-                            userResponseCollection.Add (userResponseModel);
-                        }
-                        response = Ok (userResponseCollection);
-                    } else {
-                        response = BadRequest (new { errors = new { serverErrors = apiResponse.Errors } });
-                    }
-                } else {
-                    response = BadRequest (new { errors = new { serverErrors = "Multiple header values were found for X-Tenant-Domain." } });
-                    throw new DomainNotFoundException ();
-                }
-            } else {
-                response = BadRequest (new { errors = new { serverErrors = "No domain header value was found." } });
+            IEnumerable<ApplicationUserApiResponseModel> applicationUserApiResponse = null;
+            try {
+                applicationUserApiResponse = await identityClient.GetAllUsersAsync<IEnumerable<ApplicationUserApiResponseModel>> (Domain);
+            } catch (Exception ex) {
+                Logger.LogError (ex, $"An exception occurred retrieving the retrieving the application users.");
+                return InternalServerError ($"An error occurred retrieving the retrieving the application users.");
             }
-            return response;
+
+            var userResponseCollection = new List<ApplicationUserApiResponseModel> ();
+            foreach (var user in applicationUserApiResponse) {
+                var userResponseModel = new ApplicationUserApiResponseModel {
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Role = user.Role,
+                };
+                userResponseCollection.Add (userResponseModel);
+            }
+            return Ok (userResponseCollection);
         }
 
         [HttpPost ("/user")]
         public async Task<IActionResult> Post (ApplicationUserModel userModel) {
-            if (userModel == null) {
-                throw new ArgumentNullException (nameof (userModel));
-            }
-
-            IActionResult response = new StatusCodeResult (StatusCodes.Status500InternalServerError);
-
-            return response;
+            return Ok ();
         }
     }
 }
