@@ -4,13 +4,16 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ranger.ApiGateway;
+using Ranger.ApiUtilities;
 
 //TODO: These are stubbed out for building the frontend
 namespace Ranger.ApiGateway {
     [ApiController]
     [Authorize (Roles = "User")]
+    [TenantDomainRequired]
     public class AppController : ControllerBase {
-        [HttpGet ("")]
+
+        [HttpGet ("/app/{name}")]
         public async Task<IActionResult> Index (string name) {
             IActionResult response = new StatusCodeResult (202);
             var appModel = new ApplicationApiResponseModel () {
@@ -21,8 +24,8 @@ namespace Ranger.ApiGateway {
             return Ok (appModel);
         }
 
-        [HttpGet ("/all")]
-        public async Task<IActionResult> All (string email) {
+        [HttpGet ("/app/all")]
+        public async Task<IActionResult> All () {
             IActionResult response = new StatusCodeResult (202);
             var appResponseCollection = new List<ApplicationApiResponseModel> ();
             var appModel1 = new ApplicationApiResponseModel () {
@@ -40,7 +43,7 @@ namespace Ranger.ApiGateway {
             return Ok (appResponseCollection);
         }
 
-        [HttpPost ("")]
+        [HttpPost ("app")]
         public async Task<IActionResult> Post (ApplicationModel applicationModel) {
             if (applicationModel == null) {
                 throw new ArgumentNullException (nameof (applicationModel));

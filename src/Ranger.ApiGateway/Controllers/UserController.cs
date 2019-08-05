@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Ranger.ApiUtilities;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
 

@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Ranger.ApiUtilities;
 
 namespace Ranger.ApiGateway {
     [ApiController]
     [Authorize (Roles = "User")]
+    [TenantDomainRequired]
     public class IntegrationController : ControllerBase {
         [HttpGet ("/integration/all")]
-        public async Task<IActionResult> All (string email) {
+        public async Task<IActionResult> All () {
             IActionResult response = new StatusCodeResult (202);
             var appResponseCollection = new List<ApiIntegrationApiResponseModel> ();
             var appModel1 = new ApiIntegrationApiResponseModel () {

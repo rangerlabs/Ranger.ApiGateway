@@ -4,12 +4,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ranger.ApiGateway;
+using Ranger.ApiUtilities;
 
 namespace Ranger.ApiGateway {
     [ApiController]
     [Authorize (Roles = "User")]
+    [TenantDomainRequired]
     public class GeoFenceController : ControllerBase {
-        [HttpGet ("/geofence")]
+        [HttpGet ("/geofence/{name}")]
         public async Task<IActionResult> Index (string name) {
             IActionResult response = new StatusCodeResult (200);
             var geoFenceModel = new CircularGeoFenceApiResponseModel () {

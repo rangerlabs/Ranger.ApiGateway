@@ -12,8 +12,9 @@
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="2.7.0" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.4.0" />
     <PackageReference Include="Ranger.Common" Version="1.0.24" />
-    <PackageReference Include="Ranger.InternalHttpClient" Version="1.0.9" />
+    <PackageReference Include="Ranger.InternalHttpClient" Version="1.0.17" />
     <PackageReference Include="Ranger.Monitoring" Version="1.0.1" />
     <PackageReference Include="Ranger.RabbitMQ" Version="1.0.34" />
+    <PackageReference Include="Ranger.ApiUtilities" Version="1.0.0" />
   </ItemGroup>
 </Project>

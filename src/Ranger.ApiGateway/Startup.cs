@@ -41,10 +41,10 @@ namespace Ranger.ApiGateway {
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor> ();
             services.AddSingleton<ITenantsClient, TenantsClient> (provider => {
-                return new TenantsClient ("http://tenants:8082", new LoggerFactory ().CreateLogger<TenantsClient> ());
+                return new TenantsClient ("http://tenants:8082", loggerFactory.CreateLogger<TenantsClient> ());
             });
             services.AddSingleton<IIdentityClient, IdentityClient> (provider => {
-                return new IdentityClient ("http://identity:5000", new LoggerFactory ().CreateLogger<IdentityClient> ());
+                return new IdentityClient ("http://identity:5000", loggerFactory.CreateLogger<IdentityClient> ());
             });
             services.AddCors ();
             services.AddMvc (options => {
