@@ -28,7 +28,7 @@ namespace Ranger.ApiGateway {
             return await Task.Run (() => Send (createTenantMsg));
         }
 
-        [HttpGet ("/tenant/exists/{domain}")]
+        [HttpGet ("/tenant/{domain}/exists")]
         [AllowAnonymous]
         public async Task<IActionResult> Exists (string domain) {
             var exists = false;
