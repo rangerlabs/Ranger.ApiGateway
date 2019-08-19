@@ -6,6 +6,7 @@ services:
 branches:
   only:
   - master
+  - dev
 before_script:
 - chmod -R a+x scripts
 script:
@@ -13,8 +14,6 @@ script:
 after_success:
 - "./scripts/travis-docker-publish.sh"
 notifications:
-  email:
-    on_success: never
-    on_failure: never
+  email: false
   slack:
-    secure: PNFSARTIO47ppQ6kCzhTIzwUze1dCvYRfSiIWS2GTMf/S5btcRhPyoaVky8x9TZPK6KvUGu8/Z7ntkI6FeDEqfvxwPG7tfXm6WkwvdDUTOdfE7eMP4ICzo3QT54yGzEepbsjr6igysmVNIW9D9j5dknddwfwV2mNGYsSLq6TqU9oSItl2yCuApDfi+AhnE925tlRj/Av8D+c7O9qVtYWrNY2WdwtwPA7G4MjuPj2mEtUgCrmaecIPXO05+wSav+OMzi9vJ1of+QzGR+8p39+Gqnnn8O1WJHU6rkT8sP/56+GkMBEGKdKTAuYf9l5ntLiPyF6VbgIUeMbV1e5pgZ4B0HrZNHyMhiSTTRNVFfeBuzpaX8ti6Jmn71kjE02BQQwMYocJkBt2oEQ+QYocKZ87os20coX+gN5tkbDG807JGZ6USdgOs8MCmm0qHB4dzwcOSv22hGHqFzRLIrUP4Tuzgt1uRZ5FCRjRC865XgwiwNDIy5nSLZ+gSFRZi5gnG776Qr5xKuEfDjuU2K677wTjERVWbWWvwtMN8akGIKJUYbuNei2IyyH5EYRNcNBaI7WdtVl00qqyfGZfcvxXUVcAXL49EjzfSNkJacjCC67b5tyrSAfepHNStct/AEp0WYJnuhWmj15tuM0DW4Lvz+fhD8h8PjZrZ3JKarXHk0I4zo=
+    secure: 8Xf1tkbnaVRc8sUGH3cRXddQ7bIkU9Usy3KpBflSxVadRvG4aiP1vIYd1lhYtl+IvqwVtc+kQCKfwJ/lf+AJuSS8Yr4cno/9+ZLa4lG0hD2idj+0O5benYAUeVjETUUXrt+7IyIBszzzD3G8p6v+Bi0Vx6tn4Fl+YH1D9E64R6K5oysDSl2DhE5vYPgMbH402512B7W34HcFN4Xq47x2gUHCOjoSXhUge6o+fQmnsv7C0zkHu0e82aPnYP59CuLCajOOCHYp2WD0yxI9K4ozKxTiYCrwRa087Z5846T4tXetYOyTI4b/GHV6v6AHIwY3SemJ4UDQKbnONq7du+f1MzCdXC34txaZAv2uQEe/zdjuzOb8BewpLxlPNBEhCi6hcr11xrpl7OrwAJjwPGVHzHqh9aSCGxTnk4NMZEKnXkBNFC+sUJVDRPkSHY/4zInpNU9znG0vqdWzgygGs2MjnIddoKe+fIDntWuqhHlqyqU+d1z/wQaZIm72nBk4tXutlghGhcEnJHJ4P/FD9h/+FpvkafycjaIckAHBaNwtgT1ZcIDauDcykmeRYwQ3j/pSrCt38xI/vDqHxTPOPWsY0p+Ct2bdS4AALhNHyq75xaovfbEkPLjGS4T5mBujZoKI08juc+sWENBXSg0hfc8WaoF8JvwnbppTRw1A7/XhGQs=
