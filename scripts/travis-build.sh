@@ -7,7 +7,7 @@ case "$TRAVIS_BRANCH" in
     ;;
   "dev")
     DOCKER_TAG=dev
-    ;;    
+    ;;
 esac
 
 docker build -t rangerlabs/ranger.apigateway:$DOCKER_TAG --build-arg MYGET_API_KEY=$MYGET_KEY .
