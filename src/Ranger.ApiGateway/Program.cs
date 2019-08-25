@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Ranger.ApiGateway.Data;
 using Ranger.Logging;
 
 namespace Ranger.ApiGateway {
@@ -20,6 +21,13 @@ namespace Ranger.ApiGateway {
                 .Build ();;
 
             var host = BuildHost (config["serverBindingUrl"], args);
+
+            using (var scope = host.Services.CreateScope ()) {
+                var dbInitializer = scope.ServiceProvider.GetRequiredService<IApiGatewayDbContextInitializer> ();
+                var env = scope.ServiceProvider.GetRequiredService<IHostingEnvironment> ();
+
+                dbInitializer.Migrate ();
+            }
 
             host.Run ();
         }

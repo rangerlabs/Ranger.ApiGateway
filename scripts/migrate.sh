@@ -1,0 +1,1 @@
+dotnet ef database update -p ./src/Ranger.ApiGateway.Data/Ranger.ApiGateway.Data.csproj -c ApiGatewayDbContext -s ./src/Ranger.ApiGateway/Ranger.ApiGateway.csproj 

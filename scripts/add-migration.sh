@@ -1,0 +1,1 @@
+dotnet ef migrations add $1 -p ./src/Ranger.ApiGateway.Data/Ranger.ApiGateway.Data.csproj -c ApiGatewayDbContext -s ./src/Ranger.ApiGateway/Ranger.ApiGateway.csproj 
