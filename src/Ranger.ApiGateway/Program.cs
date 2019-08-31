@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore;
@@ -10,34 +10,38 @@ using Microsoft.Extensions.DependencyInjection;
 using Ranger.ApiGateway.Data;
 using Ranger.Logging;
 
-namespace Ranger.ApiGateway {
-    public class Program {
-        public static void Main (string[] args) {
-            var config = new ConfigurationBuilder ()
-                .SetBasePath (Directory.GetCurrentDirectory ())
-                .AddJsonFile ("appsettings.json", optional : false, reloadOnChange : true)
-                .AddJsonFile ($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", optional : false, reloadOnChange : true)
-                .AddEnvironmentVariables ()
-                .Build ();;
+namespace Ranger.ApiGateway
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            var config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", optional: false, reloadOnChange: true)
+                .AddEnvironmentVariables()
+                .Build(); ;
 
-            var host = BuildHost (config["serverBindingUrl"], args);
+            var host = BuildHost(config["serverBindingUrl"], args);
 
-            using (var scope = host.Services.CreateScope ()) {
-                var dbInitializer = scope.ServiceProvider.GetRequiredService<IApiGatewayDbContextInitializer> ();
-                var env = scope.ServiceProvider.GetRequiredService<IHostingEnvironment> ();
+            using (var scope = host.Services.CreateScope())
+            {
+                var dbInitializer = scope.ServiceProvider.GetRequiredService<IApiGatewayDbContextInitializer>();
+                var env = scope.ServiceProvider.GetRequiredService<IHostingEnvironment>();
 
-                dbInitializer.Migrate ();
+                dbInitializer.Migrate();
             }
 
-            host.Run ();
+            host.Run();
         }
 
-        public static IWebHost BuildHost (string serverBindingUrl, string[] args) =>
-            WebHost.CreateDefaultBuilder (args)
-            .UseUrls (serverBindingUrl)
-            .UseStartup<Startup> ()
-            .UseLogging ()
-            .ConfigureServices (services => services.AddAutofac ())
-            .Build ();
+        public static IWebHost BuildHost(string serverBindingUrl, string[] args) =>
+            WebHost.CreateDefaultBuilder(args)
+            .UseUrls(serverBindingUrl)
+            .UseStartup<Startup>()
+            .UseLogging()
+            .ConfigureServices(services => services.AddAutofac())
+            .Build();
     }
 }
