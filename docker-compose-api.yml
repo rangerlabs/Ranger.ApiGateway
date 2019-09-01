@@ -7,8 +7,12 @@ services:
             - "8081:8081"
         networks:
             - ranger
+            - apigateway
 
 networks:
     ranger:
         name: ranger-network
+        external: true
+    apigateway:
+        name: apigateway-network
         external: true
