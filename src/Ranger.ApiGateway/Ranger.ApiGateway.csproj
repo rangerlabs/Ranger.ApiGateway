@@ -17,7 +17,7 @@
     <PackageReference Include="Ranger.Common" Version="1.0.25" />
     <PackageReference Include="Ranger.InternalHttpClient" Version="1.0.18" />
     <PackageReference Include="Ranger.Monitoring" Version="1.0.1" />
-    <PackageReference Include="Ranger.RabbitMQ" Version="1.0.44" />
+    <PackageReference Include="Ranger.RabbitMQ" Version="1.0.45" />
     <PackageReference Include="Ranger.ApiUtilities" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup>
