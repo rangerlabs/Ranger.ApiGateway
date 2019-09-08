@@ -27,6 +27,10 @@ networks:
         name: apigateway-network
         internal: true
 
+    ranger:
+        name: ranger-network
+        external: true
+
 volumes:
     postgres:
         driver: local
