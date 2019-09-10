@@ -26,6 +26,7 @@ networks:
     apigateway:
         name: apigateway-network
         internal: true
+
     ranger:
         name: ranger-network
         external: true
