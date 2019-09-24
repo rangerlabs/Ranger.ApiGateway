@@ -65,7 +65,7 @@ namespace Ranger.ApiGateway
                 var enabled = await tenantsClient.EnabledAsync<TenantEnabledModel>(domain);
                 return Ok(new { enabled = enabled.Enabled });
             }
-            catch (HttpClientException ex)
+            catch (HttpClientException<TenantEnabledModel> ex)
             {
                 if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status404NotFound)
                 {
