@@ -18,7 +18,7 @@
     <PackageReference Include="Ranger.InternalHttpClient" Version="1.2.5" />
     <PackageReference Include="Ranger.Monitoring" Version="1.0.1" />
     <PackageReference Include="Ranger.RabbitMQ" Version="1.1.0" />
-    <PackageReference Include="Ranger.ApiUtilities" Version="1.0.0" />
+    <PackageReference Include="Ranger.ApiUtilities" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ranger.ApiGateway.Data\Ranger.ApiGateway.Data.csproj" />
