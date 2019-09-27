@@ -1,6 +1,9 @@
-namespace Ranger.ApiGateway {
-    public class ApiIntegrationModel {
-        public string AppName { get; set; }
+namespace Ranger.ApiGateway
+{
+    public class ApiIntegrationModel
+    {
+        public string Id { get; set; }
+        public string AppId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string HttpEndpoint { get; set; }
