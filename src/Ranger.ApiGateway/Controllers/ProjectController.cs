@@ -12,59 +12,57 @@ namespace Ranger.ApiGateway
     [ApiController]
     [Authorize(Roles = "User")]
     [TenantDomainRequired]
-    public class AppController : ControllerBase
+    public class ProjectController : ControllerBase
     {
 
-        [HttpGet("/app/{name}")]
+        [HttpGet("/project/{name}")]
         public async Task<IActionResult> Index(string name)
         {
             IActionResult response = new StatusCodeResult(202);
-            var appModel = new ApplicationApiResponseModel()
+            var projectModel = new ProjectResponseModel()
             {
                 Name = "TestApp",
                 Description = "This is a test app",
                 ApiKey = Guid.NewGuid().ToString()
             };
-            return Ok(appModel);
+            return Ok(projectModel);
         }
 
-        [HttpGet("/app/all")]
+        [HttpGet("/project/all")]
         public async Task<IActionResult> All()
         {
             IActionResult response = new StatusCodeResult(202);
-            var appResponseCollection = new List<ApplicationApiResponseModel>();
-            var appModel1 = new ApplicationApiResponseModel()
+            var projectResponseCollection = new List<ProjectResponseModel>();
+            var projectModel1 = new ProjectResponseModel()
             {
-                Id = "APP_ID_1",
-                Name = "TestApp",
+                Name = "APP_ID_1",
                 Description = "This is a test app",
                 ApiKey = Guid.NewGuid().ToString()
             };
-            var appModel2 = new ApplicationApiResponseModel()
+            var projectModel2 = new ProjectResponseModel()
             {
-                Id = "APP_ID_2",
-                Name = "TestApp2",
+                Name = "APP_ID_2",
                 Description = "This is another test app",
                 ApiKey = Guid.NewGuid().ToString()
             };
-            appResponseCollection.Add(appModel1);
-            appResponseCollection.Add(appModel2);
-            return Ok(appResponseCollection);
+            projectResponseCollection.Add(projectModel1);
+            projectResponseCollection.Add(projectModel2);
+            return Ok(projectResponseCollection);
         }
 
-        [HttpPost("app")]
-        public async Task<IActionResult> Post(ApplicationModel applicationModel)
+        [HttpPost("project")]
+        public async Task<IActionResult> Post(ProjectModel projectModel)
         {
-            if (applicationModel == null)
+            if (projectModel == null)
             {
-                throw new ArgumentNullException(nameof(applicationModel));
+                throw new ArgumentNullException(nameof(projectModel));
             }
-            var applicationApiResponseModel = new ApplicationApiResponseModel()
+            var projectApiResponseModel = new ProjectResponseModel()
             {
-                Name = applicationModel.Name,
-                Description = applicationModel.Description
+                Name = projectModel.Name,
+                Description = projectModel.Description
             };
-            return Created("", applicationApiResponseModel);
+            return Created("", projectApiResponseModel);
         }
     }
 }

@@ -1,14 +1,12 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Ranger.ApiGateway {
-    public class ApplicationModel {
-
-        [Required]
+namespace Ranger.ApiGateway
+{
+    public class ProjectResponseModel
+    {
         public string Name { get; set; }
-
-        [Required]
-        [StringLength (140)]
         public string Description { get; set; }
-
+        public string ApiKey { get; set; }
     }
 }
