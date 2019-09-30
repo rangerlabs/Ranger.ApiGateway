@@ -1,6 +1,8 @@
-namespace Ranger.ApiGateway {
-    public enum GeoFenceShapeEnum {
-        Circular,
+namespace Ranger.ApiGateway
+{
+    public enum GeofenceShapeEnum
+    {
+        Circle,
         Polygon
     }
 }
