@@ -6,9 +6,8 @@ namespace Ranger.ApiGateway
     {
 
         [Required]
-        public string Name { get; set; }
-
         [StringLength(140)]
+        public string Name { get; set; }
         public string Description { get; set; }
 
     }

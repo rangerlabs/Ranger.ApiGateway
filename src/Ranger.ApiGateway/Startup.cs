@@ -42,6 +42,10 @@ namespace Ranger.ApiGateway
             {
                 return new TenantsClient("http://tenants:8082", loggerFactory.CreateLogger<TenantsClient>());
             });
+            services.AddSingleton<IProjectsClient, ProjectsClient>(provider =>
+            {
+                return new ProjectsClient("http://projects:8086", loggerFactory.CreateLogger<ProjectsClient>());
+            });
             services.AddSingleton<IIdentityClient, IdentityClient>(provider =>
             {
                 return new IdentityClient("http://identity:5000", loggerFactory.CreateLogger<IdentityClient>());

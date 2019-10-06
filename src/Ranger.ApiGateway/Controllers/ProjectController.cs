@@ -2,18 +2,29 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Ranger.ApiGateway;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Ranger.ApiUtilities;
+using Ranger.InternalHttpClient;
+using Ranger.Common;
 
 //TODO: These are stubbed out for building the frontend
 namespace Ranger.ApiGateway
 {
     [ApiController]
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = "Admin")]
     [TenantDomainRequired]
     public class ProjectController : ControllerBase
     {
+        private readonly IProjectsClient projectsClient;
+        private readonly ILogger<ProjectController> logger;
+        public ProjectController(IProjectsClient projectsClient, ILogger<ProjectController> logger)
+        {
+            this.logger = logger;
+            this.projectsClient = projectsClient;
+        }
 
         [HttpGet("/project/{name}")]
         public async Task<IActionResult> Index(string name)
@@ -53,16 +64,26 @@ namespace Ranger.ApiGateway
         [HttpPost("project")]
         public async Task<IActionResult> Post(ProjectModel projectModel)
         {
-            if (projectModel == null)
+            var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
+
+            var request = new { Name = projectModel.Name, Description = projectModel.Description, UserEmail = User.UserFromClaims().Email };
+
+            ProjectResponseModel response = null;
+            try
             {
-                throw new ArgumentNullException(nameof(projectModel));
+                response = await projectsClient.PostProjectAsync<ProjectResponseModel>(domain, JsonConvert.SerializeObject(request));
             }
-            var projectApiResponseModel = new ProjectResponseModel()
+            catch (HttpClientException ex)
             {
-                Name = projectModel.Name,
-                Description = projectModel.Description
-            };
-            return Created("", projectApiResponseModel);
+                logger.LogError("Failed to post project '{projectName}' for domain '{domain}'. The Projects Service responded with code '{code}'.", projectModel.Name, domain, ex.ApiResponse.StatusCode);
+                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status409Conflict)
+                {
+                    return Conflict(new { error = $"A project named ${projectModel.Name} already exists." });
+                }
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            return Created("project", response);
         }
     }
 }
