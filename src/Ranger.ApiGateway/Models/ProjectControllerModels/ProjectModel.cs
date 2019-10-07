@@ -8,6 +8,8 @@ namespace Ranger.ApiGateway
         [Required]
         [StringLength(140)]
         public string Name { get; set; }
+        [Required]
+        public int Version { get; set; }
         public string Description { get; set; }
 
     }
