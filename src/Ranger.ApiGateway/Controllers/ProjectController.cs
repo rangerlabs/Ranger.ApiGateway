@@ -9,8 +9,8 @@ using Newtonsoft.Json;
 using Ranger.ApiUtilities;
 using Ranger.InternalHttpClient;
 using Ranger.Common;
+using System.Net.Http;
 
-//TODO: These are stubbed out for building the frontend
 namespace Ranger.ApiGateway
 {
     [ApiController]
@@ -42,23 +42,36 @@ namespace Ranger.ApiGateway
         [HttpGet("/project/all")]
         public async Task<IActionResult> All()
         {
-            IActionResult response = new StatusCodeResult(202);
-            var projectResponseCollection = new List<ProjectResponseModel>();
-            var projectModel1 = new ProjectResponseModel()
+            var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
+            var projects = await projectsClient.GetAllProjectsAsync<IEnumerable<ProjectResponseModel>>(domain);
+            return Ok(projects);
+        }
+
+        [HttpPut("/project/{projectId}")]
+        public async Task<IActionResult> Put([FromRoute]string projectId, ProjectModel projectModel)
+        {
+            var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
+            var request = new { Name = projectModel.Name, Description = projectModel.Description, Version = projectModel.Version, UserEmail = User.UserFromClaims().Email };
+
+            ProjectResponseModel response = null;
+            try
             {
-                Name = "APP_ID_1",
-                Description = "This is a test app",
-                ApiKey = Guid.NewGuid().ToString()
-            };
-            var projectModel2 = new ProjectResponseModel()
+                response = await projectsClient.SendProjectAsync<ProjectResponseModel>(HttpMethod.Put, domain, JsonConvert.SerializeObject(request));
+            }
+            catch (HttpClientException ex)
             {
-                Name = "APP_ID_2",
-                Description = "This is another test app",
-                ApiKey = Guid.NewGuid().ToString()
-            };
-            projectResponseCollection.Add(projectModel1);
-            projectResponseCollection.Add(projectModel2);
-            return Ok(projectResponseCollection);
+                logger.LogError("Failed to post project '{projectName}' for domain '{domain}'. The Projects Service responded with code '{code}'.", projectModel.Name, domain, ex.ApiResponse.StatusCode);
+                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status409Conflict)
+                {
+                    var errors = new ApiErrorContent();
+                    errors.Errors.Add($"A project named ${projectModel.Name} already exists.");
+                    return Conflict(errors);
+                }
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            return Created("project", response);
+
         }
 
         [HttpPost("project")]
@@ -71,14 +84,15 @@ namespace Ranger.ApiGateway
             ProjectResponseModel response = null;
             try
             {
-                response = await projectsClient.PostProjectAsync<ProjectResponseModel>(domain, JsonConvert.SerializeObject(request));
+                response = await projectsClient.SendProjectAsync<ProjectResponseModel>(HttpMethod.Post, domain, JsonConvert.SerializeObject(request));
             }
-            catch (HttpClientException ex)
+            catch (HttpClientException<ProjectResponseModel> ex)
             {
                 logger.LogError("Failed to post project '{projectName}' for domain '{domain}'. The Projects Service responded with code '{code}'.", projectModel.Name, domain, ex.ApiResponse.StatusCode);
+                var errors = new ApiErrorContent();
                 if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status409Conflict)
                 {
-                    return Conflict(new { error = $"A project named ${projectModel.Name} already exists." });
+                    return Conflict(ex.ApiResponse.Errors);
                 }
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
