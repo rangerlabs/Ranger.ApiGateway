@@ -50,17 +50,24 @@ namespace Ranger.ApiGateway
         [HttpPut("/project/{projectId}")]
         public async Task<IActionResult> Put([FromRoute]string projectId, ProjectModel projectModel)
         {
+            if (string.IsNullOrWhiteSpace(projectId) || !Guid.TryParse(projectId, out _))
+            {
+                var errors = new ApiErrorContent();
+                errors.Errors.Add($"Invalid project id format.");
+                return BadRequest(new ApiErrorContent());
+            }
+
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
-            var request = new { Name = projectModel.Name, Description = projectModel.Description, Version = projectModel.Version, UserEmail = User.UserFromClaims().Email };
+            var request = new { Name = projectModel.Name, Description = projectModel.Description, ApiKey = projectModel.ApiKey, Version = projectModel.Version, UserEmail = User.UserFromClaims().Email };
 
             ProjectResponseModel response = null;
             try
             {
-                response = await projectsClient.SendProjectAsync<ProjectResponseModel>(HttpMethod.Put, domain, JsonConvert.SerializeObject(request));
+                response = await projectsClient.PutProjectAsync<ProjectResponseModel>(HttpMethod.Put, domain, projectId, JsonConvert.SerializeObject(request));
             }
-            catch (HttpClientException ex)
+            catch (HttpClientException<ProjectResponseModel> ex)
             {
-                logger.LogError("Failed to post project '{projectName}' for domain '{domain}'. The Projects Service responded with code '{code}'.", projectModel.Name, domain, ex.ApiResponse.StatusCode);
+                logger.LogError("Failed to put project '{projectName}' for domain '{domain}'. The Projects Service responded with code '{code}'.", projectModel.Name, domain, ex.ApiResponse.StatusCode);
                 if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status409Conflict)
                 {
                     var errors = new ApiErrorContent();
@@ -71,7 +78,6 @@ namespace Ranger.ApiGateway
             }
 
             return Created("project", response);
-
         }
 
         [HttpPost("project")]
@@ -84,7 +90,7 @@ namespace Ranger.ApiGateway
             ProjectResponseModel response = null;
             try
             {
-                response = await projectsClient.SendProjectAsync<ProjectResponseModel>(HttpMethod.Post, domain, JsonConvert.SerializeObject(request));
+                response = await projectsClient.PostProjectAsync<ProjectResponseModel>(HttpMethod.Post, domain, JsonConvert.SerializeObject(request));
             }
             catch (HttpClientException<ProjectResponseModel> ex)
             {
