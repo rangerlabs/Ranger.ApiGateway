@@ -70,8 +70,12 @@ namespace Ranger.ApiGateway
                 logger.LogError("Failed to put project '{projectName}' for domain '{domain}'. The Projects Service responded with code '{code}'.", projectModel.Name, domain, ex.ApiResponse.StatusCode);
                 if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status409Conflict)
                 {
+                    return Conflict(ex.ApiResponse.Errors);
+                }
+                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status304NotModified)
+                {
                     var errors = new ApiErrorContent();
-                    errors.Errors.Add($"A project named ${projectModel.Name} already exists.");
+                    errors.Errors.Add($"No changes were made to project with name {projectModel.Name}.");
                     return Conflict(errors);
                 }
                 return StatusCode(StatusCodes.Status500InternalServerError);
