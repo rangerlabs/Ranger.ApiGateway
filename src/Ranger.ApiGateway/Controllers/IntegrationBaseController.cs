@@ -3,10 +3,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ranger.ApiGateway;
 
-namespace Ranger.ApiGateway {
+namespace Ranger.ApiGateway
+{
     [ApiController]
-    [Authorize (Roles = "User")]
-    public class IntegrationBaseController<T> : ControllerBase {
+    [Authorize(Roles = "User")]
+    public class IntegrationBaseController<T> : ControllerBase
+    {
         //     public async Task<IActionResult> Index (string name) {
 
         //     }

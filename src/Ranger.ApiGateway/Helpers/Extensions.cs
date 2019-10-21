@@ -11,7 +11,7 @@ namespace Ranger.ApiGateway
         public static string GetPreviouslyVerifiedTenantHeader(this IHeaderDictionary headers)
         {
             StringValues domain;
-            headers.TryGetValue("X-Tenant-Domain", out domain);
+            headers.TryGetValue("x-ranger-domain", out domain);
             return domain[0];
         }
     }

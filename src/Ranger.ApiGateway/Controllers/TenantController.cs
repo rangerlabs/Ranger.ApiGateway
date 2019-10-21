@@ -12,6 +12,7 @@ using Ranger.RabbitMQ;
 
 namespace Ranger.ApiGateway
 {
+    [ApiVersion("1.0")]
     [ApiController]
     public class TenantController : BaseController
     {

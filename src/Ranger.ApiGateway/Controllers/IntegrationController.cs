@@ -8,6 +8,7 @@ using Ranger.ApiUtilities;
 
 namespace Ranger.ApiGateway
 {
+    [ApiVersion("1.0")]
     [ApiController]
     [Authorize(Roles = "User")]
     [TenantDomainRequired]

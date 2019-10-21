@@ -15,7 +15,7 @@ namespace Ranger.ApiGateway
         private static readonly string AcceptLanguageHeader = "accept-language";
         private static readonly string OperationHeader = "X-Operation";
         private static readonly string ResourceHeader = "X-Resource";
-        private static readonly string TenantDomainHeader = "X-Tenant-Domain";
+        private static readonly string TenantDomainHeader = "x-ranger-domain";
         private static readonly string DefaultCulture = "en-us";
         private static readonly string PageLink = "page";
         private readonly IBusPublisher busPublisher;
@@ -66,7 +66,7 @@ namespace Ranger.ApiGateway
             }
 
             StringValues domain;
-            bool success = HttpContext.Request.Headers.TryGetValue("X-Tenant-Domain", out domain);
+            bool success = HttpContext.Request.Headers.TryGetValue("x-ranger-domain", out domain);
 
             return CorrelationContext.Create<T>(
                 Guid.NewGuid(),
@@ -101,7 +101,7 @@ namespace Ranger.ApiGateway
         {
             get
             {
-                return Request.Headers["X-Tenant-Domain"].First();
+                return Request.Headers["x-ranger-domain"].First();
             }
         }
     }

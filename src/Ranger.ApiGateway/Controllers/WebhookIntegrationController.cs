@@ -8,6 +8,7 @@ using Ranger.ApiGateway;
 namespace Ranger.ApiGateway
 {
 
+    [ApiVersion("1.0")]
     [ApiController]
     [Authorize(Roles = "User")]
     public class WebhookIntegrationController : IntegrationBaseController<WebhookIntegrationResponseModel>

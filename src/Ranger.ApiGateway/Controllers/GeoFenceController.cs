@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Ranger.ApiGateway;
 using Ranger.ApiUtilities;
 
 namespace Ranger.ApiGateway
 {
+    [ApiVersion("1.0")]
     [ApiController]
     [Authorize(Roles = "User")]
     [TenantDomainRequired]

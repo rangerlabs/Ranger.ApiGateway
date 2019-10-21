@@ -13,6 +13,7 @@ using System.Net.Http;
 
 namespace Ranger.ApiGateway
 {
+    [ApiVersion("1.0")]
     [ApiController]
     [Authorize(Roles = "Admin")]
     [TenantDomainRequired]
@@ -26,8 +27,8 @@ namespace Ranger.ApiGateway
             this.projectsClient = projectsClient;
         }
 
-        [HttpGet("/project/{name}")]
-        public async Task<IActionResult> Index(string name)
+        [HttpGet("/project")]
+        public async Task<IActionResult> Index([FromQuery] string name)
         {
             IActionResult response = new StatusCodeResult(202);
             var projectModel = new ProjectResponseModel()
@@ -47,10 +48,10 @@ namespace Ranger.ApiGateway
             return Ok(projects);
         }
 
-        [HttpPut("/project/{projectId}")]
-        public async Task<IActionResult> Put([FromRoute]string projectId, ProjectModel projectModel)
+        [HttpPut("/project")]
+        public async Task<IActionResult> Put([FromQuery]string id, ProjectModel projectModel)
         {
-            if (string.IsNullOrWhiteSpace(projectId) || !Guid.TryParse(projectId, out _))
+            if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
             {
                 var errors = new ApiErrorContent();
                 errors.Errors.Add($"Invalid project id format.");
@@ -63,7 +64,7 @@ namespace Ranger.ApiGateway
             ProjectResponseModel response = null;
             try
             {
-                response = await projectsClient.PutProjectAsync<ProjectResponseModel>(HttpMethod.Put, domain, projectId, JsonConvert.SerializeObject(request));
+                response = await projectsClient.PutProjectAsync<ProjectResponseModel>(HttpMethod.Put, domain, id, JsonConvert.SerializeObject(request));
             }
             catch (HttpClientException<ProjectResponseModel> ex)
             {
@@ -84,7 +85,7 @@ namespace Ranger.ApiGateway
             return Created("project", response);
         }
 
-        [HttpPost("project")]
+        [HttpPost("/project")]
         public async Task<IActionResult> Post(ProjectModel projectModel)
         {
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();

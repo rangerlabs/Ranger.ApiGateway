@@ -11,6 +11,7 @@ using Ranger.RabbitMQ;
 
 namespace Ranger.ApiGateway
 {
+    [ApiVersion("1.0")]
     [ApiController]
     [TenantDomainRequired]
     [Authorize(Roles = "Admin")]
@@ -23,8 +24,8 @@ namespace Ranger.ApiGateway
             this.identityClient = identityClient;
         }
 
-        [HttpGet("/user/{email}")]
-        public async Task<IActionResult> Index(string email)
+        [HttpGet("/user")]
+        public async Task<IActionResult> Index([FromQuery]string email)
         {
             ApplicationUserApiResponseModel applicationUserApiResponse = null;
             try
