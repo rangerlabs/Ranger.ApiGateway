@@ -76,7 +76,12 @@ namespace Ranger.ApiGateway.Middleware
                                             }
                                             else
                                             {
-                                                context.Result = new ForbidResult($"The project for the provided x-ranger-apikey header is not enabled.");
+                                                context.Result = new ContentResult()
+                                                {
+                                                    StatusCode = StatusCodes.Status403Forbidden,
+                                                    Content = $"The project for the provided x-ranger-apikey header is not enabled.",
+                                                    ContentType = "application/json"
+                                                };
                                                 return;
                                             }
                                         }
@@ -98,7 +103,12 @@ namespace Ranger.ApiGateway.Middleware
                                     }
                                     else
                                     {
-                                        context.Result = new ForbidResult($"The tenant '{tenantApiResponse.Domain}' is not enabled. Ensure the domain has been confirmed.");
+                                        context.Result = new ContentResult()
+                                        {
+                                            StatusCode = StatusCodes.Status403Forbidden,
+                                            Content = $"The tenant '{tenantApiResponse.Domain}' is not enabled. Ensure the domain has been confirmed.",
+                                            ContentType = "application/json"
+                                        };
                                         return;
                                     }
                                 }
