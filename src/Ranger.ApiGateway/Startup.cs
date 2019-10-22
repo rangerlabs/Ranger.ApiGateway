@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,6 +43,10 @@ namespace Ranger.ApiGateway
             {
                 return new TenantsClient("http://tenants:8082", loggerFactory.CreateLogger<TenantsClient>());
             });
+            services.AddSingleton<IProjectsClient, ProjectsClient>(provider =>
+            {
+                return new ProjectsClient("http://projects:8086", loggerFactory.CreateLogger<ProjectsClient>());
+            });
             services.AddSingleton<IIdentityClient, IdentityClient>(provider =>
             {
                 return new IdentityClient("http://identity:5000", loggerFactory.CreateLogger<IdentityClient>());
@@ -58,6 +63,7 @@ namespace Ranger.ApiGateway
                     options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                 });
+            services.AddApiVersioning(o => o.ApiVersionReader = new HeaderApiVersionReader("api-version"));
 
             services.AddEntityFrameworkNpgsql().AddDbContext<ApiGatewayDbContext>(options =>
             {

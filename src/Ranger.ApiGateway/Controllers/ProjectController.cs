@@ -2,21 +2,33 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Ranger.ApiGateway;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Ranger.ApiUtilities;
+using Ranger.InternalHttpClient;
+using Ranger.Common;
+using System.Net.Http;
 
-//TODO: These are stubbed out for building the frontend
 namespace Ranger.ApiGateway
 {
+    [ApiVersion("1.0")]
     [ApiController]
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = "Admin")]
     [TenantDomainRequired]
     public class ProjectController : ControllerBase
     {
+        private readonly IProjectsClient projectsClient;
+        private readonly ILogger<ProjectController> logger;
+        public ProjectController(IProjectsClient projectsClient, ILogger<ProjectController> logger)
+        {
+            this.logger = logger;
+            this.projectsClient = projectsClient;
+        }
 
-        [HttpGet("/project/{name}")]
-        public async Task<IActionResult> Index(string name)
+        [HttpGet("/project")]
+        public async Task<IActionResult> Index([FromQuery] string name)
         {
             IActionResult response = new StatusCodeResult(202);
             var projectModel = new ProjectResponseModel()
@@ -31,38 +43,72 @@ namespace Ranger.ApiGateway
         [HttpGet("/project/all")]
         public async Task<IActionResult> All()
         {
-            IActionResult response = new StatusCodeResult(202);
-            var projectResponseCollection = new List<ProjectResponseModel>();
-            var projectModel1 = new ProjectResponseModel()
-            {
-                Name = "APP_ID_1",
-                Description = "This is a test app",
-                ApiKey = Guid.NewGuid().ToString()
-            };
-            var projectModel2 = new ProjectResponseModel()
-            {
-                Name = "APP_ID_2",
-                Description = "This is another test app",
-                ApiKey = Guid.NewGuid().ToString()
-            };
-            projectResponseCollection.Add(projectModel1);
-            projectResponseCollection.Add(projectModel2);
-            return Ok(projectResponseCollection);
+            var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
+            var projects = await projectsClient.GetAllProjectsAsync<IEnumerable<ProjectResponseModel>>(domain);
+            return Ok(projects);
         }
 
-        [HttpPost("project")]
+        [HttpPut("/project")]
+        public async Task<IActionResult> Put([FromQuery]string id, ProjectModel projectModel)
+        {
+            if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
+            {
+                var errors = new ApiErrorContent();
+                errors.Errors.Add($"Invalid project id format.");
+                return BadRequest(new ApiErrorContent());
+            }
+
+            var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
+            var request = new { Name = projectModel.Name, Description = projectModel.Description, ApiKey = projectModel.ApiKey, Version = projectModel.Version, UserEmail = User.UserFromClaims().Email };
+
+            ProjectResponseModel response = null;
+            try
+            {
+                response = await projectsClient.PutProjectAsync<ProjectResponseModel>(HttpMethod.Put, domain, id, JsonConvert.SerializeObject(request));
+            }
+            catch (HttpClientException<ProjectResponseModel> ex)
+            {
+                logger.LogError("Failed to put project '{projectName}' for domain '{domain}'. The Projects Service responded with code '{code}'.", projectModel.Name, domain, ex.ApiResponse.StatusCode);
+                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status409Conflict)
+                {
+                    return Conflict(ex.ApiResponse.Errors);
+                }
+                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status304NotModified)
+                {
+                    var errors = new ApiErrorContent();
+                    errors.Errors.Add($"No changes were made to project with name {projectModel.Name}.");
+                    return Conflict(errors);
+                }
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            return Created("project", response);
+        }
+
+        [HttpPost("/project")]
         public async Task<IActionResult> Post(ProjectModel projectModel)
         {
-            if (projectModel == null)
+            var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
+
+            var request = new { Name = projectModel.Name, Description = projectModel.Description, UserEmail = User.UserFromClaims().Email };
+
+            ProjectResponseModel response = null;
+            try
             {
-                throw new ArgumentNullException(nameof(projectModel));
+                response = await projectsClient.PostProjectAsync<ProjectResponseModel>(HttpMethod.Post, domain, JsonConvert.SerializeObject(request));
             }
-            var projectApiResponseModel = new ProjectResponseModel()
+            catch (HttpClientException<ProjectResponseModel> ex)
             {
-                Name = projectModel.Name,
-                Description = projectModel.Description
-            };
-            return Created("", projectApiResponseModel);
+                logger.LogError("Failed to post project '{projectName}' for domain '{domain}'. The Projects Service responded with code '{code}'.", projectModel.Name, domain, ex.ApiResponse.StatusCode);
+                var errors = new ApiErrorContent();
+                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status409Conflict)
+                {
+                    return Conflict(ex.ApiResponse.Errors);
+                }
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            return Created("project", response);
         }
     }
 }
