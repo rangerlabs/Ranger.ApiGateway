@@ -49,17 +49,17 @@ namespace Ranger.ApiGateway
         }
 
         [HttpPut("/project")]
-        public async Task<IActionResult> Put([FromQuery]string id, ProjectModel projectModel)
+        public async Task<IActionResult> Put([FromQuery]string id, PutProjectModel projectModel)
         {
             if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
             {
                 var errors = new ApiErrorContent();
                 errors.Errors.Add($"Invalid project id format.");
-                return BadRequest(new ApiErrorContent());
+                return BadRequest(errors);
             }
 
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
-            var request = new { Name = projectModel.Name, Description = projectModel.Description, ApiKey = projectModel.ApiKey, Version = projectModel.Version, UserEmail = User.UserFromClaims().Email };
+            var request = new { Name = projectModel.Name, Description = projectModel.Description, Enabled = projectModel.Enabled, ApiKey = projectModel.ApiKey, Version = projectModel.Version, UserEmail = User.UserFromClaims().Email };
 
             ProjectResponseModel response = null;
             try
@@ -76,8 +76,13 @@ namespace Ranger.ApiGateway
                 if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status304NotModified)
                 {
                     var errors = new ApiErrorContent();
-                    errors.Errors.Add($"No changes were made to project with name {projectModel.Name}.");
-                    return Conflict(errors);
+                    errors.Errors.Add($"No changes were made to project.");
+                    return new ContentResult()
+                    {
+                        StatusCode = StatusCodes.Status304NotModified,
+                        Content = JsonConvert.SerializeObject(errors),
+                        ContentType = "application/json",
+                    };
                 }
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
@@ -86,11 +91,11 @@ namespace Ranger.ApiGateway
         }
 
         [HttpPost("/project")]
-        public async Task<IActionResult> Post(ProjectModel projectModel)
+        public async Task<IActionResult> Post(PostProjectModel projectModel)
         {
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
 
-            var request = new { Name = projectModel.Name, Description = projectModel.Description, UserEmail = User.UserFromClaims().Email };
+            var request = new { Name = projectModel.Name, Description = projectModel.Description, Enabled = projectModel.Enabled, UserEmail = User.UserFromClaims().Email };
 
             ProjectResponseModel response = null;
             try
