@@ -27,19 +27,6 @@ namespace Ranger.ApiGateway
             this.projectsClient = projectsClient;
         }
 
-        [HttpGet("/project")]
-        public async Task<IActionResult> Index([FromQuery] string name)
-        {
-            IActionResult response = new StatusCodeResult(202);
-            var projectModel = new ProjectResponseModel()
-            {
-                Name = "TestApp",
-                Description = "This is a test app",
-                ApiKey = Guid.NewGuid().ToString()
-            };
-            return Ok(projectModel);
-        }
-
         [HttpGet("/project/all")]
         public async Task<IActionResult> All()
         {
@@ -59,7 +46,7 @@ namespace Ranger.ApiGateway
             }
 
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
-            var request = new { Name = projectModel.Name, Description = projectModel.Description, Enabled = projectModel.Enabled, ApiKey = projectModel.ApiKey, Version = projectModel.Version, UserEmail = User.UserFromClaims().Email };
+            var request = new { Name = projectModel.Name, Description = projectModel.Description, Enabled = projectModel.Enabled, Version = projectModel.Version, UserEmail = User.UserFromClaims().Email };
 
             ProjectResponseModel response = null;
             try

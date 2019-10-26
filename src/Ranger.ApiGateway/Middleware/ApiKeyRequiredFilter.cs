@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -72,6 +73,7 @@ namespace Ranger.ApiGateway.Middleware
                                             var projectApiResponse = await projectsClient.GetProjectByApiKeyAsync<ProjectAuthenticationResult>(tenantApiResponse.Domain, apiKey);
                                             if (projectApiResponse.Enabled)
                                             {
+                                                context.HttpContext.Items["ApiKeyEnvironment"] = Regex.Match(apiKey, "^(\\w+).").Groups[0];
                                                 await next();
                                             }
                                             else

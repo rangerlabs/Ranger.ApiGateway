@@ -13,7 +13,5 @@ namespace Ranger.ApiGateway
         [Required]
         public int Version { get; set; }
         public string Description { get; set; }
-        [Required]
-        public string ApiKey { get; set; }
     }
 }
