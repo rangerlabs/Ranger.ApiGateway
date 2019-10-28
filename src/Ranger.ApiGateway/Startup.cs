@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
@@ -52,17 +51,21 @@ namespace Ranger.ApiGateway
                 return new IdentityClient("http://identity:5000", loggerFactory.CreateLogger<IdentityClient>());
             });
             services.AddCors();
-            services.AddMvc(options =>
-            {
-                var policy = ScopePolicy.Create("apiGateway");
-                options.Filters.Add(new AuthorizeFilter(policy));
-            })
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+            services.AddMvcCore(options =>
+                {
+                    var policy = ScopePolicy.Create("apiGateway");
+                    options.Filters.Add(new AuthorizeFilter(policy));
+                    options.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(
+                        (_) => "The field is required.");
+                })
+                .AddAuthorization()
+                .AddJsonFormatters()
                 .AddJsonOptions(options =>
                 {
                     options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                 });
+
             services.AddApiVersioning(o => o.ApiVersionReader = new HeaderApiVersionReader("api-version"));
 
             services.AddEntityFrameworkNpgsql().AddDbContext<ApiGatewayDbContext>(options =>

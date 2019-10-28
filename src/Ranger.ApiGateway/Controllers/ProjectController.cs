@@ -35,10 +35,10 @@ namespace Ranger.ApiGateway
             return Ok(projects);
         }
 
-        [HttpPut("/project")]
-        public async Task<IActionResult> Put([FromQuery]string id, PutProjectModel projectModel)
+        [HttpPut("/project/{projectId}")]
+        public async Task<IActionResult> Put([FromRoute]string projectId, PutProjectModel projectModel)
         {
-            if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
+            if (string.IsNullOrWhiteSpace(projectId) || !Guid.TryParse(projectId, out _))
             {
                 var errors = new ApiErrorContent();
                 errors.Errors.Add($"Invalid project id format.");
@@ -51,11 +51,11 @@ namespace Ranger.ApiGateway
             ProjectResponseModel response = null;
             try
             {
-                response = await projectsClient.PutProjectAsync<ProjectResponseModel>(HttpMethod.Put, domain, id, JsonConvert.SerializeObject(request));
+                response = await projectsClient.PutProjectAsync<ProjectResponseModel>(domain, projectId, JsonConvert.SerializeObject(request));
             }
             catch (HttpClientException<ProjectResponseModel> ex)
             {
-                logger.LogError("Failed to put project '{projectName}' for domain '{domain}'. The Projects Service responded with code '{code}'.", projectModel.Name, domain, ex.ApiResponse.StatusCode);
+                logger.LogError(ex, "Failed to put project '{projectName}' for domain '{domain}'. The Projects Service responded with code '{code}'.", projectModel.Name, domain, ex.ApiResponse.StatusCode);
                 if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status409Conflict)
                 {
                     return Conflict(ex.ApiResponse.Errors);
@@ -87,12 +87,51 @@ namespace Ranger.ApiGateway
             ProjectResponseModel response = null;
             try
             {
-                response = await projectsClient.PostProjectAsync<ProjectResponseModel>(HttpMethod.Post, domain, JsonConvert.SerializeObject(request));
+                response = await projectsClient.PostProjectAsync<ProjectResponseModel>(domain, JsonConvert.SerializeObject(request));
             }
             catch (HttpClientException<ProjectResponseModel> ex)
             {
-                logger.LogError("Failed to post project '{projectName}' for domain '{domain}'. The Projects Service responded with code '{code}'.", projectModel.Name, domain, ex.ApiResponse.StatusCode);
+                logger.LogError(ex, "Failed to post project '{projectName}' for domain '{domain}'. The Projects Service responded with code '{code}'.", projectModel.Name, domain, ex.ApiResponse.StatusCode);
                 var errors = new ApiErrorContent();
+                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status409Conflict)
+                {
+                    return Conflict(ex.ApiResponse.Errors);
+                }
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            return Created("project", response);
+        }
+
+        [HttpDelete("/project/{projectId}")]
+        public async Task<IActionResult> SoftDeleteProject([FromRoute]string projectId)
+        {
+            var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
+            try
+            {
+                await projectsClient.SoftDeleteProjectAsync(domain, projectId);
+            }
+            catch (HttpClientException<ProjectResponseModel> ex)
+            {
+                logger.LogError(ex, $"Failed to project with ProjectId '{projectId}'");
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            return NoContent();
+        }
+
+        [HttpPut("/project/{projectId}/{environment}/reset")]
+        public async Task<IActionResult> ApiKeyReset([FromRoute]string projectId, [FromRoute]string environment, ApiKeyResetModel apiKeyResetModel)
+        {
+            var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
+            var request = new { Version = apiKeyResetModel.Version, UserEmail = User.UserFromClaims().Email };
+            ProjectResponseModel response = null;
+            try
+            {
+                response = await projectsClient.ApiKeyResetAsync<ProjectResponseModel>(domain, projectId, environment, JsonConvert.SerializeObject(request));
+            }
+            catch (HttpClientException<ProjectResponseModel> ex)
+            {
+                logger.LogError(ex, $"Failed to reset '{environment}' API key for project with ProjectId '{projectId}'");
                 if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status409Conflict)
                 {
                     return Conflict(ex.ApiResponse.Errors);
