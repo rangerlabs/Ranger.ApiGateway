@@ -109,7 +109,7 @@ namespace Ranger.ApiGateway
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
             try
             {
-                await projectsClient.SoftDeleteProjectAsync(domain, projectId);
+                await projectsClient.SoftDeleteProjectAsync(domain, projectId, User.UserFromClaims().Email);
             }
             catch (HttpClientException<ProjectResponseModel> ex)
             {
