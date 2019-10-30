@@ -20,7 +20,7 @@ namespace Ranger.ApiGateway.Controllers
         [HttpGet("/location/status")]
         public async Task<IActionResult> Index()
         {
-            return Ok($"Hey Chris, you're using the {(string)HttpContext.Items["ApiKeyEnvironment"]}.");
+            return Ok($"You're using the '{HttpContext.Items["ApiKeyEnvironment"]}' API key.");
         }
     }
 
