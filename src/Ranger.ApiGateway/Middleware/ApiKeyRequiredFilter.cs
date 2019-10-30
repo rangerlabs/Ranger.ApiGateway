@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -53,7 +54,8 @@ namespace Ranger.ApiGateway.Middleware
                 {
                     if (apiKey.Count == 1)
                     {
-                        if (Guid.TryParse(apiKey, out _))
+                        var apiKeyParts = apiKey[0].Split('.');
+                        if (apiKeyParts?.Length == 2 && (apiKeyParts[0] == "live" || apiKeyParts[0] == "test") && Guid.TryParse(apiKeyParts[1], out _))
                         {
                             try
                             {
@@ -72,6 +74,7 @@ namespace Ranger.ApiGateway.Middleware
                                             var projectApiResponse = await projectsClient.GetProjectByApiKeyAsync<ProjectAuthenticationResult>(tenantApiResponse.Domain, apiKey);
                                             if (projectApiResponse.Enabled)
                                             {
+                                                context.HttpContext.Items["ApiKeyEnvironment"] = apiKeyParts[0];
                                                 await next();
                                             }
                                             else
@@ -79,60 +82,60 @@ namespace Ranger.ApiGateway.Middleware
                                                 context.Result = new ContentResult()
                                                 {
                                                     StatusCode = StatusCodes.Status403Forbidden,
-                                                    Content = $"The project for the provided x-ranger-apikey header is not enabled.",
+                                                    Content = $"The project is not enabled.",
                                                     ContentType = "application/json"
                                                 };
                                                 return;
                                             }
                                         }
-                                        catch (HttpClientException ex)
+                                        catch (HttpClientException<ProjectAuthenticationResult> ex)
                                         {
                                             if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status404NotFound)
                                             {
-                                                context.Result = new NotFoundObjectResult($"No project was found for the provided x-ranger-apikey header '{apiKey}'.");
+                                                logger.LogError($"A mismatched occured in the project service for tenant '{tenantApiResponse.Domain}' and '{apiKey}'. The tenant was found and enabled but no project was found.");
+                                                context.Result = new StatusCodeResult(StatusCodes.Status500InternalServerError);
                                                 return;
                                             }
                                             throw;
                                         }
                                         catch (Exception ex)
                                         {
-                                            this.logger.LogError(ex, $"An exception occurred validating the API Key '{apiKey}'.");
+                                            this.logger.LogError(ex, $"An exception occurred validating the API key '{apiKey}'.");
                                             context.Result = new StatusCodeResult(StatusCodes.Status500InternalServerError);
                                             return;
                                         }
                                     }
                                     else
                                     {
-                                        context.Result = new ContentResult()
-                                        {
-                                            StatusCode = StatusCodes.Status403Forbidden,
-                                            Content = $"The tenant '{tenantApiResponse.Domain}' is not enabled. Ensure the domain has been confirmed.",
-                                            ContentType = "application/json"
-                                        };
+                                        logger.LogDebug($"The tenant '{tenantApiResponse.Domain}' is not enabled. Ensure the domain has been confirmed.");
+                                        context.Result = new UnauthorizedResult();
                                         return;
                                     }
                                 }
-                                catch (HttpClientException ex)
+                                catch (HttpClientException<TenantResult> ex)
                                 {
                                     if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status404NotFound)
                                     {
-                                        context.Result = new NotFoundObjectResult($"No tenant found for the provided API Key '{apiKey}'.");
+
+                                        logger.LogError($"No tenant found for the Database user '{databaseUsernameResult.DatabaseUsername}' for the provided API key '{apiKey}'.");
+                                        context.Result = new StatusCodeResult(StatusCodes.Status500InternalServerError);
                                         return;
                                     }
                                     throw;
                                 }
                                 catch (Exception ex)
                                 {
-                                    this.logger.LogError(ex, $"An exception occurred validating whether the domain exists for API Key '{apiKey}'.");
+                                    this.logger.LogError(ex, $"An exception occurred validating whether the domain exists for API key '{apiKey}'.");
                                     context.Result = new StatusCodeResult(StatusCodes.Status500InternalServerError);
                                     return;
                                 }
                             }
-                            catch (HttpClientException ex)
+                            catch (HttpClientException<DatabaseUsernameResult> ex)
                             {
                                 if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status404NotFound)
                                 {
-                                    context.Result = new NotFoundObjectResult($"No tenant found for the provided API key '{apiKey}'.");
+                                    logger.LogDebug($"No database user was found in the projects service for the provided API key '{apiKey}'.");
+                                    context.Result = new UnauthorizedResult();
                                     return;
                                 }
                                 throw;
@@ -146,7 +149,9 @@ namespace Ranger.ApiGateway.Middleware
                         }
                         else
                         {
-                            context.Result = new BadRequestObjectResult(new { errors = new { serverErrors = "The API Key was not a valid format." } });
+
+                            logger.LogDebug($"The API key was not a valid format: '{apiKey}'.");
+                            context.Result = new UnauthorizedResult();
                             return;
                         }
                     }
