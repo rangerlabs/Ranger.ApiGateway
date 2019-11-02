@@ -11,7 +11,7 @@ namespace Ranger.ApiGateway
         public bool OnExit { get; set; } = true;
         public bool Enabled { get; set; } = true;
         public string Description { get; set; }
-        public IEnumerable<string> IntegrationNames { get; set; }
+        public IEnumerable<string> IntegrationIds { get; set; }
         public IEnumerable<LatLng> Coordinates { get; set; }
         public int Radius { get; set; }
         public IDictionary<string, object> Metadata { get; set; }
