@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Ranger.Common;
 using Ranger.RabbitMQ;
 
 namespace Ranger.ApiGateway
@@ -85,7 +86,7 @@ namespace Ranger.ApiGateway
         {
             get
             {
-                return string.IsNullOrWhiteSpace(User?.Identity?.Name) ? "" : User.Identity.Name;
+                return User.UserFromClaims().Email;
             }
         }
 

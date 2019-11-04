@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Ranger.ApiUtilities;
+using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
 
@@ -78,9 +79,43 @@ namespace Ranger.ApiGateway
         }
 
         [HttpPost("/user")]
-        public async Task<IActionResult> Post(ApplicationUserModel userModel)
+        public async Task<IActionResult> Post(PostApplicationUserModel postApplicationUserModel)
         {
-            return Ok();
+            var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
+            var applicationUserCommand = new CreateApplicationUser(
+                domain,
+                postApplicationUserModel.Email,
+                postApplicationUserModel.FirstName,
+                postApplicationUserModel.LastName,
+                postApplicationUserModel.Role,
+                postApplicationUserModel.PermittedProjects
+            );
+            return await Task.Run(() => base.Send(applicationUserCommand));
+        }
+
+        [HttpPut("/user/{email}")]
+        public async Task<IActionResult> PutPermissions([FromRoute]string email, PutPermissionsModel putPermissionsModel)
+        {
+            if (putPermissionsModel == null)
+            {
+                var errors = new ApiErrorContent();
+                errors.Errors.Add($"The body content was not found or could not be bound.");
+                return BadRequest(errors);
+            }
+            if (String.IsNullOrWhiteSpace(putPermissionsModel.Role) && (putPermissionsModel.PermittedProjects == null || putPermissionsModel.PermittedProjects.Count == 0))
+            {
+                var errors = new ApiErrorContent();
+                errors.Errors.Add($"Both Role and Permitted Projects do not have values. Provide one or both values to update.");
+                return BadRequest(errors);
+            }
+            var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
+            var updateUserPermissionsCommand = new UpdateUserPermissions(
+                domain,
+                email,
+                putPermissionsModel.Role,
+                putPermissionsModel.PermittedProjects
+            );
+            return await Task.Run(() => base.Send(updateUserPermissionsCommand));
         }
     }
 }

@@ -31,8 +31,16 @@ namespace Ranger.ApiGateway
         public async Task<IActionResult> All()
         {
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
-            var projects = await projectsClient.GetAllProjectsAsync<IEnumerable<ProjectResponseModel>>(domain);
-            return Ok(projects);
+            try
+            {
+                var projects = await projectsClient.GetAllProjectsAsync<IEnumerable<ProjectResponseModel>>(domain);
+                return Ok(projects);
+            }
+            catch (HttpClientException<IEnumerable<ProjectResponseModel>> ex)
+            {
+                logger.LogError(ex, "Failed to retrieve projects.");
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         [HttpPut("/project/{projectId}")]

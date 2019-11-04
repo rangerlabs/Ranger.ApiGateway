@@ -1,13 +1,13 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Ranger.Common;
 
 namespace Ranger.ApiGateway
 {
-    public class UserForm
+    public class PostApplicationUserModel
     {
-
         [Required]
-        [EmailAddress(ErrorMessage = "Invalid email address")]
-        [Display(Name = "email")]
+        [EmailAddress]
         public string Email { get; set; }
 
         [Required]
@@ -21,14 +21,9 @@ namespace Ranger.ApiGateway
         public string LastName { get; set; }
 
         [Required]
-        [StringLength(64, ErrorMessage = "Passwords should be between 6 and 64 characters", MinimumLength = 6)]
-        [RegularExpression(@"[!@#$%^&*)(+=._-]{1}[a-z]{1}[A-Z]{1}[0-9]{1}")]
-        [DataType(DataType.Password)]
-        public string Password { get; set; }
+        [EnumDataType(typeof(RolesEnum))]
+        public string Role { get; set; }
 
-        [DataType(DataType.Password)]
-        [Compare("Password", ErrorMessage = "Passwords do not match")]
-        public string ConfirmPassword { get; set; }
-
+        public IList<string> PermittedProjects { get; set; } = new List<string>();
     }
 }

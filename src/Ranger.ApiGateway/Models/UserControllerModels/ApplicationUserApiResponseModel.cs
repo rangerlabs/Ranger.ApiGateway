@@ -1,7 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Ranger.ApiGateway {
-    public class ApplicationUserApiResponseModel {
+namespace Ranger.ApiGateway
+{
+    public class ApplicationUserApiResponseModel
+    {
 
         public string Email { get; set; }
 
