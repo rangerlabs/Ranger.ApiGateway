@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Ranger.ApiUtilities;
@@ -14,7 +15,6 @@ namespace Ranger.ApiGateway
 {
     [ApiVersion("1.0")]
     [ApiController]
-    [TenantDomainRequired]
     [Authorize(Roles = "Admin")]
     public class UserController : BaseController
     {
@@ -25,7 +25,29 @@ namespace Ranger.ApiGateway
             this.identityClient = identityClient;
         }
 
+        [HttpPut("/user/confirm")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Confirm(ConfirmModel confirmModel)
+        {
+            if (string.IsNullOrWhiteSpace(confirmModel.Domain))
+            {
+                var apiErrorContent = new ApiErrorContent();
+                apiErrorContent.Errors.Add($"{nameof(confirmModel.Domain)} was null or whitespace.");
+                return BadRequest(apiErrorContent);
+            }
+            if (string.IsNullOrWhiteSpace(confirmModel.RegistrationKey))
+            {
+                var apiErrorContent = new ApiErrorContent();
+                apiErrorContent.Errors.Add($"{nameof(confirmModel.RegistrationKey)} was null or whitespace.");
+                return BadRequest(apiErrorContent);
+            }
+
+            bool confirmed = await identityClient.ConfirmUserAsync(confirmModel.Domain, confirmModel.RegistrationKey);
+            return confirmed ? NoContent() : StatusCode(StatusCodes.Status304NotModified);
+        }
+
         [HttpGet("/user")]
+        [TenantDomainRequired]
         public async Task<IActionResult> Index([FromQuery]string email)
         {
             ApplicationUserApiResponseModel applicationUserApiResponse = null;
@@ -50,6 +72,7 @@ namespace Ranger.ApiGateway
         }
 
         [HttpGet("/user/all")]
+        [TenantDomainRequired]
         public async Task<IActionResult> All()
         {
             IEnumerable<ApplicationUserApiResponseModel> applicationUserApiResponse = null;
@@ -79,21 +102,24 @@ namespace Ranger.ApiGateway
         }
 
         [HttpPost("/user")]
+        [TenantDomainRequired]
         public async Task<IActionResult> Post(PostApplicationUserModel postApplicationUserModel)
         {
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
-            var applicationUserCommand = new CreateApplicationUser(
+            var applicationUserCommand = new CreateNewApplicationUserSagaInitializer(
                 domain,
                 postApplicationUserModel.Email,
                 postApplicationUserModel.FirstName,
                 postApplicationUserModel.LastName,
                 postApplicationUserModel.Role,
-                postApplicationUserModel.PermittedProjects
+                User.UserFromClaims().Email,
+                postApplicationUserModel.AuthorizedProjects
             );
             return await Task.Run(() => base.Send(applicationUserCommand));
         }
 
         [HttpPut("/user/{email}")]
+        [TenantDomainRequired]
         public async Task<IActionResult> PutPermissions([FromRoute]string email, PutPermissionsModel putPermissionsModel)
         {
             if (putPermissionsModel == null)
@@ -102,7 +128,7 @@ namespace Ranger.ApiGateway
                 errors.Errors.Add($"The body content was not found or could not be bound.");
                 return BadRequest(errors);
             }
-            if (String.IsNullOrWhiteSpace(putPermissionsModel.Role) && (putPermissionsModel.PermittedProjects == null || putPermissionsModel.PermittedProjects.Count == 0))
+            if (String.IsNullOrWhiteSpace(putPermissionsModel.Role) && (putPermissionsModel.AuthorizedProjects == null || putPermissionsModel.AuthorizedProjects.Count == 0))
             {
                 var errors = new ApiErrorContent();
                 errors.Errors.Add($"Both Role and Permitted Projects do not have values. Provide one or both values to update.");
@@ -113,7 +139,7 @@ namespace Ranger.ApiGateway
                 domain,
                 email,
                 putPermissionsModel.Role,
-                putPermissionsModel.PermittedProjects
+                putPermissionsModel.AuthorizedProjects
             );
             return await Task.Run(() => base.Send(updateUserPermissionsCommand));
         }

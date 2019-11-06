@@ -6,5 +6,6 @@ namespace Ranger.ApiGateway
     {
         [Required]
         public string RegistrationKey { get; set; }
+        public string Domain { get; set; }
     }
 }

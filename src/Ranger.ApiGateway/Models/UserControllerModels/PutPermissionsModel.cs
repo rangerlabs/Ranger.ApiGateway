@@ -9,6 +9,6 @@ namespace Ranger.ApiGateway
         [EnumDataType(typeof(RolesEnum))]
         public string Role { get; set; }
 
-        public IList<string> PermittedProjects { get; set; } = new List<string>();
+        public IList<string> AuthorizedProjects { get; set; } = new List<string>();
     }
 }

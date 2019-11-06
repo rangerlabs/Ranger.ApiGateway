@@ -10,9 +10,9 @@ namespace Ranger.ApiGateway
         public string Domain { get; }
         public string Email { get; }
         public string Role { get; }
-        public IEnumerable<string> PermittedProjects { get; }
+        public IEnumerable<string> AuthorizedProjects { get; }
 
-        public UpdateUserPermissions(string domain, string email, string role = "", IEnumerable<string> permittedProjects = null)
+        public UpdateUserPermissions(string domain, string email, string role = "", IEnumerable<string> authorizedProjects = null)
         {
             if (string.IsNullOrWhiteSpace(domain))
             {
@@ -28,7 +28,7 @@ namespace Ranger.ApiGateway
             this.Email = email;
             this.Domain = domain;
             this.Role = role;
-            this.PermittedProjects = permittedProjects;
+            this.AuthorizedProjects = authorizedProjects;
         }
     }
 }
