@@ -83,7 +83,7 @@ namespace Ranger.ApiGateway
 
         [HttpPut("/tenant/{domain}/confirm")]
         [AllowAnonymous]
-        public async Task<IActionResult> Confirm(string domain, ConfirmModel confirmModel)
+        public async Task<IActionResult> Confirm(string domain, TenantConfirmModel confirmModel)
         {
             try
             {

@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Ranger.ApiUtilities;
 using Ranger.Common;
 using Ranger.InternalHttpClient;
@@ -27,22 +29,9 @@ namespace Ranger.ApiGateway
 
         [HttpPut("/user/confirm")]
         [AllowAnonymous]
-        public async Task<IActionResult> Confirm(ConfirmModel confirmModel)
+        public async Task<IActionResult> Confirm(UserConfirmModel confirmModel)
         {
-            if (string.IsNullOrWhiteSpace(confirmModel.Domain))
-            {
-                var apiErrorContent = new ApiErrorContent();
-                apiErrorContent.Errors.Add($"{nameof(confirmModel.Domain)} was null or whitespace.");
-                return BadRequest(apiErrorContent);
-            }
-            if (string.IsNullOrWhiteSpace(confirmModel.RegistrationKey))
-            {
-                var apiErrorContent = new ApiErrorContent();
-                apiErrorContent.Errors.Add($"{nameof(confirmModel.RegistrationKey)} was null or whitespace.");
-                return BadRequest(apiErrorContent);
-            }
-
-            bool confirmed = await identityClient.ConfirmUserAsync(confirmModel.Domain, confirmModel.RegistrationKey);
+            bool confirmed = await identityClient.ConfirmUserAsync(confirmModel.Domain, JsonConvert.SerializeObject(confirmModel));
             return confirmed ? NoContent() : StatusCode(StatusCodes.Status304NotModified);
         }
 
