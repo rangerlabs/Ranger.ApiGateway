@@ -21,6 +21,7 @@ namespace Ranger.ApiGateway
             var appResponseCollection = new List<WebhookIntegrationResponseModel>();
             var appModel1 = new WebhookIntegrationResponseModel()
             {
+                Id = "GUID1",
                 ProjectName = "APP_ID_1",
                 Name = "API_Integration",
                 Description = "This is a test integration",
@@ -29,6 +30,7 @@ namespace Ranger.ApiGateway
             };
             var appModel2 = new WebhookIntegrationResponseModel()
             {
+                Id = "GUID2",
                 ProjectName = "APP_ID_2",
                 Name = "API_Integration_2",
                 Description = "This is another test integration",
@@ -37,6 +39,7 @@ namespace Ranger.ApiGateway
             };
             var appModel3 = new WebhookIntegrationResponseModel()
             {
+                Id = "GUID3",
                 ProjectName = "APP_ID_2",
                 Name = "API_Integration_3",
                 Description = "This is another test integration",

@@ -2,10 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Ranger.ApiUtilities;
+using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
 
@@ -13,7 +17,6 @@ namespace Ranger.ApiGateway
 {
     [ApiVersion("1.0")]
     [ApiController]
-    [TenantDomainRequired]
     [Authorize(Roles = "Admin")]
     public class UserController : BaseController
     {
@@ -24,7 +27,16 @@ namespace Ranger.ApiGateway
             this.identityClient = identityClient;
         }
 
+        [HttpPut("/user/confirm")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Confirm(UserConfirmModel confirmModel)
+        {
+            bool confirmed = await identityClient.ConfirmUserAsync(confirmModel.Domain, JsonConvert.SerializeObject(confirmModel));
+            return confirmed ? NoContent() : StatusCode(StatusCodes.Status304NotModified);
+        }
+
         [HttpGet("/user")]
+        [TenantDomainRequired]
         public async Task<IActionResult> Index([FromQuery]string email)
         {
             ApplicationUserApiResponseModel applicationUserApiResponse = null;
@@ -49,6 +61,7 @@ namespace Ranger.ApiGateway
         }
 
         [HttpGet("/user/all")]
+        [TenantDomainRequired]
         public async Task<IActionResult> All()
         {
             IEnumerable<ApplicationUserApiResponseModel> applicationUserApiResponse = null;
@@ -78,9 +91,46 @@ namespace Ranger.ApiGateway
         }
 
         [HttpPost("/user")]
-        public async Task<IActionResult> Post(ApplicationUserModel userModel)
+        [TenantDomainRequired]
+        public async Task<IActionResult> Post(PostApplicationUserModel postApplicationUserModel)
         {
-            return Ok();
+            var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
+            var applicationUserCommand = new CreateNewApplicationUserSagaInitializer(
+                domain,
+                postApplicationUserModel.Email,
+                postApplicationUserModel.FirstName,
+                postApplicationUserModel.LastName,
+                postApplicationUserModel.Role,
+                User.UserFromClaims().Email,
+                postApplicationUserModel.AuthorizedProjects
+            );
+            return await Task.Run(() => base.Send(applicationUserCommand));
+        }
+
+        [HttpPut("/user/{email}")]
+        [TenantDomainRequired]
+        public async Task<IActionResult> PutPermissions([FromRoute]string email, PutPermissionsModel putPermissionsModel)
+        {
+            if (putPermissionsModel == null)
+            {
+                var errors = new ApiErrorContent();
+                errors.Errors.Add($"The body content was not found or could not be bound.");
+                return BadRequest(errors);
+            }
+            if (String.IsNullOrWhiteSpace(putPermissionsModel.Role) && (putPermissionsModel.AuthorizedProjects == null || putPermissionsModel.AuthorizedProjects.Count == 0))
+            {
+                var errors = new ApiErrorContent();
+                errors.Errors.Add($"Both Role and Permitted Projects do not have values. Provide one or both values to update.");
+                return BadRequest(errors);
+            }
+            var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
+            var updateUserPermissionsCommand = new UpdateUserPermissions(
+                domain,
+                email,
+                putPermissionsModel.Role,
+                putPermissionsModel.AuthorizedProjects
+            );
+            return await Task.Run(() => base.Send(updateUserPermissionsCommand));
         }
     }
 }

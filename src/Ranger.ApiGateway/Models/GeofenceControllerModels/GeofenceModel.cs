@@ -14,7 +14,7 @@ namespace Ranger.ApiGateway
         public bool Enabled { get; set; } = true;
         [Required]
         public string Description { get; set; }
-        public IEnumerable<string> IntegrationNames { get; set; }
+        public IEnumerable<string> IntegrationIds { get; set; }
         [Required]
         public IEnumerable<LatLng> Coordinates { get; set; }
         [Required]
