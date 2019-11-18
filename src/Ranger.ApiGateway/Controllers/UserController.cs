@@ -27,11 +27,19 @@ namespace Ranger.ApiGateway
             this.identityClient = identityClient;
         }
 
-        [HttpPut("/user/confirm")]
+        [HttpPost("/user/{userId}/password-reset")]
         [AllowAnonymous]
-        public async Task<IActionResult> Confirm(UserConfirmModel confirmModel)
+        public async Task<IActionResult> PasswordReset([FromRoute] string userId, UserConfirmPasswordResetModel confirmModel)
         {
-            bool confirmed = await identityClient.ConfirmUserAsync(confirmModel.Domain, JsonConvert.SerializeObject(confirmModel));
+            bool confirmed = await identityClient.UserConfirmPasswordResetAsync(confirmModel.Domain, userId, JsonConvert.SerializeObject(confirmModel));
+            return confirmed ? NoContent() : StatusCode(StatusCodes.Status304NotModified);
+        }
+
+        [HttpPut("/user/{userId}/confirm")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Confirm([FromRoute] string userId, UserConfirmModel confirmModel)
+        {
+            bool confirmed = await identityClient.ConfirmUserAsync(confirmModel.Domain, userId, JsonConvert.SerializeObject(confirmModel));
             return confirmed ? NoContent() : StatusCode(StatusCodes.Status304NotModified);
         }
 
