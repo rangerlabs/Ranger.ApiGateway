@@ -27,12 +27,67 @@ namespace Ranger.ApiGateway
             this.identityClient = identityClient;
         }
 
+        [HttpPut("/user/{email}/password-reset")]
+        [TenantDomainRequired]
+        public async Task<IActionResult> PasswordReset([FromRoute] string email, PasswordResetModel passwordResetModel)
+        {
+            bool submitted = await identityClient.RequestPasswordReset(Domain, email, JsonConvert.SerializeObject(passwordResetModel));
+            return submitted ? NoContent() : StatusCode(StatusCodes.Status400BadRequest);
+        }
+
+        [HttpPut("/user/{email}/email-change")]
+        [TenantDomainRequired]
+        public async Task<IActionResult> EmailChange([FromRoute] string email, EmailChangeModel emailChangeModel)
+        {
+            bool submitted = false;
+            try
+            {
+                submitted = await identityClient.RequestEmailChange(Domain, email, JsonConvert.SerializeObject(emailChangeModel));
+            }
+            catch (HttpClientException ex)
+            {
+                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status409Conflict)
+                {
+                    return Conflict(ex.ApiResponse.Errors);
+                }
+                throw;
+            }
+            return submitted ? NoContent() : StatusCode(StatusCodes.Status400BadRequest);
+        }
+
         [HttpPost("/user/{userId}/password-reset")]
         [AllowAnonymous]
         public async Task<IActionResult> PasswordReset([FromRoute] string userId, UserConfirmPasswordResetModel confirmModel)
         {
             bool confirmed = await identityClient.UserConfirmPasswordResetAsync(confirmModel.Domain, userId, JsonConvert.SerializeObject(confirmModel));
             return confirmed ? NoContent() : StatusCode(StatusCodes.Status304NotModified);
+        }
+
+        [HttpPost("/user/{userId}/email-change")]
+        [AllowAnonymous]
+        public async Task<IActionResult> EmailChange([FromRoute] string userId, UserConfirmEmailChangeModel userConfirmEmailChangeModel)
+        {
+            var requestContent = new
+            {
+                Email = userConfirmEmailChangeModel.Email
+            };
+            try
+            {
+                await identityClient.UserConfirmPasswordResetAsync(userConfirmEmailChangeModel.Domain, userId, JsonConvert.SerializeObject(requestContent));
+            }
+            catch (HttpClientException ex)
+            {
+                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status409Conflict)
+                {
+                    return Conflict(ex.ApiResponse.Errors);
+                }
+                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status400BadRequest)
+                {
+                    return BadRequest(ex.ApiResponse.Errors);
+                }
+                return InternalServerError();
+            }
+            return NoContent();
         }
 
         [HttpPut("/user/{userId}/confirm")]
