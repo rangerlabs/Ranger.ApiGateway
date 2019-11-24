@@ -21,10 +21,12 @@ namespace Ranger.ApiGateway
     public class UserController : BaseController
     {
         private readonly IIdentityClient identityClient;
+        private readonly ILogger<UserController> logger;
 
         public UserController(IBusPublisher busPublisher, IIdentityClient identityClient, ILogger<UserController> logger) : base(busPublisher, logger)
         {
             this.identityClient = identityClient;
+            this.logger = logger;
         }
 
         [HttpPut("/user/{email}/password-reset")]
@@ -59,8 +61,22 @@ namespace Ranger.ApiGateway
         [AllowAnonymous]
         public async Task<IActionResult> PasswordReset([FromRoute] string userId, UserConfirmPasswordResetModel confirmModel)
         {
-            bool confirmed = await identityClient.UserConfirmPasswordResetAsync(confirmModel.Domain, userId, JsonConvert.SerializeObject(confirmModel));
-            return confirmed ? NoContent() : StatusCode(StatusCodes.Status304NotModified);
+            try
+            {
+                var requestContent = JsonConvert.SerializeObject(new
+                {
+                    NewPassword = confirmModel.NewPassword,
+                    ConfirmPassword = confirmModel.ConfirmPassword,
+                    Token = confirmModel.Token
+                });
+                bool confirmed = await identityClient.UserConfirmPasswordResetAsync(confirmModel.Domain, userId, requestContent);
+                return confirmed ? NoContent() : StatusCode(StatusCodes.Status304NotModified);
+            }
+            catch (HttpClientException ex)
+            {
+                logger.LogError(ex, "Failed to reset user password.");
+                return InternalServerError();
+            }
         }
 
         [HttpPost("/user/{userId}/email-change")]
@@ -69,11 +85,12 @@ namespace Ranger.ApiGateway
         {
             var requestContent = new
             {
-                Email = userConfirmEmailChangeModel.Email
+                Email = userConfirmEmailChangeModel.Email,
+                Token = userConfirmEmailChangeModel.Token
             };
             try
             {
-                await identityClient.UserConfirmPasswordResetAsync(userConfirmEmailChangeModel.Domain, userId, JsonConvert.SerializeObject(requestContent));
+                await identityClient.UserConfirmEmailChangeAsync(userConfirmEmailChangeModel.Domain, userId, JsonConvert.SerializeObject(requestContent));
             }
             catch (HttpClientException ex)
             {
