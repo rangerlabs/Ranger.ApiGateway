@@ -175,7 +175,7 @@ namespace Ranger.ApiGateway
         public async Task<IActionResult> Post(PostApplicationUserModel postApplicationUserModel)
         {
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
-            var applicationUserCommand = new CreateNewApplicationUserSagaInitializer(
+            var applicationUserCommand = new CreateUserSagaInitializer(
                 domain,
                 postApplicationUserModel.Email,
                 postApplicationUserModel.FirstName,
@@ -204,9 +204,10 @@ namespace Ranger.ApiGateway
                 return BadRequest(errors);
             }
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
-            var updateUserPermissionsCommand = new UpdateUserPermissions(
+            var updateUserPermissionsCommand = new UpdateUserPermissionsSagaInitializer(
                 domain,
                 email,
+                HttpContext.User.UserFromClaims().Email,
                 putPermissionsModel.Role,
                 putPermissionsModel.AuthorizedProjects
             );
