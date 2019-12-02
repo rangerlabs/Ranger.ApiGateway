@@ -119,10 +119,10 @@ namespace Ranger.ApiGateway
         [TenantDomainRequired]
         public async Task<IActionResult> Index([FromQuery]string email)
         {
-            ApplicationUserApiResponseModel applicationUserApiResponse = null;
+            UserApiResponseModel applicationUserApiResponse = null;
             try
             {
-                applicationUserApiResponse = await identityClient.GetAllUsersAsync<ApplicationUserApiResponseModel>(Domain);
+                applicationUserApiResponse = await identityClient.GetAllUsersAsync<UserApiResponseModel>(Domain);
             }
             catch (Exception ex)
             {
@@ -130,7 +130,7 @@ namespace Ranger.ApiGateway
                 return InternalServerError($"An error occurred retrieving the retrieving the application user for email '{email}'.");
             }
 
-            var userResponseModel = new ApplicationUserApiResponseModel
+            var userResponseModel = new UserApiResponseModel
             {
                 Email = applicationUserApiResponse.Email,
                 FirstName = applicationUserApiResponse.FirstName,
@@ -144,10 +144,10 @@ namespace Ranger.ApiGateway
         [TenantDomainRequired]
         public async Task<IActionResult> All()
         {
-            IEnumerable<ApplicationUserApiResponseModel> applicationUserApiResponse = null;
+            IEnumerable<UserApiResponseModel> applicationUserApiResponse = null;
             try
             {
-                applicationUserApiResponse = await identityClient.GetAllUsersAsync<IEnumerable<ApplicationUserApiResponseModel>>(Domain);
+                applicationUserApiResponse = await identityClient.GetAllUsersAsync<IEnumerable<UserApiResponseModel>>(Domain);
             }
             catch (Exception ex)
             {
@@ -155,15 +155,16 @@ namespace Ranger.ApiGateway
                 return InternalServerError($"An error occurred retrieving the retrieving the application users.");
             }
 
-            var userResponseCollection = new List<ApplicationUserApiResponseModel>();
+            var userResponseCollection = new List<UserApiResponseModel>();
             foreach (var user in applicationUserApiResponse)
             {
-                var userResponseModel = new ApplicationUserApiResponseModel
+                var userResponseModel = new UserApiResponseModel
                 {
                     Email = user.Email,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     Role = user.Role,
+                    AuthorizedProjects = user.AuthorizedProjects
                 };
                 userResponseCollection.Add(userResponseModel);
             }

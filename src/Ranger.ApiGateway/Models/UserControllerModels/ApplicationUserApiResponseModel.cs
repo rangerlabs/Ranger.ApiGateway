@@ -1,8 +1,8 @@
-using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace Ranger.ApiGateway
 {
-    public class ApplicationUserApiResponseModel
+    public class UserApiResponseModel
     {
 
         public string Email { get; set; }
@@ -14,5 +14,7 @@ namespace Ranger.ApiGateway
         public bool EmailConfirmed { get; set; }
 
         public string Role { get; set; }
+
+        public IEnumerable<string> AuthorizedProjects { get; set; }
     }
 }
