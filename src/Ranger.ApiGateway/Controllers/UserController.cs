@@ -22,9 +22,11 @@ namespace Ranger.ApiGateway
     {
         private readonly IIdentityClient identityClient;
         private readonly ILogger<UserController> logger;
+        private readonly IProjectsClient projectsClient;
 
-        public UserController(IBusPublisher busPublisher, IIdentityClient identityClient, ILogger<UserController> logger) : base(busPublisher, logger)
+        public UserController(IBusPublisher busPublisher, IIdentityClient identityClient, IProjectsClient projectsClient, ILogger<UserController> logger) : base(busPublisher, logger)
         {
+            this.projectsClient = projectsClient;
             this.identityClient = identityClient;
             this.logger = logger;
         }
@@ -107,6 +109,32 @@ namespace Ranger.ApiGateway
             return NoContent();
         }
 
+        [HttpGet("user/{email}/authorized-projects")]
+        public async Task<IActionResult> GetAuthorizedProjectsForUser([FromRoute] string email)
+        {
+            IEnumerable<string> result = null;
+            try
+            {
+                result = await projectsClient.GetProjectIdsForUser(Domain, email);
+            }
+            catch (HttpClientException<IEnumerable<string>> ex)
+            {
+                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status404NotFound)
+                {
+                    return NotFound();
+                }
+                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status400BadRequest)
+                {
+                    var badRequestContent = new ApiErrorContent();
+                    badRequestContent.Errors.Add("Ensure the user's email is a valid format.");
+                    return BadRequest(badRequestContent);
+                }
+            }
+            var apiErrorContent = new ApiErrorContent();
+            apiErrorContent.Errors.Add($"An error occurred retrieving the list of authorized projects for {email}.");
+            return BadRequest(apiErrorContent);
+        }
+
         [HttpPut("/user/{userId}/confirm")]
         [AllowAnonymous]
         public async Task<IActionResult> Confirm([FromRoute] string userId, UserConfirmModel confirmModel)
@@ -117,12 +145,12 @@ namespace Ranger.ApiGateway
 
         [HttpGet("/user")]
         [TenantDomainRequired]
-        public async Task<IActionResult> Index([FromQuery]string email)
+        public async Task<IActionResult> Index([FromQuery] string email)
         {
             UserApiResponseModel applicationUserApiResponse = null;
             try
             {
-                applicationUserApiResponse = await identityClient.GetAllUsersAsync<UserApiResponseModel>(Domain);
+                applicationUserApiResponse = await identityClient.GetUserAsync<UserApiResponseModel>(Domain, email);
             }
             catch (Exception ex)
             {
@@ -190,7 +218,7 @@ namespace Ranger.ApiGateway
 
         [HttpPut("/user/{email}")]
         [TenantDomainRequired]
-        public async Task<IActionResult> PutPermissions([FromRoute]string email, PutPermissionsModel putPermissionsModel)
+        public async Task<IActionResult> PutPermissions([FromRoute] string email, PutPermissionsModel putPermissionsModel)
         {
             if (putPermissionsModel == null)
             {
