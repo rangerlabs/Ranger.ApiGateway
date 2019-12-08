@@ -11,7 +11,7 @@ namespace Ranger.ApiGateway.Controllers
     [ApiController]
     [ApiKeyRequired]
     [AllowAnonymous]
-    public class LocationController : BaseController
+    public class LocationController : BaseController<LocationController>
     {
         public LocationController(IBusPublisher busPublisher, ILogger<LocationController> logger) : base(busPublisher, logger)
         {

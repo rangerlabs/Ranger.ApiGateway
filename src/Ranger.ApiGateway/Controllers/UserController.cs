@@ -18,7 +18,7 @@ namespace Ranger.ApiGateway
     [ApiVersion("1.0")]
     [ApiController]
     [Authorize(Roles = "Admin")]
-    public class UserController : BaseController
+    public class UserController : BaseController<UserController>
     {
         private readonly IIdentityClient identityClient;
         private readonly ILogger<UserController> logger;
@@ -109,7 +109,7 @@ namespace Ranger.ApiGateway
             return NoContent();
         }
 
-        [HttpGet("user/{email}/authorized-projects")]
+        [HttpGet("/user/{email}/authorized-projects")]
         public async Task<IActionResult> GetAuthorizedProjectsForUser([FromRoute] string email)
         {
             IEnumerable<string> result = null;
@@ -130,9 +130,7 @@ namespace Ranger.ApiGateway
                     return BadRequest(badRequestContent);
                 }
             }
-            var apiErrorContent = new ApiErrorContent();
-            apiErrorContent.Errors.Add($"An error occurred retrieving the list of authorized projects for {email}.");
-            return BadRequest(apiErrorContent);
+            return Ok(result);
         }
 
         [HttpPut("/user/{userId}/confirm")]
@@ -154,8 +152,8 @@ namespace Ranger.ApiGateway
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"An exception occurred retrieving the retrieving the application user for email '{email}'.");
-                return InternalServerError($"An error occurred retrieving the retrieving the application user for email '{email}'.");
+                this.logger.LogError(ex, $"An exception occurred retrieving the application user for email '{email}'.");
+                return InternalServerError($"An error occurred retrieving the application user for email '{email}'.");
             }
 
             var userResponseModel = new UserApiResponseModel
@@ -179,8 +177,8 @@ namespace Ranger.ApiGateway
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, $"An exception occurred retrieving the retrieving the application users.");
-                return InternalServerError($"An error occurred retrieving the retrieving the application users.");
+                this.logger.LogError(ex, $"An exception occurred retrieving the application users.");
+                return InternalServerError($"An error occurred retrieving the application users.");
             }
 
             var userResponseCollection = new List<UserApiResponseModel>();

@@ -104,6 +104,7 @@ namespace Ranger.ApiGateway
         {
             this.loggerFactory = loggerFactory;
 
+            app.UseRouting();
             app.UseCors(builder =>
             {
                 builder.AllowAnyHeader()
@@ -117,7 +118,12 @@ namespace Ranger.ApiGateway
                 app.UsePathBase("/api");
             }
             app.UseAuthentication();
-            app.UseMvcWithDefaultRoute();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }
