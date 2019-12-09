@@ -137,8 +137,22 @@ namespace Ranger.ApiGateway
         [AllowAnonymous]
         public async Task<IActionResult> Confirm([FromRoute] string userId, UserConfirmModel confirmModel)
         {
-            bool confirmed = await identityClient.ConfirmUserAsync(confirmModel.Domain, userId, JsonConvert.SerializeObject(confirmModel));
-            return confirmed ? NoContent() : StatusCode(StatusCodes.Status304NotModified);
+            try
+            {
+                var requestContent = JsonConvert.SerializeObject(new
+                {
+                    NewPassword = confirmModel.NewPassword,
+                    ConfirmPassword = confirmModel.ConfirmPassword,
+                    Token = confirmModel.Token
+                });
+                bool confirmed = await identityClient.UserConfirmPasswordResetAsync(confirmModel.Domain, userId, requestContent);
+                return confirmed ? NoContent() : StatusCode(StatusCodes.Status304NotModified);
+            }
+            catch (HttpClientException ex)
+            {
+                logger.LogError(ex, "Failed to set new user password.");
+                return InternalServerError();
+            }
         }
 
         [HttpGet("/user")]
