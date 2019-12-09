@@ -145,7 +145,7 @@ namespace Ranger.ApiGateway
                     ConfirmPassword = confirmModel.ConfirmPassword,
                     Token = confirmModel.Token
                 });
-                bool confirmed = await identityClient.UserConfirmPasswordResetAsync(confirmModel.Domain, userId, requestContent);
+                bool confirmed = await identityClient.ConfirmUserAsync(confirmModel.Domain, userId, requestContent);
                 return confirmed ? NoContent() : StatusCode(StatusCodes.Status304NotModified);
             }
             catch (HttpClientException ex)
