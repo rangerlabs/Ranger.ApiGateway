@@ -11,18 +11,18 @@ namespace Ranger.ApiGateway
 {
     [Route("[controller]")]
     [ApiController]
-    public class BaseController : ControllerBase
+    public class BaseController<TController> : ControllerBase
     {
         private static readonly string AcceptLanguageHeader = "accept-language";
         private static readonly string OperationHeader = "X-Operation";
         private static readonly string ResourceHeader = "X-Resource";
-        private static readonly string TenantDomainHeader = "x-ranger-domain";
+        // private static readonly string TenantDomainHeader = "x-ranger-domain";
         private static readonly string DefaultCulture = "en-us";
-        private static readonly string PageLink = "page";
+        // private static readonly string PageLink = "page";
         private readonly IBusPublisher busPublisher;
-        protected readonly ILogger Logger;
+        protected readonly ILogger<TController> Logger;
 
-        public BaseController(IBusPublisher busPublisher, ILogger logger)
+        public BaseController(IBusPublisher busPublisher, ILogger<TController> logger)
         {
             this.busPublisher = busPublisher;
             this.Logger = logger;

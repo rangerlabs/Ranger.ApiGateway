@@ -2,8 +2,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Ranger.ApiGateway
 {
-    public class UserConfirmModel
+    public class UserConfirmPasswordResetModel
     {
+        [Required]
         public string Domain { get; set; }
         [Required]
         public string Token { get; set; }

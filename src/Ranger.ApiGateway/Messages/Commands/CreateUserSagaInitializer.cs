@@ -4,7 +4,7 @@ using Ranger.RabbitMQ;
 namespace Ranger.ApiGateway
 {
     [MessageNamespaceAttribute("operations")]
-    public class CreateNewApplicationUserSagaInitializer : ICommand
+    public class CreateUserSagaInitializer : ICommand
     {
         public string Domain { get; }
         public string Email { get; }
@@ -12,9 +12,9 @@ namespace Ranger.ApiGateway
         public string LastName { get; }
         public string Role { get; }
         public string CommandingUserEmail { get; }
-        public IEnumerable<string> PermittedProjectIds { get; }
+        public IEnumerable<string> AuthorizedProjectIds { get; }
 
-        public CreateNewApplicationUserSagaInitializer(string domain, string email, string firstName, string lastName, string role, string commandingUserEmail, IEnumerable<string> permittedProjectIds)
+        public CreateUserSagaInitializer(string domain, string email, string firstName, string lastName, string role, string commandingUserEmail, IEnumerable<string> authorizedProjectIds)
         {
             if (string.IsNullOrEmpty(domain))
             {
@@ -52,7 +52,7 @@ namespace Ranger.ApiGateway
             this.LastName = lastName;
             this.Role = role;
             this.CommandingUserEmail = commandingUserEmail;
-            this.PermittedProjectIds = permittedProjectIds ?? new List<string>();
+            this.AuthorizedProjectIds = authorizedProjectIds ?? new List<string>();
         }
     }
 }
