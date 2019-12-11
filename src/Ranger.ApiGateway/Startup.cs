@@ -115,12 +115,9 @@ namespace Ranger.ApiGateway
 
             app.UseEndpoints(endpoints =>
             {
-                if (Environment.IsProduction())
-                {
-                    endpoints.MapControllerRoute("default", "api/{controller}/{action}/{id?}");
-                }
-                endpoints.MapControllerRoute("default", "{controller}/{action}/{id?}");
+                endpoints.MapDefaultControllerRoute();
             });
+            app.UsePathBase("/api");
         }
     }
 }
