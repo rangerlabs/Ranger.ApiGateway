@@ -113,16 +113,16 @@ namespace Ranger.ApiGateway
                     .WithExposedHeaders("X-Operation");
             });
 
-            if (Environment.IsProduction())
-            {
-                app.UsePathBase("/api");
-            }
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();
+                if (Environment.IsProduction())
+                {
+                    endpoints.MapControllerRoute("default", "api/{controller=Home}/{action=Index}/{id?}");
+                }
+                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }
