@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Versioning;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -101,6 +102,10 @@ namespace Ranger.ApiGateway
         {
             this.loggerFactory = loggerFactory;
 
+            app.UseRewriter(
+                new RewriteOptions().AddRewrite(@"^api(.*)", "$1", true)
+            );
+
             app.UseRouting();
             app.UseCors(builder =>
             {
@@ -117,7 +122,6 @@ namespace Ranger.ApiGateway
             {
                 endpoints.MapDefaultControllerRoute();
             });
-            app.UsePathBase("/api");
         }
     }
 }
