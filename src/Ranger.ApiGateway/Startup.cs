@@ -36,10 +36,7 @@ namespace Ranger.ApiGateway
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers(options =>
-                {
-                    options.EnableEndpointRouting = false;
-                })
+            services.AddControllers()
                 .AddNewtonsoftJson(options =>
                 {
                     options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
@@ -120,9 +117,9 @@ namespace Ranger.ApiGateway
             {
                 if (Environment.IsProduction())
                 {
-                    endpoints.MapControllerRoute("default", "api/{controller=Home}/{action=Index}/{id?}");
+                    endpoints.MapControllerRoute("default", "api/{controller}/{action}/{id?}");
                 }
-                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapControllerRoute("default", "{controller}/{action}/{id?}");
             });
         }
     }
