@@ -102,10 +102,10 @@ namespace Ranger.ApiGateway
         {
             this.loggerFactory = loggerFactory;
 
-            app.UseRewriter(
-                new RewriteOptions().AddRewrite(@"^api(.*)", "$1", true)
-            );
-
+            if (Environment.IsProduction())
+            {
+                app.UsePathBase("/api");
+            }
             app.UseRouting();
             app.UseCors(builder =>
             {
