@@ -17,6 +17,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
 using Ranger.ApiGateway.Data;
+using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
 
@@ -87,15 +88,15 @@ namespace Ranger.ApiGateway
                     options.Authority = "http://identity:5000/auth";
                     options.ApiName = "apiGateway";
 
-                    //TODO: Change these to true
-                    options.EnableCaching = false;
                     options.RequireHttpsMetadata = false;
                 });
+
         }
 
         public void ConfigureContainer(ContainerBuilder builder)
         {
             builder.AddRabbitMq(loggerFactory);
+            builder.RegisterInstance<RangerPusherOptions>(configuration.GetOptions<RangerPusherOptions>("pusher"));
         }
 
         public void Configure(IApplicationBuilder app, IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory)

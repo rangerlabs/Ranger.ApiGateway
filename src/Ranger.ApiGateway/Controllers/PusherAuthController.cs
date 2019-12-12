@@ -21,15 +21,17 @@ namespace Ranger.ApiGateway
     {
         private readonly IIdentityClient identityClient;
         private readonly ILogger<UserController> logger;
+        private readonly RangerPusherOptions pusherOptions;
 
-        public PusherController(IIdentityClient identityClient, ILogger<UserController> logger)
+        public PusherController(IIdentityClient identityClient, RangerPusherOptions pusherOptions, ILogger<UserController> logger)
         {
+            this.pusherOptions = pusherOptions;
             this.identityClient = identityClient;
             this.logger = logger;
         }
 
         [HttpPost("/pusher/auth")]
-        public async Task<IActionResult> Index([FromForm]PusherAuthModel pusherAuthModel)
+        public async Task<IActionResult> Index([FromForm] PusherAuthModel pusherAuthModel)
         {
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
             User user = null;
@@ -45,18 +47,7 @@ namespace Ranger.ApiGateway
 
             if (user != null && user.Email == User.UserFromClaims().Email)
             {
-                var options = new PusherOptions
-                {
-                    Cluster = "us2",
-                    Encrypted = true
-                };
-
-                var pusher = new Pusher(
-                    "828034",
-                    "aed7ba7c7247aca9680e",
-                    "df532af7ccf602593aa5",
-                    options);
-
+                var pusher = new Pusher(pusherOptions.AppId, pusherOptions.Key, pusherOptions.Secret, new PusherOptions { Cluster = pusherOptions.Cluster, Encrypted = bool.Parse(pusherOptions.Encrypted) });
                 return Ok(pusher.Authenticate(pusherAuthModel.channel_name, pusherAuthModel.socket_id));
             }
             return Forbid();
