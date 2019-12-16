@@ -12,9 +12,9 @@ namespace Ranger.ApiGateway
         public string LastName { get; }
         public string Role { get; }
         public string CommandingUserEmail { get; }
-        public IEnumerable<string> AuthorizedProjectIds { get; }
+        public IEnumerable<string> AuthorizedProjects { get; }
 
-        public CreateUserSagaInitializer(string domain, string email, string firstName, string lastName, string role, string commandingUserEmail, IEnumerable<string> authorizedProjectIds)
+        public CreateUserSagaInitializer(string domain, string email, string firstName, string lastName, string role, string commandingUserEmail, IEnumerable<string> authorizedProjects)
         {
             if (string.IsNullOrEmpty(domain))
             {
@@ -52,7 +52,7 @@ namespace Ranger.ApiGateway
             this.LastName = lastName;
             this.Role = role;
             this.CommandingUserEmail = commandingUserEmail;
-            this.AuthorizedProjectIds = authorizedProjectIds ?? new List<string>();
+            this.AuthorizedProjects = authorizedProjects ?? new List<string>();
         }
     }
 }
