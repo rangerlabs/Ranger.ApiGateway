@@ -15,7 +15,6 @@ namespace Ranger.ApiGateway
 {
     [ApiVersion("1.0")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
     [TenantDomainRequired]
     public class ProjectController : ControllerBase
     {
@@ -28,12 +27,14 @@ namespace Ranger.ApiGateway
         }
 
         [HttpGet("/project/all")]
+        [Authorize(Roles = "User")]
         public async Task<IActionResult> All()
         {
+            var user = HttpContext.User.UserFromClaims();
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
             try
             {
-                var projects = await projectsClient.GetAllProjectsAsync<IEnumerable<ProjectResponseModel>>(domain);
+                var projects = await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectResponseModel>>(domain, User.UserFromClaims().Email);
                 return Ok(projects);
             }
             catch (HttpClientException<IEnumerable<ProjectResponseModel>> ex)
@@ -44,6 +45,7 @@ namespace Ranger.ApiGateway
         }
 
         [HttpPut("/project/{projectId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Put([FromRoute]string projectId, PutProjectModel projectModel)
         {
             if (string.IsNullOrWhiteSpace(projectId) || !Guid.TryParse(projectId, out _))
@@ -86,6 +88,7 @@ namespace Ranger.ApiGateway
         }
 
         [HttpPost("/project")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Post(PostProjectModel projectModel)
         {
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
@@ -112,6 +115,7 @@ namespace Ranger.ApiGateway
         }
 
         [HttpDelete("/project/{projectId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> SoftDeleteProject([FromRoute]string projectId)
         {
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
@@ -128,6 +132,7 @@ namespace Ranger.ApiGateway
         }
 
         [HttpPut("/project/{projectId}/{environment}/reset")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ApiKeyReset([FromRoute]string projectId, [FromRoute]string environment, ApiKeyResetModel apiKeyResetModel)
         {
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();

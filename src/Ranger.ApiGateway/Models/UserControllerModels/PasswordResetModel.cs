@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Ranger.ApiUtilities
+namespace Ranger.ApiGateway
 {
     public class PasswordResetModel
     {

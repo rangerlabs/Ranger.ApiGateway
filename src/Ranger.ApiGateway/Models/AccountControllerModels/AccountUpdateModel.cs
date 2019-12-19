@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Ranger.ApiGateway.Models.AccountControllerModels
+namespace Ranger.ApiGateway
 {
-    public class AccountInfoModel
+    public class AccountUpdateModel
     {
         [Required]
         [RegularExpression(@"^([\s\,\.\-\'a-zA-Z]){1,48}$")]
