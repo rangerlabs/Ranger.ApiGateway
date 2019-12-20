@@ -23,12 +23,42 @@ namespace Ranger.ApiGateway
         private readonly IIdentityClient identityClient;
         private readonly ILogger<UserController> logger;
         private readonly IProjectsClient projectsClient;
+        private readonly IBusPublisher busPublisher;
 
         public UserController(IBusPublisher busPublisher, IIdentityClient identityClient, IProjectsClient projectsClient, ILogger<UserController> logger) : base(busPublisher, logger)
         {
+            this.busPublisher = busPublisher;
             this.projectsClient = projectsClient;
             this.identityClient = identityClient;
             this.logger = logger;
+        }
+
+        [HttpDelete("/user/{email}")]
+        [TenantDomainRequired]
+        public async Task<IActionResult> DeleteUser([FromRoute] string email)
+        {
+            try
+            {
+                var deleteUserContent = new DeleteUserModel()
+                {
+                    CommandingUserEmail = User.UserFromClaims().Email
+                };
+                await identityClient.DeleteUserAsync(Domain, email, JsonConvert.SerializeObject(deleteUserContent));
+            }
+            catch (HttpClientException ex)
+            {
+                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status403Forbidden)
+                {
+                    return Forbid();
+                }
+                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status404NotFound)
+                {
+                    return NotFound();
+                }
+                return InternalServerError();
+            }
+            busPublisher.Send(new SendPusherDomainUserPredefinedNotification("ForceSignoutNotification", Domain, email), CorrelationContext.Empty);
+            return NoContent();
         }
 
         [HttpPut("/user/{email}/password-reset")]
