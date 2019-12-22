@@ -28,7 +28,7 @@ namespace Ranger.ApiGateway
         public async Task<IActionResult> Post(TenantModel tenantModel)
         {
             var domain = new Domain(tenantModel.DomainForm.Domain.ToLower(), tenantModel.DomainForm.OrganizationName);
-            var owner = new NewTenantOwner(tenantModel.UserForm.Email, tenantModel.UserForm.FirstName, tenantModel.UserForm.LastName, tenantModel.UserForm.Password);
+            var owner = new NewPrimaryOwner(tenantModel.UserForm.Email, tenantModel.UserForm.FirstName, tenantModel.UserForm.LastName, tenantModel.UserForm.Password);
 
             var createTenantMsg = new CreateTenant(domain, owner);
             return await Task.Run(() => Send(createTenantMsg));
