@@ -13,13 +13,13 @@ namespace Ranger.ApiGateway
     [TenantDomainRequired]
     public class GeofenceController : ControllerBase
     {
-        [HttpGet("{projectName}/geofence/{name}")]
+        [HttpGet("{projectName}/geofences/{name}")]
         public async Task<IActionResult> Index(string projectName, string name)
         {
             return Ok();
         }
 
-        [HttpGet("{projectName}/geofence/all")]
+        [HttpGet("{projectName}/geofences")]
         public async Task<IActionResult> All(string projectName)
         {
             IActionResult response = new StatusCodeResult(200);
@@ -83,7 +83,7 @@ namespace Ranger.ApiGateway
             return Ok(geoFenceResponseCollection);
         }
 
-        [HttpPost("/{projectName}/geofence/circle")]
+        [HttpPost("/{projectName}/geofences/circle")]
         public async Task<IActionResult> Post([FromRoute]string projectName, [FromBody]GeofenceModel geoFenceModel)
         {
             var applicationApiResponseModel = new GeofenceResponseModel()

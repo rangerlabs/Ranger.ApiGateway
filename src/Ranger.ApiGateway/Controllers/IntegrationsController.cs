@@ -14,7 +14,7 @@ namespace Ranger.ApiGateway
     [TenantDomainRequired]
     public class IntegrationController : ControllerBase
     {
-        [HttpGet("{projectName}/integration/all")]
+        [HttpGet("{projectName}/integrations")]
         public async Task<IActionResult> All(string projectName)
         {
             IActionResult response = new StatusCodeResult(202);

@@ -17,7 +17,7 @@ namespace Ranger.ApiGateway.Controllers
         {
         }
 
-        [HttpGet("/location/status")]
+        [HttpGet("/locations/status")]
         public async Task<IActionResult> Index()
         {
             return Ok($"You're using the '{HttpContext.Items["ApiKeyEnvironment"]}' API key.");

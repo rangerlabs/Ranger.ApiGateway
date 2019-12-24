@@ -33,7 +33,7 @@ namespace Ranger.ApiGateway
             this.logger = logger;
         }
 
-        [HttpDelete("/user/{email}")]
+        [HttpDelete("/users/{email}")]
         [TenantDomainRequired]
         public async Task<IActionResult> DeleteUser([FromRoute] string email)
         {
@@ -61,17 +61,17 @@ namespace Ranger.ApiGateway
             return NoContent();
         }
 
-        [HttpPut("/user/{email}/password-reset")]
+        [HttpPut("/users/{email}/password-reset")]
         [TenantDomainRequired]
-        public async Task<IActionResult> PasswordReset([FromRoute] string email, PasswordResetModel passwordResetModel)
+        public async Task<IActionResult> PasswordResetRequest([FromRoute] string email, PasswordResetModel passwordResetModel)
         {
             bool submitted = await identityClient.RequestPasswordReset(Domain, email, JsonConvert.SerializeObject(passwordResetModel));
             return submitted ? NoContent() : StatusCode(StatusCodes.Status400BadRequest);
         }
 
-        [HttpPut("/user/{email}/email-change")]
+        [HttpPut("/users/{email}/email-change")]
         [TenantDomainRequired]
-        public async Task<IActionResult> EmailChange([FromRoute] string email, EmailChangeModel emailChangeModel)
+        public async Task<IActionResult> EmailChangeRequest([FromRoute] string email, EmailChangeModel emailChangeModel)
         {
             bool submitted = false;
             try
@@ -89,7 +89,7 @@ namespace Ranger.ApiGateway
             return submitted ? NoContent() : StatusCode(StatusCodes.Status400BadRequest);
         }
 
-        [HttpPost("/user/{userId}/password-reset")]
+        [HttpPost("/users/{userId}/password-reset")]
         [AllowAnonymous]
         public async Task<IActionResult> PasswordReset([FromRoute] string userId, UserConfirmPasswordResetModel confirmModel)
         {
@@ -111,7 +111,7 @@ namespace Ranger.ApiGateway
             }
         }
 
-        [HttpPost("/user/{userId}/email-change")]
+        [HttpPost("/users/{userId}/email-change")]
         [AllowAnonymous]
         public async Task<IActionResult> EmailChange([FromRoute] string userId, UserConfirmEmailChangeModel userConfirmEmailChangeModel)
         {
@@ -139,7 +139,7 @@ namespace Ranger.ApiGateway
             return NoContent();
         }
 
-        [HttpGet("/user/{email}/authorized-projects")]
+        [HttpGet("/users/{email}/authorized-projects")]
         public async Task<IActionResult> GetAuthorizedProjectsForUser([FromRoute] string email)
         {
             IEnumerable<string> result = null;
@@ -163,9 +163,9 @@ namespace Ranger.ApiGateway
             return Ok(result);
         }
 
-        [HttpPut("/user/{userId}/confirm")]
+        [HttpPut("/users/{userId}/confirm")]
         [AllowAnonymous]
-        public async Task<IActionResult> Confirm([FromRoute] string userId, UserConfirmModel confirmModel)
+        public async Task<IActionResult> ConfirmUser([FromRoute] string userId, UserConfirmModel confirmModel)
         {
             try
             {
@@ -185,9 +185,9 @@ namespace Ranger.ApiGateway
             }
         }
 
-        [HttpGet("/user")]
+        [HttpGet("/users/{email}")]
         [TenantDomainRequired]
-        public async Task<IActionResult> Index([FromQuery] string email)
+        public async Task<IActionResult> GetUser([FromRoute] string email)
         {
             UserApiResponseModel applicationUserApiResponse = null;
             try
@@ -210,9 +210,9 @@ namespace Ranger.ApiGateway
             return Ok(userResponseModel);
         }
 
-        [HttpGet("/user/all")]
+        [HttpGet("/users")]
         [TenantDomainRequired]
-        public async Task<IActionResult> All()
+        public async Task<IActionResult> GetAllUsers()
         {
             IEnumerable<UserApiResponseModel> applicationUserApiResponse = null;
             try
@@ -241,9 +241,9 @@ namespace Ranger.ApiGateway
             return Ok(userResponseCollection);
         }
 
-        [HttpPost("/user")]
+        [HttpPost("/users")]
         [TenantDomainRequired]
-        public async Task<IActionResult> Post(PostApplicationUserModel postApplicationUserModel)
+        public async Task<IActionResult> CreateUser(PostApplicationUserModel postApplicationUserModel)
         {
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
             var applicationUserCommand = new CreateUserSagaInitializer(
@@ -258,7 +258,7 @@ namespace Ranger.ApiGateway
             return await Task.Run(() => base.Send(applicationUserCommand));
         }
 
-        [HttpPut("/user/{email}")]
+        [HttpPut("/users/{email}")]
         [TenantDomainRequired]
         public async Task<IActionResult> PutPermissions([FromRoute] string email, PutPermissionsModel putPermissionsModel)
         {
