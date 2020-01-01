@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Ranger.ApiUtilities;
+using Ranger.Common;
+using Ranger.RabbitMQ;
 
 namespace Ranger.ApiGateway
 {
@@ -11,96 +15,76 @@ namespace Ranger.ApiGateway
     [ApiController]
     [Authorize(Roles = "User")]
     [TenantDomainRequired]
-    public class GeofenceController : ControllerBase
+    public class GeofenceController : BaseController<GeofenceController>
     {
-        [HttpGet("{projectName}/geofences/{name}")]
+        private readonly IBusPublisher busPublisher;
+
+        public GeofenceController(IBusPublisher busPublisher, ILogger<GeofenceController> logger) : base(busPublisher, logger)
+        {
+            this.busPublisher = busPublisher;
+        }
+
+        [HttpGet("/{projectName}/geofences/{name}")]
         public async Task<IActionResult> Index(string projectName, string name)
         {
             return Ok();
         }
 
-        [HttpGet("{projectName}/geofences")]
-        public async Task<IActionResult> All(string projectName)
+        [HttpGet("/{projectName}/geofences")]
+        public async Task<IActionResult> GetAllGeofences(string projectName)
         {
-            IActionResult response = new StatusCodeResult(200);
-            var geoFenceResponseCollection = new List<GeofenceResponseModel>();
-            var polygonPoints = new List<LatLng>();
-            polygonPoints.Add(new LatLng(
-                40.74530871346847, -74.01628833886718));
-            polygonPoints.Add(new LatLng(
-                40.75363163725995, -73.95552021142578));
-            polygonPoints.Add(new LatLng(
-                40.77490733099531, -73.98580335067368));
-
-            var geoFenceModel = new GeofenceResponseModel()
-            {
-                ProjectName = "APP_ID_1",
-                Name = "Hoboken",
-                Labels = new List<string> { "Polygon" },
-                OnEnter = true,
-                OnExit = true,
-                Enabled = true,
-                Description = "Test Geo Fence Description",
-                IntegrationIds = new List<string> { "GUID1" },
-                Coordinates = polygonPoints,
-                Metadata = new Dictionary<string, object>(),
-                Shape = Enum.GetName(typeof(GeofenceShapeEnum), GeofenceShapeEnum.Polygon),
-            };
-            var geoFenceModel2 = new GeofenceResponseModel()
-            {
-                ProjectName = "APP_ID_2",
-                Name = "Manhattan Circle",
-                Labels = new List<string> { "NYC" },
-                OnEnter = true,
-                OnExit = true,
-                Enabled = true,
-                Description = "Test Geo Fence 2 Description",
-                IntegrationIds = new List<string> { "GUID1", "GUID2" },
-                Coordinates = new List<LatLng>{new LatLng(
-                40.7745457, -73.9718052)},
-                Metadata = new Dictionary<string, object>(),
-                Radius = 100,
-                Shape = Enum.GetName(typeof(GeofenceShapeEnum), GeofenceShapeEnum.Circle),
-            };
-            var geoFenceModel3 = new GeofenceResponseModel()
-            {
-                ProjectName = "APP_ID_2",
-                Name = "Hoboken Circle",
-                Labels = new List<string> { "Hoboken", "NYC" },
-                OnEnter = true,
-                OnExit = true,
-                Enabled = true,
-                Description = "Test Geo Fence 2 Description",
-                IntegrationIds = new List<string> { "GUID3" },
-                Coordinates = new List<LatLng> { new LatLng(40.7426017, -74.0284736) },
-                Metadata = new Dictionary<string, object>(),
-                Radius = 100,
-                Shape = Enum.GetName(typeof(GeofenceShapeEnum), GeofenceShapeEnum.Circle),
-            };
-            geoFenceResponseCollection.Add(geoFenceModel);
-            geoFenceResponseCollection.Add(geoFenceModel2);
-            geoFenceResponseCollection.Add(geoFenceModel3);
-            return Ok(geoFenceResponseCollection);
+            return Ok(new List<object>());
         }
 
-        [HttpPost("/{projectName}/geofences/circle")]
+        [HttpPost("/{projectName}/geofences")]
         public async Task<IActionResult> Post([FromRoute]string projectName, [FromBody]GeofenceModel geoFenceModel)
         {
-            var applicationApiResponseModel = new GeofenceResponseModel()
+            if (geoFenceModel.Shape == GeofenceShapeEnum.Circle)
             {
-                ProjectName = projectName,
-                Name = geoFenceModel.Name,
-                Labels = geoFenceModel.Labels,
-                OnEnter = geoFenceModel.OnEnter,
-                OnExit = geoFenceModel.OnExit,
-                Enabled = geoFenceModel.Enabled,
-                Description = geoFenceModel.Description,
-                IntegrationIds = geoFenceModel.IntegrationIds,
-                Coordinates = geoFenceModel.Coordinates,
-                Metadata = geoFenceModel.Metadata,
-                Radius = geoFenceModel.Radius,
-            };
-            return Created($"{projectName}/geofence", geoFenceModel);
+                if (geoFenceModel.Radius < 50)
+                {
+                    return BadRequest("Circular geofence radii must be greater than or equal to 50 meters.");
+                }
+                if (geoFenceModel.Coordinates.Count() == 0 || geoFenceModel.Coordinates.Count() > 1)
+                {
+                    return BadRequest("Circular geofence must have exactly one coordinate in their Coordinate array.");
+                }
+            }
+            else
+            {
+                geoFenceModel.Radius = 0;
+                if (geoFenceModel.Coordinates.Count() < 3)
+                {
+                    return BadRequest("Polygon geofence must have three or more coordinate in their Coordinate array.");
+                }
+            }
+
+            if (geoFenceModel.ExpirationDate < geoFenceModel.LaunchDate)
+            {
+                return BadRequest("The geofence expiration date was before the launch date.");
+            }
+
+            var createGeofenceSagaInitializer = new CreateGeofenceSagaInitializer(
+                User is null ? false : true,
+                User?.UserFromClaims().Email ?? "", //INSERT TOKEN HERE
+                Domain,
+                geoFenceModel.ExternalId,
+                geoFenceModel.ProjectId,
+                geoFenceModel.Shape,
+                geoFenceModel.Coordinates,
+                geoFenceModel.Labels,
+                geoFenceModel.IntegrationIds,
+                geoFenceModel.Metadata,
+                geoFenceModel.Description,
+                geoFenceModel.Radius,
+                geoFenceModel.Enabled,
+                geoFenceModel.OnEnter,
+                geoFenceModel.OnExit,
+                geoFenceModel.ExpirationDate,
+                geoFenceModel.LaunchDate,
+                geoFenceModel.Schedule
+            );
+            return await Task.Run(() => base.Send(createGeofenceSagaInitializer));
         }
     }
 }
