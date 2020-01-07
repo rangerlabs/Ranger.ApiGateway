@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
+using Ranger.ApiGateway.Authorization;
 using Ranger.ApiGateway.Data;
 using Ranger.Common;
 using Ranger.InternalHttpClient;
@@ -50,9 +51,15 @@ namespace Ranger.ApiGateway
                     {
                         policyBuilder.RequireScope("apiGateway");
                     });
+
+                options.AddPolicy("BelongsToProject", policyBuilder =>
+                {
+                    policyBuilder.RequireAuthenticatedUser().AddRequirements(new BelongsToProjectRequirement());
+                });
             });
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<IAuthorizationHandler, BelongsToProjectHandler>();
             services.AddSingleton<ITenantsClient, TenantsClient>(provider =>
             {
                 return new TenantsClient("http://tenants:8082", loggerFactory.CreateLogger<TenantsClient>());
@@ -64,6 +71,10 @@ namespace Ranger.ApiGateway
             services.AddSingleton<IIdentityClient, IdentityClient>(provider =>
             {
                 return new IdentityClient("http://identity:5000", loggerFactory.CreateLogger<IdentityClient>());
+            });
+            services.AddSingleton<IGeofencesClient, GeofencesClient>(provider =>
+            {
+                return new GeofencesClient("http://geofences:8085", loggerFactory.CreateLogger<GeofencesClient>());
             });
             services.AddCors();
 

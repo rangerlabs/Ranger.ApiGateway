@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Ranger.ApiUtilities;
 using Ranger.Common;
+using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
 
 namespace Ranger.ApiGateway
@@ -17,11 +19,15 @@ namespace Ranger.ApiGateway
     [TenantDomainRequired]
     public class GeofenceController : BaseController<GeofenceController>
     {
-        private readonly IBusPublisher busPublisher;
+        private readonly IGeofencesClient geofencesClient;
+        private readonly ILogger<GeofenceController> logger;
+        private readonly IProjectsClient projectsClient;
 
-        public GeofenceController(IBusPublisher busPublisher, ILogger<GeofenceController> logger) : base(busPublisher, logger)
+        public GeofenceController(IBusPublisher busPublisher, IGeofencesClient geofencesClient, IProjectsClient projectsClient, ILogger<GeofenceController> logger) : base(busPublisher, logger)
         {
-            this.busPublisher = busPublisher;
+            this.projectsClient = projectsClient;
+            this.logger = logger;
+            this.geofencesClient = geofencesClient;
         }
 
         [HttpGet("/{projectName}/geofences/{name}")]
@@ -31,13 +37,37 @@ namespace Ranger.ApiGateway
         }
 
         [HttpGet("/{projectName}/geofences")]
+        [Authorize("BelongsToProject")]
         public async Task<IActionResult> GetAllGeofences(string projectName)
         {
-            return Ok(new List<object>());
+            try
+            {
+                var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(Domain, User.UserFromClaims().Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
+                if (!String.IsNullOrWhiteSpace(projectId))
+                {
+                    var geofences = await geofencesClient.GetAllGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(Domain, projectId);
+                    return Ok(geofences);
+                }
+                logger.LogWarning("The user was authorized for a project but the project ID was not successfully retrieved.");
+                return NotFound();
+            }
+            catch (HttpClientException<IEnumerable<GeofenceResponseModel>> ex)
+            {
+                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status404NotFound)
+                {
+                    return NotFound();
+                }
+                throw;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to retrieve geofences.");
+            }
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
 
         [HttpPost("/{projectName}/geofences")]
-        public async Task<IActionResult> Post([FromRoute]string projectName, [FromBody]GeofenceModel geoFenceModel)
+        public async Task<IActionResult> Post([FromRoute] string projectName, [FromBody] GeofenceModel geoFenceModel)
         {
             if (geoFenceModel.Shape == GeofenceShapeEnum.Circle)
             {
