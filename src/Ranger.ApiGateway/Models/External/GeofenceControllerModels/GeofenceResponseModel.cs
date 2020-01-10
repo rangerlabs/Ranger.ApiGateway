@@ -8,7 +8,7 @@ namespace Ranger.ApiGateway
     public class GeofenceResponseModel
     {
         public GeofenceShapeEnum Shape { get; set; }
-        public LngLat LngLat { get; set; }
+        public IEnumerable<LngLat> Coordinates { get; set; }
         public int Radius { get; set; }
 
         public string ExternalId { get; set; }

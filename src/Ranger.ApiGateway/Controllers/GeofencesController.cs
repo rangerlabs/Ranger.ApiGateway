@@ -82,6 +82,10 @@ namespace Ranger.ApiGateway
             }
             else
             {
+                if (geoFenceModel.Coordinates.First().Equals(geoFenceModel.Coordinates.Last()))
+                {
+                    return BadRequest("The first and last coordinates in a polygon are implicitely connected. Remove the explicit closing edge.");
+                }
                 geoFenceModel.Radius = 0;
                 if (geoFenceModel.Coordinates.Count() < 3)
                 {
