@@ -41,7 +41,7 @@ namespace Ranger.ApiGateway
 
             this.Coordinates = coordinates;
             this.Shape = shape;
-            this.Radius = Radius;
+            this.Radius = radius;
 
             this.Domain = domain;
             this.ExternalId = externalId;
