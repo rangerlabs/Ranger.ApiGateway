@@ -13,7 +13,7 @@ namespace Ranger.ApiGateway
         [AllowAnonymous]
         public IActionResult Index()
         {
-            return Ok($"The Ranger API running as of {DateTime.UtcNow}");
+            return Ok($"The Ranger API is up and running as of {DateTime.UtcNow} UTC.");
         }
     }
 }

@@ -5,12 +5,10 @@ using Ranger.Common;
 
 namespace Ranger.ApiGateway
 {
-    public class GeofenceModel
+    public class GeofencePostModel
     {
         [Required]
         public string ExternalId { get; set; }
-        [Required]
-        public string ProjectId { get; set; }
         [Required]
         public IEnumerable<LngLat> Coordinates { get; set; }
         public IEnumerable<string> Labels { get; set; }
