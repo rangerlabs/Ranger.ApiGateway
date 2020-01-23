@@ -7,7 +7,7 @@ using Ranger.RabbitMQ;
 namespace Ranger.ApiGateway
 {
     [MessageNamespaceAttribute("operations")]
-    public class CreateGeofenceSagaInitializer : ICommand
+    public class CreateGeofenceSagaInitializer : SagaInitializer, ICommand
     {
         public CreateGeofenceSagaInitializer(bool frontendRequest, string commandingUserEmailOrTokenPrefix, string domain, string externalId, string projectId, GeofenceShapeEnum shape, IEnumerable<LngLat> coordinates, IEnumerable<string> labels = null, IEnumerable<string> integrationIds = null, IDictionary<string, object> metadata = null, string description = null, int radius = 0, bool enabled = true, bool onEnter = true, bool onExit = true, DateTime? expirationDate = null, DateTime? launchDate = null, Schedule schedule = null)
         {
@@ -43,7 +43,7 @@ namespace Ranger.ApiGateway
             this.Shape = shape;
             this.Radius = radius;
 
-            this.Domain = domain;
+            Domain = domain;
             this.ExternalId = externalId;
             this.ProjectId = projectId;
             this.Labels = labels ?? new List<string>();
@@ -52,18 +52,15 @@ namespace Ranger.ApiGateway
             this.Description = string.IsNullOrWhiteSpace(description) ? "" : description;
             this.ExpirationDate = expirationDate ?? DateTime.MaxValue;
             this.LaunchDate = launchDate ?? DateTime.UtcNow;
-            this.Schedule = schedule ?? Schedule.FullSchedule;
+            this.Schedule = schedule;
             this.Enabled = enabled;
             this.OnEnter = onEnter;
             this.OnExit = onExit;
         }
         public bool FrontendRequest { get; }
         public string CommandingUserEmailOrTokenPrefix { get; }
-
-        public string Domain { get; }
         public string ExternalId { get; }
         public string ProjectId { get; }
-
         public IEnumerable<string> Labels { get; }
         public bool OnEnter { get; } = true;
         public bool OnExit { get; } = true;

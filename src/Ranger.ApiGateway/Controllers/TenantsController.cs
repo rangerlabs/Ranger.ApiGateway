@@ -27,7 +27,7 @@ namespace Ranger.ApiGateway
         [AllowAnonymous]
         public async Task<IActionResult> Post(TenantModel tenantModel)
         {
-            var createTenantMsg = new CreateTenantSagaInitializer(tenantModel.DomainForm.Domain.ToLower(), tenantModel.DomainForm.OrganizationName, tenantModel.UserForm.Email, tenantModel.UserForm.FirstName, tenantModel.UserForm.LastName, tenantModel.UserForm.Password);
+            var createTenantMsg = new CreateTenant(tenantModel.DomainForm.Domain.ToLower(), tenantModel.DomainForm.OrganizationName, tenantModel.UserForm.Email, tenantModel.UserForm.FirstName, tenantModel.UserForm.LastName, tenantModel.UserForm.Password);
             return await Task.Run(() => Send(createTenantMsg));
         }
 

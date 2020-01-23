@@ -4,9 +4,8 @@ using Ranger.RabbitMQ;
 namespace Ranger.ApiGateway
 {
     [MessageNamespaceAttribute("operations")]
-    public class CreateUserSagaInitializer : ICommand
+    public class CreateUserSagaInitializer : SagaInitializer, ICommand
     {
-        public string Domain { get; }
         public string Email { get; }
         public string FirstName { get; }
         public string LastName { get; }
@@ -46,7 +45,7 @@ namespace Ranger.ApiGateway
                 throw new System.ArgumentException($"{nameof(commandingUserEmail)} was null or whitespace.");
             }
 
-            this.Domain = domain;
+            Domain = domain;
             this.Email = email;
             this.FirstName = firstName;
             this.LastName = lastName;
