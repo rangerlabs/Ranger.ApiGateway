@@ -238,7 +238,14 @@ namespace Ranger.ApiGateway
                 };
                 userResponseCollection.Add(userResponseModel);
             }
-            return Ok(userResponseCollection);
+            if (userResponseCollection.Count() > 0)
+            {
+                return Ok(userResponseCollection);
+            }
+            else
+            {
+                return NoContent();
+            }
         }
 
         [HttpPost("/users")]

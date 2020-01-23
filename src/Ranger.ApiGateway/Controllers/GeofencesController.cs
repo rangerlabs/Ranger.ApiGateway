@@ -46,7 +46,14 @@ namespace Ranger.ApiGateway
                 if (!String.IsNullOrWhiteSpace(projectId))
                 {
                     var geofences = await geofencesClient.GetAllGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(Domain, projectId);
-                    return Ok(geofences);
+                    if (geofences.Count() > 0)
+                    {
+                        return Ok(geofences);
+                    }
+                    else
+                    {
+                        return NoContent();
+                    }
                 }
                 logger.LogWarning("The user was authorized for a project but the project ID was not successfully retrieved.");
                 return NotFound();

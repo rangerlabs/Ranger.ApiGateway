@@ -11,6 +11,7 @@ namespace Ranger.ApiGateway
         public IEnumerable<LngLat> Coordinates { get; set; }
         public int Radius { get; set; }
 
+        public string Id { get; set; }
         public string ExternalId { get; set; }
         public string ProjectId { get; set; }
         public string Description { get; set; }

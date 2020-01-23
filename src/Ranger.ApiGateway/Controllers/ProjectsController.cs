@@ -10,6 +10,7 @@ using Ranger.ApiUtilities;
 using Ranger.InternalHttpClient;
 using Ranger.Common;
 using System.Net.Http;
+using System.Linq;
 
 namespace Ranger.ApiGateway
 {
@@ -35,7 +36,14 @@ namespace Ranger.ApiGateway
             try
             {
                 var projects = await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectResponseModel>>(domain, User.UserFromClaims().Email);
-                return Ok(projects);
+                if (projects.Count() > 0)
+                {
+                    return Ok(projects);
+                }
+                else
+                {
+                    return NoContent();
+                }
             }
             catch (HttpClientException<IEnumerable<ProjectResponseModel>> ex)
             {
