@@ -151,9 +151,10 @@ namespace Ranger.ApiGateway
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
 
+        //TODO: Working on how to rename given the externalId
         [HttpPut("/{projectName}/geofences/{externalId}")]
         [Authorize("BelongsToProject")]
-        public async Task<IActionResult> UpsertGeofence([FromRoute] string projectName, [FromRoute] string externalId, [FromBody] GeofencePutModel geoFenceModel)
+        public async Task<IActionResult> UpdateGeofence([FromRoute] string projectName, [FromRoute] string externalId, [FromBody] GeofencePutModel geoFenceModel)
         {
             try
             {
@@ -189,10 +190,11 @@ namespace Ranger.ApiGateway
                         return BadRequest("The geofence expiration date was before the launch date.");
                     }
 
-                    var createGeofenceSagaInitializer = new UpsertGeofenceSagaInitializer(
+                    var createGeofenceSagaInitializer = new UpdateGeofenceSagaInitializer(
                         User is null ? false : true,
                         User?.UserFromClaims().Email ?? "", //INSERT TOKEN HERE
                         Domain,
+                        geoFenceModel.Id,
                         externalId,
                         projectId,
                         geoFenceModel.Shape,

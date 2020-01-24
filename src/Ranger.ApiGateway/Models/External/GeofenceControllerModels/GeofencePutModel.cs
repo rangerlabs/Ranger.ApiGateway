@@ -8,6 +8,8 @@ namespace Ranger.ApiGateway
     public class GeofencePutModel
     {
         [Required]
+        public string Id { get; set; }
+        [Required]
         public IEnumerable<LngLat> Coordinates { get; set; }
         public IEnumerable<string> Labels { get; set; }
         public bool OnEnter { get; set; } = true;
