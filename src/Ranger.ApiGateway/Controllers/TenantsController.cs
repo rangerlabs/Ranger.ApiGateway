@@ -23,20 +23,17 @@ namespace Ranger.ApiGateway
             this.tenantsClient = tenantsClient;
         }
 
-        [HttpPost("/tenant")]
+        [HttpPost("/tenants")]
         [AllowAnonymous]
         public async Task<IActionResult> Post(TenantModel tenantModel)
         {
-            var domain = new Domain(tenantModel.DomainForm.Domain.ToLower(), tenantModel.DomainForm.OrganizationName);
-            var owner = new NewPrimaryOwner(tenantModel.UserForm.Email, tenantModel.UserForm.FirstName, tenantModel.UserForm.LastName, tenantModel.UserForm.Password);
-
-            var createTenantMsg = new CreateTenant(domain, owner);
+            var createTenantMsg = new CreateTenant(tenantModel.DomainForm.Domain.ToLower(), tenantModel.DomainForm.OrganizationName, tenantModel.UserForm.Email, tenantModel.UserForm.FirstName, tenantModel.UserForm.LastName, tenantModel.UserForm.Password);
             return await Task.Run(() => Send(createTenantMsg));
         }
 
-        [HttpGet("/tenant/{domain}/exists")]
+        [HttpGet("/tenants/{domain}/exists")]
         [AllowAnonymous]
-        public async Task<IActionResult> Exists(string domain)
+        public async Task<IActionResult> TenantExists(string domain)
         {
             try
             {
@@ -57,9 +54,9 @@ namespace Ranger.ApiGateway
             }
         }
 
-        [HttpGet("/tenant/{domain}/enabled")]
+        [HttpGet("/tenants/{domain}/enabled")]
         [AllowAnonymous]
-        public async Task<IActionResult> Enabled(string domain)
+        public async Task<IActionResult> TenantEnabled(string domain)
         {
             try
             {
@@ -81,9 +78,9 @@ namespace Ranger.ApiGateway
             }
         }
 
-        [HttpPut("/tenant/{domain}/confirm")]
+        [HttpPut("/tenants/{domain}/confirm")]
         [AllowAnonymous]
-        public async Task<IActionResult> Confirm(string domain, TenantConfirmModel confirmModel)
+        public async Task<IActionResult> ConfirmTenant(string domain, TenantConfirmModel confirmModel)
         {
             try
             {

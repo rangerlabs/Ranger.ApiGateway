@@ -4,9 +4,8 @@ using Ranger.RabbitMQ;
 namespace Ranger.ApiGateway
 {
     [MessageNamespace("operations")]
-    public class UpdateUserPermissionsSagaInitializer : ICommand
+    public class UpdateUserPermissionsSagaInitializer : SagaInitializer, ICommand
     {
-        public string Domain { get; }
         public string Email { get; }
         public string CommandingUserEmail { get; }
         public string Role { get; }
@@ -31,7 +30,7 @@ namespace Ranger.ApiGateway
 
             this.Email = email;
             this.CommandingUserEmail = commandingUserEmail;
-            this.Domain = domain;
+            Domain = domain;
             this.Role = role;
             this.AuthorizedProjects = authorizedProjects;
         }

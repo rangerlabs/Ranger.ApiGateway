@@ -25,7 +25,7 @@ namespace Ranger.ApiGateway
             this.logger = logger;
         }
 
-        [HttpPut("/account/{email}")]
+        [HttpPut("/accounts/{email}")]
         [TenantDomainRequired]
         public async Task<IActionResult> AccountUpdate([FromRoute] string email, AccountUpdateModel accountUpdateModel)
         {
@@ -43,7 +43,7 @@ namespace Ranger.ApiGateway
             return Ok();
         }
 
-        [HttpDelete("/account/{email}")]
+        [HttpDelete("/accounts/{email}")]
         [TenantDomainRequired]
         public async Task<IActionResult> DeleteAccount([FromRoute] string email, AccountDeleteModel accountDeleteModel)
         {

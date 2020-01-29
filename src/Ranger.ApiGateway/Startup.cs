@@ -1,21 +1,18 @@
-using System;
 using System.Security.Cryptography.X509Certificates;
 using Autofac;
-using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Versioning;
-using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
+using Ranger.ApiGateway.Authorization;
 using Ranger.ApiGateway.Data;
 using Ranger.Common;
 using Ranger.InternalHttpClient;
@@ -50,9 +47,15 @@ namespace Ranger.ApiGateway
                     {
                         policyBuilder.RequireScope("apiGateway");
                     });
+
+                options.AddPolicy("BelongsToProject", policyBuilder =>
+                {
+                    policyBuilder.RequireAuthenticatedUser().AddRequirements(new BelongsToProjectRequirement());
+                });
             });
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<IAuthorizationHandler, BelongsToProjectHandler>();
             services.AddSingleton<ITenantsClient, TenantsClient>(provider =>
             {
                 return new TenantsClient("http://tenants:8082", loggerFactory.CreateLogger<TenantsClient>());
@@ -64,6 +67,14 @@ namespace Ranger.ApiGateway
             services.AddSingleton<IIdentityClient, IdentityClient>(provider =>
             {
                 return new IdentityClient("http://identity:5000", loggerFactory.CreateLogger<IdentityClient>());
+            });
+            services.AddSingleton<IGeofencesClient, GeofencesClient>(provider =>
+            {
+                return new GeofencesClient("http://geofences:8085", loggerFactory.CreateLogger<GeofencesClient>());
+            });
+            services.AddSingleton<IOperationsClient, OperationsClient>(provider =>
+            {
+                return new OperationsClient("http://operatins:8083", loggerFactory.CreateLogger<OperationsClient>());
             });
             services.AddCors();
 

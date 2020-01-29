@@ -10,6 +10,7 @@ using Ranger.ApiUtilities;
 using Ranger.InternalHttpClient;
 using Ranger.Common;
 using System.Net.Http;
+using System.Linq;
 
 namespace Ranger.ApiGateway
 {
@@ -26,16 +27,23 @@ namespace Ranger.ApiGateway
             this.projectsClient = projectsClient;
         }
 
-        [HttpGet("/project/all")]
+        [HttpGet("/projects")]
         [Authorize(Roles = "User")]
-        public async Task<IActionResult> All()
+        public async Task<IActionResult> GetAllProjects()
         {
             var user = HttpContext.User.UserFromClaims();
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
             try
             {
                 var projects = await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectResponseModel>>(domain, User.UserFromClaims().Email);
-                return Ok(projects);
+                if (projects.Count() > 0)
+                {
+                    return Ok(projects);
+                }
+                else
+                {
+                    return NoContent();
+                }
             }
             catch (HttpClientException<IEnumerable<ProjectResponseModel>> ex)
             {
@@ -44,9 +52,9 @@ namespace Ranger.ApiGateway
             }
         }
 
-        [HttpPut("/project/{projectId}")]
+        [HttpPut("/projects/{projectId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Put([FromRoute]string projectId, PutProjectModel projectModel)
+        public async Task<IActionResult> UpdateProject([FromRoute]string projectId, PutProjectModel projectModel)
         {
             if (string.IsNullOrWhiteSpace(projectId) || !Guid.TryParse(projectId, out _))
             {
@@ -87,9 +95,9 @@ namespace Ranger.ApiGateway
             return Created("project", response);
         }
 
-        [HttpPost("/project")]
+        [HttpPost("/projects")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Post(PostProjectModel projectModel)
+        public async Task<IActionResult> CreateProject(PostProjectModel projectModel)
         {
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
 
@@ -114,7 +122,7 @@ namespace Ranger.ApiGateway
             return Created("project", response);
         }
 
-        [HttpDelete("/project/{projectId}")]
+        [HttpDelete("/projects/{projectId}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> SoftDeleteProject([FromRoute]string projectId)
         {
@@ -131,7 +139,7 @@ namespace Ranger.ApiGateway
             return NoContent();
         }
 
-        [HttpPut("/project/{projectId}/{environment}/reset")]
+        [HttpPut("/projects/{projectId}/{environment}/reset")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ApiKeyReset([FromRoute]string projectId, [FromRoute]string environment, ApiKeyResetModel apiKeyResetModel)
         {

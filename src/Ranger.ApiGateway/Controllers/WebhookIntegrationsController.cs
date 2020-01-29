@@ -13,20 +13,20 @@ namespace Ranger.ApiGateway
     [Authorize(Roles = "User")]
     public class WebhookIntegrationController : IntegrationBaseController<WebhookIntegrationResponseModel>
     {
-        [HttpGet("/integration/webhook")]
+        [HttpGet("/integrations/webhook")]
         public async Task<IActionResult> Index(string name)
         {
 
             return Ok();
         }
 
-        [HttpGet("/integration/webhook/all")]
+        [HttpGet("/integrations/webhook/all")]
         public async Task<IActionResult> All(string email)
         {
             return Ok();
         }
 
-        [HttpPost("{projectName}/integration/webhook")]
+        [HttpPost("{projectName}/integrations/webhook")]
         public async Task<IActionResult> Post([FromRoute]string projectName, [FromBody]WebhookIntegrationModel webhookIntegrationModel)
         {
             if (string.IsNullOrWhiteSpace(projectName))
@@ -46,7 +46,7 @@ namespace Ranger.ApiGateway
                 URL = webhookIntegrationModel.URL,
                 AuthKey = webhookIntegrationModel.AuthKey
             };
-            return Created("/integration/webhook", apiIntegrationResponseModel);
+            return Created("/integrations/webhook", apiIntegrationResponseModel);
         }
     }
 }
