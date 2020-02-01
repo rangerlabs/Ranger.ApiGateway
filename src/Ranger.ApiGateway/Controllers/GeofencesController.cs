@@ -43,9 +43,9 @@ namespace Ranger.ApiGateway
             try
             {
                 var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(Domain, User.UserFromClaims().Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
-                if (!String.IsNullOrWhiteSpace(projectId))
+                if (!(projectId is null) || !projectId.Equals(Guid.Empty))
                 {
-                    var geofences = await geofencesClient.GetAllGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(Domain, projectId);
+                    var geofences = await geofencesClient.GetAllGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(Domain, projectId.GetValueOrDefault());
                     if (geofences.Count() > 0)
                     {
                         return Ok(geofences);
@@ -80,7 +80,7 @@ namespace Ranger.ApiGateway
             try
             {
                 var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(Domain, User.UserFromClaims().Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
-                if (!String.IsNullOrWhiteSpace(projectId))
+                if (!(projectId is null) || !projectId.Equals(Guid.Empty))
                 {
                     if (geoFenceModel.Shape == GeofenceShapeEnum.Circle)
                     {
@@ -116,7 +116,7 @@ namespace Ranger.ApiGateway
                         User?.UserFromClaims().Email ?? "", //INSERT TOKEN HERE
                         Domain,
                         geoFenceModel.ExternalId,
-                        projectId,
+                        projectId.GetValueOrDefault(),
                         geoFenceModel.Shape,
                         geoFenceModel.Coordinates,
                         geoFenceModel.Labels,
@@ -159,7 +159,7 @@ namespace Ranger.ApiGateway
             try
             {
                 var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(Domain, User.UserFromClaims().Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
-                if (!String.IsNullOrWhiteSpace(projectId))
+                if (!(projectId is null) || !projectId.Equals(Guid.Empty))
                 {
                     if (geoFenceModel.Shape == GeofenceShapeEnum.Circle)
                     {
@@ -196,7 +196,7 @@ namespace Ranger.ApiGateway
                         Domain,
                         geoFenceModel.Id,
                         externalId,
-                        projectId,
+                        projectId.GetValueOrDefault(),
                         geoFenceModel.Shape,
                         geoFenceModel.Coordinates,
                         geoFenceModel.Labels,
@@ -238,14 +238,14 @@ namespace Ranger.ApiGateway
             try
             {
                 var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(Domain, User.UserFromClaims().Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
-                if (!String.IsNullOrWhiteSpace(projectId))
+                if (!(projectId is null) || !projectId.Equals(Guid.Empty))
                 {
                     var deleteGeofenceSagaInitializer = new DeleteGeofenceSagaInitializer(
                         User is null ? false : true,
                         User?.UserFromClaims().Email ?? "", //INSERT TOKEN HERE
                         Domain,
                         externalId,
-                        projectId
+                        projectId.GetValueOrDefault()
                     );
                     return await Task.Run(() => base.Send(deleteGeofenceSagaInitializer));
                 }

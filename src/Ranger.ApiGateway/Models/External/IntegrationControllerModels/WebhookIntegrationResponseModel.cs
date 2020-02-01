@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Ranger.Common.SharedKernel;
 
 namespace Ranger.ApiGateway
 {
@@ -6,14 +8,15 @@ namespace Ranger.ApiGateway
     {
         public WebhookIntegrationResponseModel()
         {
-            this.Type = Enum.GetName(typeof(IntegrationEnum), IntegrationEnum.WEBHOOK);
+            this.Type = Enum.GetName(typeof(IntegrationsEnum), IntegrationsEnum.WEBHOOK);
         }
-        public string Id { get; set; }
+        public Guid Id { get; set; }
         public string Type { get; set; }
         public string Name { get; set; }
         public string ProjectName { get; set; }
         public string Description { get; set; }
         public string URL { get; set; }
-        public string AuthKey { get; set; }
+        public IEnumerable<KeyValuePair<string, string>> Headers { get; set; }
+        public IEnumerable<KeyValuePair<string, string>> Metadata { get; set; }
     }
 }

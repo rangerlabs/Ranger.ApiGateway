@@ -105,7 +105,7 @@ namespace Ranger.ApiGateway
 
         public void ConfigureContainer(ContainerBuilder builder)
         {
-            builder.AddRabbitMq(loggerFactory);
+            builder.AddRabbitMq();
             builder.RegisterInstance<RangerPusherOptions>(configuration.GetOptions<RangerPusherOptions>("pusher"));
         }
 
