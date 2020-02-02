@@ -11,6 +11,7 @@ namespace Ranger.ApiGateway.Messages.Commands
             string commandingUserEmail,
             string domain,
             string name,
+            Guid projectId,
             string messageJsonContent,
             IntegrationsEnum integrationType)
         {
@@ -37,12 +38,14 @@ namespace Ranger.ApiGateway.Messages.Commands
             CommandingUserEmail = commandingUserEmail;
             Domain = domain;
             Name = name;
+            ProjectId = projectId;
             MessageJsonContent = messageJsonContent;
             IntegrationType = integrationType;
         }
 
         public string CommandingUserEmail { get; }
         public string Name { get; }
+        public Guid ProjectId { get; }
         public string MessageJsonContent { get; }
         public IntegrationsEnum IntegrationType { get; }
     }

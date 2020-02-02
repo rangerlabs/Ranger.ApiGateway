@@ -48,6 +48,7 @@ namespace Ranger.ApiGateway
                         User?.UserFromClaims().Email ?? "", //INSERT TOKEN HERE
                         Domain,
                         webhookIntegrationModel.Name,
+                        projectId.GetValueOrDefault(),
                         JsonConvert.SerializeObject(webhookIntegrationModel),
                         IntegrationsEnum.WEBHOOK
                     );

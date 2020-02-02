@@ -30,12 +30,6 @@ namespace Ranger.ApiGateway
             this.geofencesClient = geofencesClient;
         }
 
-        [HttpGet("/{projectName}/geofences/{name}")]
-        public async Task<IActionResult> Index(string projectName, string name)
-        {
-            return Ok();
-        }
-
         [HttpGet("/{projectName}/geofences")]
         [Authorize("BelongsToProject")]
         public async Task<IActionResult> GetAllGeofences(string projectName)

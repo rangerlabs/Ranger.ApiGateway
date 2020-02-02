@@ -74,8 +74,13 @@ namespace Ranger.ApiGateway
             });
             services.AddSingleton<IOperationsClient, OperationsClient>(provider =>
             {
-                return new OperationsClient("http://operatins:8083", loggerFactory.CreateLogger<OperationsClient>());
+                return new OperationsClient("http://operations:8083", loggerFactory.CreateLogger<OperationsClient>());
             });
+            services.AddSingleton<IIntegrationsClient, IntegrationsClient>(provider =>
+            {
+                return new IntegrationsClient("http://integrations:8087", loggerFactory.CreateLogger<IntegrationsClient>());
+            });
+
             services.AddCors();
 
             services.AddApiVersioning(o => o.ApiVersionReader = new HeaderApiVersionReader("api-version"));
