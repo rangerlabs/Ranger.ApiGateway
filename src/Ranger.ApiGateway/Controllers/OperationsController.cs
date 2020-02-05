@@ -30,7 +30,7 @@ namespace Ranger.ApiGateway.Controllers
         {
             try
             {
-                return Ok(await this.operationsClient.GetOperationStateById<OperationStateResponseModel>(Domain, id.ToString()));
+                return Ok(await this.operationsClient.GetOperationStateById<OperationStateResponseModel>(Domain, id));
             }
             catch (HttpClientException<OperationStateResponseModel> ex)
             {

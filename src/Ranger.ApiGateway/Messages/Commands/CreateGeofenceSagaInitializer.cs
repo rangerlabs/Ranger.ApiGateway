@@ -9,7 +9,25 @@ namespace Ranger.ApiGateway
     [MessageNamespaceAttribute("operations")]
     public class CreateGeofenceSagaInitializer : SagaInitializer, ICommand
     {
-        public CreateGeofenceSagaInitializer(bool frontendRequest, string commandingUserEmailOrTokenPrefix, string domain, string externalId, string projectId, GeofenceShapeEnum shape, IEnumerable<LngLat> coordinates, IEnumerable<string> labels = null, IEnumerable<string> integrationIds = null, IDictionary<string, object> metadata = null, string description = null, int radius = 0, bool enabled = true, bool onEnter = true, bool onExit = true, DateTime? expirationDate = null, DateTime? launchDate = null, Schedule schedule = null)
+        public CreateGeofenceSagaInitializer(
+            bool frontendRequest,
+            string commandingUserEmailOrTokenPrefix,
+            string domain,
+            string externalId,
+            Guid projectId,
+            GeofenceShapeEnum shape,
+            IEnumerable<LngLat> coordinates,
+            IEnumerable<string> labels = null,
+            IEnumerable<Guid> integrationIds = null,
+            IDictionary<string, object> metadata = null,
+            string description = null,
+            int radius = 0,
+            bool enabled = true,
+            bool onEnter = true,
+            bool onExit = true,
+            DateTime? expirationDate = null,
+            DateTime? launchDate = null,
+            Schedule schedule = null)
         {
             if (string.IsNullOrWhiteSpace(commandingUserEmailOrTokenPrefix))
             {
@@ -23,10 +41,7 @@ namespace Ranger.ApiGateway
             {
                 throw new System.ArgumentException($"{nameof(externalId)} was null or whitespace.");
             }
-            if (string.IsNullOrWhiteSpace(projectId))
-            {
-                throw new System.ArgumentException($"{nameof(projectId)} was null or whitespace.");
-            }
+
             if (coordinates is null)
             {
                 throw new System.ArgumentException($"{nameof(coordinates)} was null.");
@@ -47,7 +62,7 @@ namespace Ranger.ApiGateway
             this.ExternalId = externalId;
             this.ProjectId = projectId;
             this.Labels = labels ?? new List<string>();
-            this.IntegrationIds = integrationIds ?? new List<string>();
+            this.IntegrationIds = integrationIds ?? new List<Guid>();
             this.Metadata = metadata ?? new Dictionary<string, object>();
             this.Description = string.IsNullOrWhiteSpace(description) ? "" : description;
             this.ExpirationDate = expirationDate ?? DateTime.MaxValue;
@@ -60,13 +75,13 @@ namespace Ranger.ApiGateway
         public bool FrontendRequest { get; }
         public string CommandingUserEmailOrTokenPrefix { get; }
         public string ExternalId { get; }
-        public string ProjectId { get; }
+        public Guid ProjectId { get; }
         public IEnumerable<string> Labels { get; }
         public bool OnEnter { get; } = true;
         public bool OnExit { get; } = true;
         public bool Enabled { get; } = true;
         public string Description { get; }
-        public IEnumerable<string> IntegrationIds { get; }
+        public IEnumerable<Guid> IntegrationIds { get; }
         public IEnumerable<LngLat> Coordinates { get; }
         public int Radius { get; }
         public IDictionary<string, object> Metadata { get; }

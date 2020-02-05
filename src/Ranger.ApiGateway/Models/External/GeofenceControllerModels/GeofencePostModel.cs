@@ -16,7 +16,7 @@ namespace Ranger.ApiGateway
         public bool OnExit { get; set; } = true;
         public bool Enabled { get; set; } = true;
         public string Description { get; set; }
-        public IEnumerable<string> IntegrationIds { get; set; }
+        public IEnumerable<Guid> IntegrationIds { get; set; }
         public int Radius { get; set; }
         public IDictionary<string, object> Metadata { get; set; }
         public GeofenceShapeEnum Shape { get; set; }

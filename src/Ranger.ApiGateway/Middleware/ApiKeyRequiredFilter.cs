@@ -17,7 +17,7 @@ namespace Ranger.ApiGateway.Middleware
 
         private class ProjectAuthenticationResult
         {
-            public string ProjectId { get; set; }
+            public Guid ProjectId { get; set; }
             public string Name { get; set; }
             public bool Enabled { get; set; }
         }

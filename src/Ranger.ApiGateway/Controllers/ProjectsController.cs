@@ -9,7 +9,6 @@ using Newtonsoft.Json;
 using Ranger.ApiUtilities;
 using Ranger.InternalHttpClient;
 using Ranger.Common;
-using System.Net.Http;
 using System.Linq;
 
 namespace Ranger.ApiGateway
@@ -54,15 +53,8 @@ namespace Ranger.ApiGateway
 
         [HttpPut("/projects/{projectId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateProject([FromRoute]string projectId, PutProjectModel projectModel)
+        public async Task<IActionResult> UpdateProject([FromRoute]Guid projectId, PutProjectModel projectModel)
         {
-            if (string.IsNullOrWhiteSpace(projectId) || !Guid.TryParse(projectId, out _))
-            {
-                var errors = new ApiErrorContent();
-                errors.Errors.Add($"Invalid project id format.");
-                return BadRequest(errors);
-            }
-
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
             var request = new { Name = projectModel.Name, Description = projectModel.Description, Enabled = projectModel.Enabled, Version = projectModel.Version, UserEmail = User.UserFromClaims().Email };
 
@@ -124,7 +116,7 @@ namespace Ranger.ApiGateway
 
         [HttpDelete("/projects/{projectId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> SoftDeleteProject([FromRoute]string projectId)
+        public async Task<IActionResult> SoftDeleteProject([FromRoute]Guid projectId)
         {
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
             try
@@ -141,7 +133,7 @@ namespace Ranger.ApiGateway
 
         [HttpPut("/projects/{projectId}/{environment}/reset")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ApiKeyReset([FromRoute]string projectId, [FromRoute]string environment, ApiKeyResetModel apiKeyResetModel)
+        public async Task<IActionResult> ApiKeyReset([FromRoute]Guid projectId, [FromRoute]string environment, ApiKeyResetModel apiKeyResetModel)
         {
             var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
             var request = new { Version = apiKeyResetModel.Version, UserEmail = User.UserFromClaims().Email };

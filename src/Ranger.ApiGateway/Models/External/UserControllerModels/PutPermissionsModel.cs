@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Ranger.Common;
@@ -9,6 +10,6 @@ namespace Ranger.ApiGateway
         [EnumDataType(typeof(RolesEnum))]
         public string Role { get; set; }
 
-        public IList<string> AuthorizedProjects { get; set; } = new List<string>();
+        public IList<Guid> AuthorizedProjects { get; set; } = new List<Guid>();
     }
 }
