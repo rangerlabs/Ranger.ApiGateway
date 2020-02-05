@@ -58,6 +58,7 @@ namespace Ranger.ApiGateway
                 {
                     return NotFound();
                 }
+                logger.LogError(ex, "Failed to retrieve geofences.");
                 throw;
             }
             catch (Exception ex)
