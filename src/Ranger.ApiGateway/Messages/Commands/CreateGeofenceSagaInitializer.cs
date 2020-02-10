@@ -19,7 +19,7 @@ namespace Ranger.ApiGateway
             IEnumerable<LngLat> coordinates,
             IEnumerable<string> labels = null,
             IEnumerable<Guid> integrationIds = null,
-            IDictionary<string, object> metadata = null,
+            IDictionary<string, string> metadata = null,
             string description = null,
             int radius = 0,
             bool enabled = true,
@@ -84,7 +84,7 @@ namespace Ranger.ApiGateway
         public IEnumerable<Guid> IntegrationIds { get; }
         public IEnumerable<LngLat> Coordinates { get; }
         public int Radius { get; }
-        public IDictionary<string, object> Metadata { get; }
+        public IDictionary<string, string> Metadata { get; }
         public GeofenceShapeEnum Shape { get; }
         public DateTime ExpirationDate { get; }
         public DateTime LaunchDate { get; }

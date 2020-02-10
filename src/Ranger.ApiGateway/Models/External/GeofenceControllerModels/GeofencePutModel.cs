@@ -18,7 +18,7 @@ namespace Ranger.ApiGateway
         public string Description { get; set; }
         public IEnumerable<Guid> IntegrationIds { get; set; }
         public int Radius { get; set; }
-        public IDictionary<string, object> Metadata { get; set; }
+        public IDictionary<string, string> Metadata { get; set; }
         public GeofenceShapeEnum Shape { get; set; }
         public DateTime ExpirationDate { get; set; }
         public DateTime LaunchDate { get; set; }
