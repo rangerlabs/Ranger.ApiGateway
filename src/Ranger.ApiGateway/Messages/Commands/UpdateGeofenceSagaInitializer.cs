@@ -9,7 +9,25 @@ namespace Ranger.ApiGateway
     [MessageNamespaceAttribute("operations")]
     public class UpdateGeofenceSagaInitializer : SagaInitializer, ICommand
     {
-        public UpdateGeofenceSagaInitializer(bool frontendRequest, string commandingUserEmailOrTokenPrefix, string domain, Guid id, string externalId, Guid projectId, GeofenceShapeEnum shape, IEnumerable<LngLat> coordinates, IEnumerable<string> labels = null, IEnumerable<Guid> integrationIds = null, IDictionary<string, string> metadata = null, string description = null, int radius = 0, bool enabled = true, bool onEnter = true, bool onExit = true, DateTime? expirationDate = null, DateTime? launchDate = null, Schedule schedule = null)
+        public UpdateGeofenceSagaInitializer(bool frontendRequest,
+            string commandingUserEmailOrTokenPrefix,
+            string domain,
+            Guid id,
+            string externalId,
+            Guid projectId,
+            GeofenceShapeEnum shape,
+            IEnumerable<LngLat> coordinates,
+            IEnumerable<string> labels = null,
+            IEnumerable<Guid> integrationIds = null,
+            IDictionary<string, string> metadata = null,
+            string description = null,
+            int radius = 0,
+            bool enabled = true,
+            bool onEnter = true,
+            bool onExit = true,
+            DateTime? expirationDate = null,
+            DateTime? launchDate = null,
+            Schedule schedule = null)
         {
             if (string.IsNullOrWhiteSpace(commandingUserEmailOrTokenPrefix))
             {
@@ -46,7 +64,7 @@ namespace Ranger.ApiGateway
             this.ProjectId = projectId;
             this.Labels = labels ?? new List<string>();
             this.IntegrationIds = integrationIds ?? new List<Guid>();
-            this.Metadata = metadata ?? new Dictionary<string, object>();
+            this.Metadata = metadata ?? new Dictionary<string, string>();
             this.Description = string.IsNullOrWhiteSpace(description) ? "" : description;
             this.ExpirationDate = expirationDate ?? DateTime.MaxValue;
             this.LaunchDate = launchDate ?? DateTime.UtcNow;

@@ -63,7 +63,7 @@ namespace Ranger.ApiGateway
             this.ProjectId = projectId;
             this.Labels = labels ?? new List<string>();
             this.IntegrationIds = integrationIds ?? new List<Guid>();
-            this.Metadata = metadata ?? new Dictionary<string, object>();
+            this.Metadata = metadata ?? new Dictionary<string, string>();
             this.Description = string.IsNullOrWhiteSpace(description) ? "" : description;
             this.ExpirationDate = expirationDate ?? DateTime.MaxValue;
             this.LaunchDate = launchDate ?? DateTime.UtcNow;
