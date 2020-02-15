@@ -9,6 +9,8 @@ namespace Ranger.ApiGateway
     {
         public Guid Id { get; set; }
         [Required]
+        public bool Enabled { get; set; }
+        [Required]
         [StringLength(140)]
         public string Name { get; set; }
         [Required]
