@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Ranger.ApiGateway;
 using Ranger.ApiGateway.Messages.Commands;
 using Ranger.ApiUtilities;
 using Ranger.Common;
@@ -73,6 +72,46 @@ namespace Ranger.ApiGateway
                 logger.LogError(ex, "Failed to create integration.");
             }
             return StatusCode(StatusCodes.Status500InternalServerError);
+        }
+
+        [HttpPut("{id}")]
+        [Authorize("BelongsToProject")]
+        public async Task<IActionResult> UpdateIntegration([FromRoute] string projectName, [FromRoute] Guid id, [FromBody] WebhookIntegrationPutModel model)
+        {
+            try
+            {
+                var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(Domain, User.UserFromClaims().Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
+                if (!(projectId is null) || !projectId.Equals(Guid.Empty))
+                {
+                    model.Id = id;
+                    var updateIntegrationSagaInitializer = new UpdateIntegrationSagaInitializer(
+                        User.UserFromClaims().Email,
+                        Domain,
+                        model.Name,
+                        projectId.GetValueOrDefault(),
+                        JsonConvert.SerializeObject(model),
+                        IntegrationsEnum.WEBHOOK,
+                        model.Version
+                    );
+                    return await Task.Run(() => base.Send(updateIntegrationSagaInitializer));
+                }
+                logger.LogWarning("The user was authorized for a project but the project ID was not successfully retrieved. This may be the result of a concurrency issue. Verify the project still exists.");
+                return NotFound();
+            }
+            catch (HttpClientException<IEnumerable<GeofenceResponseModel>> ex)
+            {
+                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status404NotFound)
+                {
+                    return NotFound();
+                }
+                throw;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to upsert geofence.");
+            }
+            return StatusCode(StatusCodes.Status500InternalServerError);
+
         }
     }
 }

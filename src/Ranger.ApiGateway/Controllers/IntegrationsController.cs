@@ -31,6 +31,19 @@ namespace Ranger.ApiGateway
             this.integrationsClient = integrationsClient;
         }
 
+        [HttpDelete("{integrationName}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteIntegrationForProject(string projectName, [FromRoute] string integrationName)
+        {
+            var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(Domain, User.UserFromClaims().Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
+            if (!(projectId is null) || !projectId.Equals(Guid.Empty))
+            {
+                return await Task.Run(() => base.Send(new DeleteIntegrationSagaInitializer(User.UserFromClaims().Email, Domain, integrationName, projectId.GetValueOrDefault())));
+            }
+            logger.LogWarning("The user was authorized for a project but the project ID was not successfully retrieved.");
+            return NotFound();
+        }
+
         [HttpGet]
         [Authorize("BelongsToProject")]
         public async Task<IActionResult> GetAllIntegrationsForProject(string projectName)
@@ -40,10 +53,10 @@ namespace Ranger.ApiGateway
                 var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(Domain, User.UserFromClaims().Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
                 if (!(projectId is null) || !projectId.Equals(Guid.Empty))
                 {
-                    var geofences = await integrationsClient.GetAllIntegrationsByProjectId<IEnumerable<dynamic>>(Domain, projectId.GetValueOrDefault());
-                    if (geofences.Count() > 0)
+                    var integrations = await integrationsClient.GetAllIntegrationsByProjectId<IEnumerable<dynamic>>(Domain, projectId.GetValueOrDefault());
+                    if (integrations.Count() > 0)
                     {
-                        return Ok(geofences);
+                        return Ok(integrations);
                     }
                     else
                     {
