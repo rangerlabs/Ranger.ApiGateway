@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -50,6 +51,10 @@ namespace Ranger.ApiGateway
             if (email.ToLowerInvariant() != User.UserFromClaims().Email.ToLowerInvariant())
             {
                 return Forbid();
+            }
+            if (User.UserFromClaims().Role.ToLowerInvariant() == Enum.GetName(typeof(RolesEnum), RolesEnum.PrimaryOwner))
+            {
+                return Forbid("Primary Owners must transfer ownership of the domain before deleting their account.");
             }
 
             try

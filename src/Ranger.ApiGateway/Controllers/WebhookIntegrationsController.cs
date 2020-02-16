@@ -36,6 +36,7 @@ namespace Ranger.ApiGateway
         }
 
         [HttpPost]
+        [Authorize("BelongsToProject")]
         public async Task<IActionResult> Post([FromRoute]string projectName, [FromBody]WebhookIntegrationPostModel webhookIntegrationModel)
         {
             try
