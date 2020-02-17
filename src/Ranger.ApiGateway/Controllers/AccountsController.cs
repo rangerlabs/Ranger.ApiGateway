@@ -13,6 +13,7 @@ namespace Ranger.ApiGateway
 {
     [ApiVersion("1.0")]
     [ApiController]
+    [TenantDomainRequired]
     public class AccountController : BaseController<AccountController>
     {
         private readonly IIdentityClient identityClient;
@@ -26,8 +27,7 @@ namespace Ranger.ApiGateway
             this.logger = logger;
         }
 
-        [HttpPut("/accounts/{email}")]
-        [TenantDomainRequired]
+        [HttpPut("/account/{email}")]
         public async Task<IActionResult> AccountUpdate([FromRoute] string email, AccountUpdateModel accountUpdateModel)
         {
             try
@@ -44,8 +44,7 @@ namespace Ranger.ApiGateway
             return Ok();
         }
 
-        [HttpDelete("/accounts/{email}")]
-        [TenantDomainRequired]
+        [HttpDelete("/account/{email}")]
         public async Task<IActionResult> DeleteAccount([FromRoute] string email, AccountDeleteModel accountDeleteModel)
         {
             if (email.ToLowerInvariant() != User.UserFromClaims().Email.ToLowerInvariant())
@@ -79,6 +78,17 @@ namespace Ranger.ApiGateway
             }
             busPublisher.Send(new SendPusherDomainUserPredefinedNotification("ForceSignoutNotification", Domain, email), CorrelationContext.Empty);
             return NoContent();
+        }
+
+        [HttpPost("/account/transfer-primary-ownership")]
+        public async Task<IActionResult> TransferPrimaryOwnership([FromBody] TransferPrimaryOwnershipModel model)
+        {
+            if (User.UserFromClaims().Role.ToLowerInvariant() != Enum.GetName(typeof(RolesEnum), RolesEnum.PrimaryOwner))
+            {
+                return BadRequest("Only Primary Owners have the ability to transfer their role.");
+            }
+
+            return await Task.Run(() => Send(new TransferPrimaryOwnershipSagaInitializer(User.UserFromClaims().Email, model.Email, Domain)));
         }
     }
 }
