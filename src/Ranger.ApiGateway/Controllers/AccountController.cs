@@ -27,6 +27,7 @@ namespace Ranger.ApiGateway
             this.logger = logger;
         }
 
+
         [HttpPut("/account/{email}")]
         public async Task<IActionResult> AccountUpdate([FromRoute] string email, AccountUpdateModel accountUpdateModel)
         {
@@ -83,12 +84,35 @@ namespace Ranger.ApiGateway
         [HttpPost("/account/transfer-primary-ownership")]
         public async Task<IActionResult> TransferPrimaryOwnership([FromBody] TransferPrimaryOwnershipModel model)
         {
-            if (User.UserFromClaims().Role.ToLowerInvariant() != Enum.GetName(typeof(RolesEnum), RolesEnum.PrimaryOwner))
+            if (User.UserFromClaims().Role != Enum.GetName(typeof(RolesEnum), RolesEnum.PrimaryOwner))
             {
                 return BadRequest("Only Primary Owners have the ability to transfer their role.");
             }
 
             return await Task.Run(() => Send(new TransferPrimaryOwnershipSagaInitializer(User.UserFromClaims().Email, model.Email, Domain)));
+        }
+
+
+        [HttpPost("/account/accept-primary-ownership")]
+        public async Task<IActionResult> AcceptPrimaryOwnership([FromBody] PrimaryOwnershipAcceptModel model)
+        {
+            if (Guid.Equals(Guid.Empty, model.CorrelationId))
+            {
+                return BadRequest("The correlationId parameter cannot be an empty GUID.");
+            }
+            await Task.Run(() => busPublisher.Publish(new PrimaryOwnershipTransferAccepted(model.Token), CorrelationContext.FromId(model.CorrelationId)));
+            return Accepted();
+        }
+
+        [HttpPost("/account/refuse-primary-ownership")]
+        public async Task<IActionResult> RejectPrimaryOwnership([FromBody] PrimaryOwnershipRefuseModel model)
+        {
+            if (Guid.Equals(Guid.Empty, model.CorrelationId))
+            {
+                return BadRequest("The correlationId parameter cannot be an empty GUID.");
+            }
+            await Task.Run(() => busPublisher.Publish(new PrimaryOwnershipTransferRefused(), CorrelationContext.FromId(model.CorrelationId)));
+            return Accepted();
         }
     }
 }
