@@ -3,9 +3,9 @@ using Ranger.RabbitMQ;
 namespace Ranger.ApiGateway
 {
     [MessageNamespace("operations")]
-    public class PrimaryOwnershipTransferAccepted : IEvent
+    public class AcceptPrimaryOwnershipTransfer : ICommand
     {
-        public PrimaryOwnershipTransferAccepted(string token)
+        public AcceptPrimaryOwnershipTransfer(string token)
         {
             if (string.IsNullOrWhiteSpace(token))
             {

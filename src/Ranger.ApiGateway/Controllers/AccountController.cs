@@ -100,7 +100,7 @@ namespace Ranger.ApiGateway
             {
                 return BadRequest("The correlationId parameter cannot be an empty GUID.");
             }
-            await Task.Run(() => busPublisher.Publish(new PrimaryOwnershipTransferAccepted(model.Token), CorrelationContext.FromId(model.CorrelationId)));
+            await Task.Run(() => busPublisher.Send(new AcceptPrimaryOwnershipTransfer(model.Token), CorrelationContext.FromId(model.CorrelationId)));
             return Accepted();
         }
 
@@ -111,7 +111,18 @@ namespace Ranger.ApiGateway
             {
                 return BadRequest("The correlationId parameter cannot be an empty GUID.");
             }
-            await Task.Run(() => busPublisher.Publish(new PrimaryOwnershipTransferRefused(), CorrelationContext.FromId(model.CorrelationId)));
+            await Task.Run(() => busPublisher.Send(new RefusePrimaryOwnershipTransfer(), CorrelationContext.FromId(model.CorrelationId)));
+            return Accepted();
+        }
+
+        [HttpPost("/account/cancel-ownership-transfer")]
+        public async Task<IActionResult> CancelPrimaryOwnershipTransfer([FromBody] CancelPrimaryOwnershipModel model)
+        {
+            if (Guid.Equals(Guid.Empty, model.CorrelationId))
+            {
+                return BadRequest("The correlationId parameter cannot be an empty GUID.");
+            }
+            await Task.Run(() => busPublisher.Send(new CancelPrimaryOwnershipTransfer(), CorrelationContext.FromId(model.CorrelationId)));
             return Accepted();
         }
     }
