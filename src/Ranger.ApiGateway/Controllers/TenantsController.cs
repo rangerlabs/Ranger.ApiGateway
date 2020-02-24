@@ -54,6 +54,33 @@ namespace Ranger.ApiGateway
             }
         }
 
+        [HttpGet("/tenants/{domain}/primary-owner-transfer")]
+        public async Task<IActionResult> GetPrimaryOwnerTransfer(string domain)
+        {
+            try
+            {
+                var primaryOwnerTransferModel = await tenantsClient.GetPrimaryOwnerTransferByDomain<PrimaryOwnerTransferModel>(domain);
+                if (primaryOwnerTransferModel is null)
+                {
+                    return NoContent();
+                }
+                return Ok(primaryOwnerTransferModel);
+            }
+            catch (HttpClientException<PrimaryOwnerTransferModel> ex)
+            {
+                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status404NotFound)
+                {
+                    return NotFound();
+                }
+                Logger.LogError(ex, $"An exception occurred retrieving the primary owner transfer for domain '{domain}'.");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"An exception occurred retrieving the primary owner transfer for domain '{domain}'.");
+            }
+            return InternalServerError();
+        }
+
         [HttpGet("/tenants/{domain}/enabled")]
         [AllowAnonymous]
         public async Task<IActionResult> TenantEnabled(string domain)
