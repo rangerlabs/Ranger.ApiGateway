@@ -84,7 +84,7 @@ namespace Ranger.ApiGateway
                 var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(Domain, User.UserFromClaims().Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
                 if (!(projectId is null) || !projectId.Equals(Guid.Empty))
                 {
-                    model.Id = id;
+                    model.IntegrationId = id;
                     var updateIntegrationSagaInitializer = new UpdateIntegrationSagaInitializer(
                         User.UserFromClaims().Email,
                         Domain,

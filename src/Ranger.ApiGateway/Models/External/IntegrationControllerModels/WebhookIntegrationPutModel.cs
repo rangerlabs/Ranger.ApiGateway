@@ -7,7 +7,7 @@ namespace Ranger.ApiGateway
 {
     public class WebhookIntegrationPutModel
     {
-        public Guid Id { get; set; }
+        public Guid IntegrationId { get; set; }
         [Required]
         public bool Enabled { get; set; }
         [Required]

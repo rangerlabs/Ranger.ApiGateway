@@ -1,12 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
 
@@ -17,10 +16,21 @@ namespace Ranger.ApiGateway
     public class TenantController : BaseController<TenantController>
     {
         private readonly ITenantsClient tenantsClient;
+        private readonly IBusPublisher busPublisher;
 
         public TenantController(ITenantsClient tenantsClient, IBusPublisher busPublisher, ILogger<TenantController> logger) : base(busPublisher, logger)
         {
+            this.busPublisher = busPublisher;
             this.tenantsClient = tenantsClient;
+
+        }
+
+        [HttpDelete("/tenants/{domain}")]
+        [Authorize(Roles = "PrimaryOwner")]
+        public async Task<IActionResult> DeleteTenant([FromRoute] string domain)
+        {
+            var deleteTenantMsg = new DeleteTenantSagaInitializer(User.UserFromClaims().Email, Domain);
+            return await Task.Run(() => Send(deleteTenantMsg));
         }
 
         [HttpPost("/tenants")]
@@ -55,6 +65,7 @@ namespace Ranger.ApiGateway
         }
 
         [HttpGet("/tenants/{domain}/primary-owner-transfer")]
+        [Authorize(Roles = "PrimaryOwner")]
         public async Task<IActionResult> GetPrimaryOwnerTransfer(string domain)
         {
             try
