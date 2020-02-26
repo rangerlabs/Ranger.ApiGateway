@@ -234,7 +234,8 @@ namespace Ranger.ApiGateway
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     Role = user.Role,
-                    AuthorizedProjects = user.AuthorizedProjects
+                    AuthorizedProjects = user.AuthorizedProjects,
+                    EmailConfirmed = user.EmailConfirmed
                 };
                 userResponseCollection.Add(userResponseModel);
             }

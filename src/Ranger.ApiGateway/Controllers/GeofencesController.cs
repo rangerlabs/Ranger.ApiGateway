@@ -146,10 +146,9 @@ namespace Ranger.ApiGateway
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
 
-        //TODO: Working on how to rename given the externalId
-        [HttpPut("/{projectName}/geofences/{externalId}")]
+        [HttpPut("/{projectName}/geofences/{id}")]
         [Authorize("BelongsToProject")]
-        public async Task<IActionResult> UpdateGeofence([FromRoute] string projectName, [FromRoute] string externalId, [FromBody] GeofencePutModel geoFenceModel)
+        public async Task<IActionResult> UpdateGeofence([FromRoute] string projectName, [FromRoute] Guid id, [FromBody] GeofencePutModel geoFenceModel)
         {
             try
             {
@@ -189,8 +188,8 @@ namespace Ranger.ApiGateway
                         User is null ? false : true,
                         User?.UserFromClaims().Email ?? "", //INSERT TOKEN HERE
                         Domain,
-                        geoFenceModel.Id,
-                        externalId,
+                        id,
+                        geoFenceModel.ExternalId,
                         projectId.GetValueOrDefault(),
                         geoFenceModel.Shape,
                         geoFenceModel.Coordinates,

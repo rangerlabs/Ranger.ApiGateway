@@ -8,7 +8,8 @@ namespace Ranger.ApiGateway
     public class GeofencePutModel
     {
         [Required]
-        public Guid Id { get; set; }
+        [StringLength(140)]
+        public string ExternalId { get; set; }
         [Required]
         public IEnumerable<LngLat> Coordinates { get; set; }
         public IEnumerable<string> Labels { get; set; }
@@ -18,7 +19,7 @@ namespace Ranger.ApiGateway
         public string Description { get; set; }
         public IEnumerable<Guid> IntegrationIds { get; set; }
         public int Radius { get; set; }
-        public IDictionary<string, object> Metadata { get; set; }
+        public IEnumerable<KeyValuePair<string, string>> Metadata { get; set; }
         public GeofenceShapeEnum Shape { get; set; }
         public DateTime ExpirationDate { get; set; }
         public DateTime LaunchDate { get; set; }

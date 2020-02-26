@@ -65,7 +65,7 @@ namespace Ranger.ApiGateway
             }
             catch (HttpClientException<ProjectResponseModel> ex)
             {
-                logger.LogError(ex, "Failed to put project '{projectName}' for domain '{domain}'. The Projects Service responded with code '{code}'.", projectModel.Name, domain, ex.ApiResponse.StatusCode);
+                logger.LogError(ex, $"Failed to put project '{projectModel.Name}' for domain '{domain}'. The Projects Service responded with code '{ex.ApiResponse.StatusCode}'.", projectModel.Name, domain, ex.ApiResponse.StatusCode);
                 if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status409Conflict)
                 {
                     return Conflict(ex.ApiResponse.Errors);
@@ -102,7 +102,7 @@ namespace Ranger.ApiGateway
             }
             catch (HttpClientException<ProjectResponseModel> ex)
             {
-                logger.LogError(ex, "Failed to post project '{projectName}' for domain '{domain}'. The Projects Service responded with code '{code}'.", projectModel.Name, domain, ex.ApiResponse.StatusCode);
+                logger.LogError(ex, $"Failed to post project '{projectModel.Name}' for domain '{domain}'. The Projects Service responded with code '{ex.ApiResponse.StatusCode}'.", projectModel.Name, domain, ex.ApiResponse.StatusCode);
                 var errors = new ApiErrorContent();
                 if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status409Conflict)
                 {

@@ -4,6 +4,6 @@ namespace Ranger.ApiGateway
 {
     public abstract class SagaInitializer
     {
-        public string Domain { get; set; }
+        public string Domain { get; protected set; }
     }
 }
