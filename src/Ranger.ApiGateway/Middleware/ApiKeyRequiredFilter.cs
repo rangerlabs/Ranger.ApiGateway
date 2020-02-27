@@ -75,6 +75,9 @@ namespace Ranger.ApiGateway.Middleware
                                             if (projectApiResponse.Enabled)
                                             {
                                                 context.HttpContext.Items["ApiKeyEnvironment"] = apiKeyParts[0];
+                                                context.HttpContext.Items["DatabaseUsername"] = databaseUsernameResult.DatabaseUsername;
+                                                context.HttpContext.Items["ProjectId"] = projectApiResponse.ProjectId;
+
                                                 await next();
                                             }
                                             else

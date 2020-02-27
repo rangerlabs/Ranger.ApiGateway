@@ -1,8 +1,11 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Ranger.ApiGateway.Middleware;
+using Ranger.ApiGateway.Models.External.BreadcrumbsControllerModels;
+using Ranger.Common.SharedKernel;
 using Ranger.RabbitMQ;
 
 namespace Ranger.ApiGateway.Controllers
@@ -11,17 +14,24 @@ namespace Ranger.ApiGateway.Controllers
     [ApiController]
     [ApiKeyRequired]
     [AllowAnonymous]
-    public class LocationController : BaseController<LocationController>
+    public class BreadcrumbsController : BaseController<BreadcrumbsController>
     {
-        public LocationController(IBusPublisher busPublisher, ILogger<LocationController> logger) : base(busPublisher, logger)
+        private readonly IBusPublisher busPublisher;
+        private readonly ILogger<BreadcrumbsController> logger;
+        public BreadcrumbsController(IBusPublisher busPublisher, ILogger<BreadcrumbsController> logger) : base(busPublisher, logger)
         {
+            this.logger = logger;
+            this.busPublisher = busPublisher;
         }
 
-        [HttpGet("/locations/status")]
-        public async Task<IActionResult> Index()
+        [HttpPost("/breadcrumbs")]
+        public IActionResult PostBreadcrumb([FromBody] Breadcrumb model)
         {
-            return Ok($"You're using the '{HttpContext.Items["ApiKeyEnvironment"]}' API key.");
+            logger.LogDebug("Breadcrumb received.");
+            var environment = Enum.Parse<EnvironmentEnum>(HttpContext.Items["ApiKeyEnvironment"] as string);
+            var databaseUsername = HttpContext.Items["ApiKeyEnvironment"] as string;
+            var projectId = Guid.Parse(HttpContext.Items["ApiKeyEnvironment"] as string);
+            return base.Send(new ComputeGeofenceIntersections(databaseUsername, projectId, environment, model));
         }
     }
-
 }
