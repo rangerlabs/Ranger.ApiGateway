@@ -74,9 +74,9 @@ namespace Ranger.ApiGateway.Middleware
                                             var projectApiResponse = await projectsClient.GetProjectByApiKeyAsync<ProjectAuthenticationResult>(tenantApiResponse.Domain, apiKey);
                                             if (projectApiResponse.Enabled)
                                             {
-                                                context.HttpContext.Items["ApiKeyEnvironment"] = apiKeyParts[0];
+                                                context.HttpContext.Items["ApiKeyEnvironment"] = apiKeyParts[0].ToUpperInvariant();
                                                 context.HttpContext.Items["DatabaseUsername"] = databaseUsernameResult.DatabaseUsername;
-                                                context.HttpContext.Items["ProjectId"] = projectApiResponse.ProjectId;
+                                                context.HttpContext.Items["ProjectId"] = projectApiResponse.ProjectId.ToString();
 
                                                 await next();
                                             }

@@ -13,7 +13,6 @@ namespace Ranger.ApiGateway.Controllers
     [ApiVersion("1.0")]
     [ApiController]
     [ApiKeyRequired]
-    [AllowAnonymous]
     public class BreadcrumbsController : BaseController<BreadcrumbsController>
     {
         private readonly IBusPublisher busPublisher;
@@ -29,8 +28,8 @@ namespace Ranger.ApiGateway.Controllers
         {
             logger.LogDebug("Breadcrumb received.");
             var environment = Enum.Parse<EnvironmentEnum>(HttpContext.Items["ApiKeyEnvironment"] as string);
-            var databaseUsername = HttpContext.Items["ApiKeyEnvironment"] as string;
-            var projectId = Guid.Parse(HttpContext.Items["ApiKeyEnvironment"] as string);
+            var databaseUsername = HttpContext.Items["DatabaseUsername"] as string;
+            var projectId = Guid.Parse(HttpContext.Items["ProjectId"] as string);
             return base.Send(new ComputeGeofenceIntersections(databaseUsername, projectId, environment, model));
         }
     }
