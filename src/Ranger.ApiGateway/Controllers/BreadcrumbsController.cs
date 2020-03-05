@@ -1,11 +1,8 @@
 using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Ranger.ApiGateway.Middleware;
-using Ranger.ApiGateway.Models.External.BreadcrumbsControllerModels;
-using Ranger.Common.SharedKernel;
+using Ranger.Common;
 using Ranger.RabbitMQ;
 
 namespace Ranger.ApiGateway.Controllers

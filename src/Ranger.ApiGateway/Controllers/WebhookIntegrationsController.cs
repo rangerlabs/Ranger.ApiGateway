@@ -10,7 +10,6 @@ using Newtonsoft.Json;
 using Ranger.ApiGateway.Messages.Commands;
 using Ranger.ApiUtilities;
 using Ranger.Common;
-using Ranger.Common.SharedKernel;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
 

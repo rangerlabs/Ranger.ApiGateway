@@ -1,6 +1,5 @@
 using System;
-using Ranger.ApiGateway.Models.External.BreadcrumbsControllerModels;
-using Ranger.Common.SharedKernel;
+using Ranger.Common;
 using Ranger.RabbitMQ;
 
 namespace Ranger.ApiGateway
