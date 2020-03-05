@@ -20,8 +20,8 @@ namespace Ranger.ApiGateway
         public int Radius { get; set; }
         public IEnumerable<KeyValuePair<string, string>> Metadata { get; set; }
         public GeofenceShapeEnum Shape { get; set; }
-        public DateTime ExpirationDate { get; set; }
-        public DateTime LaunchDate { get; set; }
+        public DateTime? ExpirationDate { get; set; }
+        public DateTime? LaunchDate { get; set; }
         public Schedule Schedule { get; set; }
     }
 }

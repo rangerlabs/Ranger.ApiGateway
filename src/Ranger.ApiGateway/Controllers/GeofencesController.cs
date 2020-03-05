@@ -81,7 +81,11 @@ namespace Ranger.ApiGateway
                     {
                         if (geoFenceModel.Radius < 50)
                         {
-                            return BadRequest("Circular geofence radii must be greater than or equal to 50 meters.");
+                            return BadRequest("Circular geofence radius must be greater than or equal to 50 meters.");
+                        }
+                        if (geoFenceModel.Radius > 10000)
+                        {
+                            return BadRequest("Circular geofence radius must be less than 10000 meters.");
                         }
                         if (geoFenceModel.Coordinates.Count() == 0 || geoFenceModel.Coordinates.Count() > 1)
                         {
@@ -160,6 +164,10 @@ namespace Ranger.ApiGateway
                         if (geoFenceModel.Radius < 50)
                         {
                             return BadRequest("Circular geofence radii must be greater than or equal to 50 meters.");
+                        }
+                        if (geoFenceModel.Radius > 10000)
+                        {
+                            return BadRequest("Circular geofence radius must be less than 10000 meters.");
                         }
                         if (geoFenceModel.Coordinates.Count() == 0 || geoFenceModel.Coordinates.Count() > 1)
                         {
