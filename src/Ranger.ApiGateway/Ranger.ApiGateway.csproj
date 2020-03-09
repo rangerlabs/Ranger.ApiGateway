@@ -16,9 +16,9 @@
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="5.0.1" />
     <PackageReference Include="PusherServer" Version="4.2.0" />
-    <PackageReference Include="Ranger.Common" Version="2.3.2" />
+    <PackageReference Include="Ranger.Common" Version="2.3.3" />
     <PackageReference Include="Ranger.InternalHttpClient" Version="3.1.0" />
-    <PackageReference Include="Ranger.Mongo" Version="2.1.0" />
+    <PackageReference Include="Ranger.Monitoring" Version="2.1.0" />
     <PackageReference Include="Ranger.RabbitMQ" Version="2.1.0" />
     <PackageReference Include="Ranger.ApiUtilities" Version="3.1.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.10.1" />
