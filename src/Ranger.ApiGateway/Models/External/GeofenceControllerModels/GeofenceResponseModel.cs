@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using MongoDB.Driver.GeoJsonObjectModel;
 using Ranger.Common;
 
 namespace Ranger.ApiGateway
