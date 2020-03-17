@@ -44,5 +44,5 @@ RUN if [ "${BUILD_CONFIG}" = "Debug" ]; then \
     fi
 ENV DEBIAN_FRONTEND teletype
 
-EXPOSE 8086
+EXPOSE 8081
 ENTRYPOINT ["dotnet", "Ranger.ApiGateway.dll"]
