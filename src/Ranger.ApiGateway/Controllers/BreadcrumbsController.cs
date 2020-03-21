@@ -21,13 +21,28 @@ namespace Ranger.ApiGateway.Controllers
         }
 
         [HttpPost("/breadcrumbs")]
-        public IActionResult PostBreadcrumb([FromBody] Breadcrumb model)
+        public IActionResult PostBreadcrumb([FromBody] BreadcrumbModel model)
         {
             logger.LogDebug("Breadcrumb received.");
             var environment = Enum.Parse<EnvironmentEnum>(HttpContext.Items["ApiKeyEnvironment"] as string);
             var databaseUsername = HttpContext.Items["DatabaseUsername"] as string;
             var projectId = Guid.Parse(HttpContext.Items["ProjectId"] as string);
-            return base.Send(new ComputeGeofenceIntersections(databaseUsername, projectId, environment, model));
+            var domain = HttpContext.Items["Domain"] as string;
+            return base.Send(
+                new ComputeGeofenceIntersections(
+                    databaseUsername,
+                    domain,
+                    projectId,
+                    environment,
+                    new Breadcrumb(
+                        model.DeviceId,
+                        model.ExternalUserId,
+                        model.Position,
+                        model.RecordedAt,
+                        model.Metadata,
+                        model.Accuracy)
+                    )
+                );
         }
     }
 }

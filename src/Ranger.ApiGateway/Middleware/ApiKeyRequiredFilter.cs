@@ -77,6 +77,7 @@ namespace Ranger.ApiGateway.Middleware
                                                 context.HttpContext.Items["ApiKeyEnvironment"] = apiKeyParts[0].ToUpperInvariant();
                                                 context.HttpContext.Items["DatabaseUsername"] = databaseUsernameResult.DatabaseUsername;
                                                 context.HttpContext.Items["ProjectId"] = projectApiResponse.ProjectId.ToString();
+                                                context.HttpContext.Items["Domain"] = tenantApiResponse.Domain;
 
                                                 await next();
                                             }
