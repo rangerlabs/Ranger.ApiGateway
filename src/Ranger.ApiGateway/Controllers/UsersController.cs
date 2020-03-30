@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Ranger.ApiUtilities;
 using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
@@ -34,16 +33,15 @@ namespace Ranger.ApiGateway
         }
 
         [HttpDelete("/users/{email}")]
-        [TenantDomainRequired]
         public async Task<IActionResult> DeleteUser([FromRoute] string email)
         {
             try
             {
                 var deleteUserContent = new DeleteUserModel()
                 {
-                    CommandingUserEmail = User.UserFromClaims().Email
+                    CommandingUserEmail = UserFromClaims.Email
                 };
-                await identityClient.DeleteUserAsync(Domain, email, JsonConvert.SerializeObject(deleteUserContent));
+                await identityClient.DeleteUserAsync(UserFromClaims.Domain, email, JsonConvert.SerializeObject(deleteUserContent));
             }
             catch (HttpClientException ex)
             {
@@ -57,26 +55,24 @@ namespace Ranger.ApiGateway
                 }
                 return InternalServerError();
             }
-            busPublisher.Send(new SendPusherDomainUserPredefinedNotification("ForceSignoutNotification", Domain, email), CorrelationContext.Empty);
+            busPublisher.Send(new SendPusherDomainUserPredefinedNotification("ForceSignoutNotification", UserFromClaims.Domain, email), CorrelationContext.Empty);
             return NoContent();
         }
 
         [HttpPut("/users/{email}/password-reset")]
-        [TenantDomainRequired]
         public async Task<IActionResult> PasswordResetRequest([FromRoute] string email, PasswordResetModel passwordResetModel)
         {
-            bool submitted = await identityClient.RequestPasswordReset(Domain, email, JsonConvert.SerializeObject(passwordResetModel));
+            bool submitted = await identityClient.RequestPasswordReset(UserFromClaims.Domain, email, JsonConvert.SerializeObject(passwordResetModel));
             return submitted ? NoContent() : StatusCode(StatusCodes.Status400BadRequest);
         }
 
         [HttpPut("/users/{email}/email-change")]
-        [TenantDomainRequired]
         public async Task<IActionResult> EmailChangeRequest([FromRoute] string email, EmailChangeModel emailChangeModel)
         {
             bool submitted = false;
             try
             {
-                submitted = await identityClient.RequestEmailChange(Domain, email, JsonConvert.SerializeObject(emailChangeModel));
+                submitted = await identityClient.RequestEmailChange(UserFromClaims.Domain, email, JsonConvert.SerializeObject(emailChangeModel));
             }
             catch (HttpClientException ex)
             {
@@ -145,7 +141,7 @@ namespace Ranger.ApiGateway
             IEnumerable<string> result = null;
             try
             {
-                result = await projectsClient.GetProjectIdsForUser(Domain, email);
+                result = await projectsClient.GetProjectIdsForUser(UserFromClaims.Domain, email);
             }
             catch (HttpClientException<IEnumerable<string>> ex)
             {
@@ -186,13 +182,12 @@ namespace Ranger.ApiGateway
         }
 
         [HttpGet("/users/{email}")]
-        [TenantDomainRequired]
         public async Task<IActionResult> GetUser([FromRoute] string email)
         {
             UserApiResponseModel applicationUserApiResponse = null;
             try
             {
-                applicationUserApiResponse = await identityClient.GetUserAsync<UserApiResponseModel>(Domain, email);
+                applicationUserApiResponse = await identityClient.GetUserAsync<UserApiResponseModel>(UserFromClaims.Domain, email);
             }
             catch (Exception ex)
             {
@@ -211,13 +206,12 @@ namespace Ranger.ApiGateway
         }
 
         [HttpGet("/users")]
-        [TenantDomainRequired]
         public async Task<IActionResult> GetAllUsers()
         {
             IEnumerable<UserApiResponseModel> applicationUserApiResponse = null;
             try
             {
-                applicationUserApiResponse = await identityClient.GetAllUsersAsync<IEnumerable<UserApiResponseModel>>(Domain);
+                applicationUserApiResponse = await identityClient.GetAllUsersAsync<IEnumerable<UserApiResponseModel>>(UserFromClaims.Domain);
             }
             catch (Exception ex)
             {
@@ -250,24 +244,22 @@ namespace Ranger.ApiGateway
         }
 
         [HttpPost("/users")]
-        [TenantDomainRequired]
         public async Task<IActionResult> CreateUser(PostApplicationUserModel postApplicationUserModel)
         {
-            var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
+            var user = UserFromClaims;
             var applicationUserCommand = new CreateUserSagaInitializer(
-                domain,
+                UserFromClaims.Domain,
                 postApplicationUserModel.Email,
                 postApplicationUserModel.FirstName,
                 postApplicationUserModel.LastName,
                 postApplicationUserModel.Role,
-                User.UserFromClaims().Email,
+                user.Email,
                 postApplicationUserModel.AuthorizedProjects
             );
             return await Task.Run(() => base.Send(applicationUserCommand));
         }
 
         [HttpPut("/users/{email}")]
-        [TenantDomainRequired]
         public async Task<IActionResult> PutPermissions([FromRoute] string email, PutPermissionsModel putPermissionsModel)
         {
             if (putPermissionsModel == null)
@@ -282,11 +274,11 @@ namespace Ranger.ApiGateway
                 errors.Errors.Add($"Both Role and Permitted Projects do not have values. Provide one or both values to update.");
                 return BadRequest(errors);
             }
-            var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
+            var user = UserFromClaims;
             var updateUserPermissionsCommand = new UpdateUserPermissionsSagaInitializer(
-                domain,
+                UserFromClaims.Domain,
                 email,
-                HttpContext.User.UserFromClaims().Email,
+                user.Email,
                 putPermissionsModel.Role,
                 putPermissionsModel.AuthorizedProjects
             );

@@ -29,7 +29,7 @@ namespace Ranger.ApiGateway
         [Authorize(Roles = "PrimaryOwner")]
         public async Task<IActionResult> DeleteTenant([FromRoute] string domain)
         {
-            var deleteTenantMsg = new DeleteTenantSagaInitializer(User.UserFromClaims().Email, Domain);
+            var deleteTenantMsg = new DeleteTenantSagaInitializer(UserFromClaims.Email, UserFromClaims.Domain);
             return await Task.Run(() => Send(deleteTenantMsg));
         }
 

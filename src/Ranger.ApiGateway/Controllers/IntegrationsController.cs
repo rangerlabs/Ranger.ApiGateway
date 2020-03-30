@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Ranger.ApiUtilities;
 using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
@@ -16,7 +15,6 @@ namespace Ranger.ApiGateway
     [ApiVersion("1.0")]
     [ApiController]
     [Authorize(Roles = "User")]
-    [TenantDomainRequired]
     [Route("{projectName}/integrations")]
     public class IntegrationsController : BaseController<IntegrationsController>
     {
@@ -35,10 +33,10 @@ namespace Ranger.ApiGateway
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteIntegrationForProject(string projectName, [FromRoute] string integrationName)
         {
-            var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(Domain, User.UserFromClaims().Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
+            var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(UserFromClaims.Domain, UserFromClaims.Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
             if (!(projectId is null) || !projectId.Equals(Guid.Empty))
             {
-                return await Task.Run(() => base.Send(new DeleteIntegrationSagaInitializer(User.UserFromClaims().Email, Domain, integrationName, projectId.GetValueOrDefault())));
+                return await Task.Run(() => base.Send(new DeleteIntegrationSagaInitializer(UserFromClaims.Email, UserFromClaims.Domain, integrationName, projectId.GetValueOrDefault())));
             }
             logger.LogWarning("The user was authorized for a project but the project ID was not successfully retrieved.");
             return NotFound();
@@ -50,10 +48,10 @@ namespace Ranger.ApiGateway
         {
             try
             {
-                var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(Domain, User.UserFromClaims().Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
+                var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(UserFromClaims.Domain, UserFromClaims.Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
                 if (!(projectId is null) || !projectId.Equals(Guid.Empty))
                 {
-                    var integrations = await integrationsClient.GetAllIntegrationsByProjectId<IEnumerable<dynamic>>(Domain, projectId.GetValueOrDefault());
+                    var integrations = await integrationsClient.GetAllIntegrationsByProjectId<IEnumerable<dynamic>>(UserFromClaims.Domain, projectId.GetValueOrDefault());
                     if (integrations.Count() > 0)
                     {
                         return Ok(integrations);

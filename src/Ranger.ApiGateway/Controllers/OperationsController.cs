@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Ranger.ApiUtilities;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
 
@@ -13,7 +12,6 @@ namespace Ranger.ApiGateway.Controllers
     [ApiVersion("1.0")]
     [ApiController]
     [Authorize(Roles = "User")]
-    [TenantDomainRequired]
     public class OperationsController : BaseController<OperationsController>
     {
         private readonly IOperationsClient operationsClient;
@@ -30,7 +28,7 @@ namespace Ranger.ApiGateway.Controllers
         {
             try
             {
-                return Ok(await this.operationsClient.GetOperationStateById<OperationStateResponseModel>(Domain, id));
+                return Ok(await this.operationsClient.GetOperationStateById<OperationStateResponseModel>(UserFromClaims.Domain, id));
             }
             catch (HttpClientException<OperationStateResponseModel> ex)
             {

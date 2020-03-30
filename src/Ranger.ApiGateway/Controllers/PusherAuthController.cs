@@ -7,24 +7,25 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using PusherServer;
-using Ranger.ApiUtilities;
 using Ranger.Common;
 using Ranger.InternalHttpClient;
+using Ranger.RabbitMQ;
 
 namespace Ranger.ApiGateway
 {
     [ApiController]
-    [TenantDomainRequired]
     [Authorize]
     [ApiVersion("1.0")]
-    public class PusherController : ControllerBase
+    public class PusherController : BaseController<PusherController>
     {
         private readonly IIdentityClient identityClient;
-        private readonly ILogger<UserController> logger;
+        private readonly ILogger<PusherController> logger;
         private readonly RangerPusherOptions pusherOptions;
+        private readonly IBusPublisher busPublisher;
 
-        public PusherController(IIdentityClient identityClient, RangerPusherOptions pusherOptions, ILogger<UserController> logger)
+        public PusherController(IBusPublisher busPublisher, IIdentityClient identityClient, RangerPusherOptions pusherOptions, ILogger<PusherController> logger) : base(busPublisher, logger)
         {
+            this.busPublisher = busPublisher;
             this.pusherOptions = pusherOptions;
             this.identityClient = identityClient;
             this.logger = logger;
@@ -33,11 +34,10 @@ namespace Ranger.ApiGateway
         [HttpPost("/pusher/auth")]
         public async Task<IActionResult> Index([FromForm] PusherAuthModel pusherAuthModel)
         {
-            var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
             User user = null;
             try
             {
-                user = await this.identityClient.GetUserAsync<User>(domain, pusherAuthModel.userEmail);
+                user = await this.identityClient.GetUserAsync<User>(UserFromClaims.Domain, pusherAuthModel.userEmail);
             }
             catch (Exception ex)
             {
@@ -45,7 +45,7 @@ namespace Ranger.ApiGateway
                 return StatusCode((int)StatusCodes.Status500InternalServerError);
             }
 
-            if (user != null && user.Email == User.UserFromClaims().Email)
+            if (user != null && user.Email == UserFromClaims.Email)
             {
                 var pusher = new Pusher(pusherOptions.AppId, pusherOptions.Key, pusherOptions.Secret, new PusherOptions { Cluster = pusherOptions.Cluster, Encrypted = bool.Parse(pusherOptions.Encrypted) });
                 return Ok(pusher.Authenticate(pusherAuthModel.channel_name, pusherAuthModel.socket_id));

@@ -16,7 +16,6 @@ namespace Ranger.ApiGateway
         private static readonly string AcceptLanguageHeader = "accept-language";
         private static readonly string OperationHeader = "X-Operation";
         private static readonly string ResourceHeader = "X-Resource";
-        // private static readonly string TenantDomainHeader = "x-ranger-domain";
         private static readonly string DefaultCulture = "en-us";
         // private static readonly string PageLink = "page";
         private readonly IBusPublisher busPublisher;
@@ -66,13 +65,10 @@ namespace Ranger.ApiGateway
                 resource = $"{resource}/{resourceId}";
             }
 
-            StringValues domain;
-            bool success = HttpContext.Request.Headers.TryGetValue("x-ranger-domain", out domain);
-
             return CorrelationContext.Create<T>(
                 Guid.NewGuid(),
-                success ? domain.First() : "",
-                UserEmail,
+                UserFromClaims?.Domain ?? "",
+                UserFromClaims?.Email ?? "",
                 resourceId ?? Guid.Empty,
                 Request.Path.ToString(),
                 HttpContext.TraceIdentifier,
@@ -82,11 +78,11 @@ namespace Ranger.ApiGateway
             );
         }
 
-        protected string UserEmail
+        protected User UserFromClaims
         {
             get
             {
-                return User.UserFromClaims().Email;
+                return User.UserFromClaims();
             }
         }
 
@@ -95,14 +91,6 @@ namespace Ranger.ApiGateway
             get
             {
                 return Request.Headers.ContainsKey(AcceptLanguageHeader) ? Request.Headers[AcceptLanguageHeader].First().ToLowerInvariant() : DefaultCulture;
-            }
-        }
-
-        protected string Domain
-        {
-            get
-            {
-                return Request.Headers["x-ranger-domain"].First();
             }
         }
     }

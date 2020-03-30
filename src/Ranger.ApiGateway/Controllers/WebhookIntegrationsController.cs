@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Ranger.ApiGateway.Messages.Commands;
-using Ranger.ApiUtilities;
 using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
@@ -19,7 +18,6 @@ namespace Ranger.ApiGateway
     [ApiVersion("1.0")]
     [ApiController]
     [Authorize(Roles = "User")]
-    [TenantDomainRequired]
     [Route("{projectName}/integrations/webhook")]
     public class WebhookIntegrationController : BaseController<WebhookIntegrationController>
     {
@@ -40,12 +38,12 @@ namespace Ranger.ApiGateway
         {
             try
             {
-                var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(Domain, User.UserFromClaims().Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
+                var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(UserFromClaims.Domain, UserFromClaims.Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
                 if (!(projectId is null) || !projectId.Equals(Guid.Empty))
                 {
                     var createIntegrationSagaInitializer = new CreateIntegrationSagaInitializer(
-                        User?.UserFromClaims().Email ?? "", //INSERT TOKEN HERE
-                        Domain,
+                        UserFromClaims.Email ?? "", //INSERT TOKEN HERE
+                        UserFromClaims.Domain,
                         webhookIntegrationModel.Name,
                         projectId.GetValueOrDefault(),
                         JsonConvert.SerializeObject(webhookIntegrationModel),
@@ -80,13 +78,13 @@ namespace Ranger.ApiGateway
         {
             try
             {
-                var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(Domain, User.UserFromClaims().Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
+                var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(UserFromClaims.Domain, UserFromClaims.Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
                 if (!(projectId is null) || !projectId.Equals(Guid.Empty))
                 {
                     model.IntegrationId = id;
                     var updateIntegrationSagaInitializer = new UpdateIntegrationSagaInitializer(
-                        User.UserFromClaims().Email,
-                        Domain,
+                        UserFromClaims.Email,
+                        UserFromClaims.Domain,
                         model.Name,
                         projectId.GetValueOrDefault(),
                         JsonConvert.SerializeObject(model),

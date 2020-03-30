@@ -27,26 +27,24 @@ namespace Ranger.ApiGateway.Authorization
             var projectName = httpContextAccessor.HttpContext.Request.Path.Value.Split("/")[1];
             if (!String.IsNullOrWhiteSpace(projectName))
             {
-                var domain = httpContextAccessor.HttpContext.Request.Headers["x-ranger-domain"].First();
-                if (!String.IsNullOrWhiteSpace(domain))
+                var user = context.User.UserFromClaims();
+                if (!String.IsNullOrWhiteSpace(user.Domain))
                 {
-                    var email = context.User.UserFromClaims().Email;
-                    if (!String.IsNullOrWhiteSpace(email))
+                    if (!String.IsNullOrWhiteSpace(user.Email))
                     {
-                        var role = context.User.UserFromClaims().Role;
-                        if (!String.IsNullOrWhiteSpace(role))
+                        if (!String.IsNullOrWhiteSpace(user.Role))
                         {
-                            var roleEnum = Enum.Parse<RolesEnum>(role);
+                            var roleEnum = Enum.Parse<RolesEnum>(user.Role);
                             if (roleEnum == RolesEnum.User)
                             {
                                 IEnumerable<ProjectModel> authorizedProjectNames;
                                 try
                                 {
-                                    authorizedProjectNames = await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(domain, email).ConfigureAwait(false);
+                                    authorizedProjectNames = await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(user.Domain, user.Email).ConfigureAwait(false);
                                 }
                                 catch (Exception ex)
                                 {
-                                    logger.LogError(ex, $"Failed to retrieve authorized projects to validate user's project authorization. Domain: '{domain}', Email: '{email}'.");
+                                    logger.LogError(ex, $"Failed to retrieve authorized projects to validate user's project authorization. Domain: '{user.Domain}', Email: '{user.Email}'.");
                                     throw;
                                 }
                                 if (authorizedProjectNames.Select(_ => _.Name).Contains(projectName))

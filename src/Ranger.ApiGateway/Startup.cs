@@ -83,6 +83,10 @@ namespace Ranger.ApiGateway
             {
                 return new IntegrationsClient("http://integrations:8087", loggerFactory.CreateLogger<IntegrationsClient>());
             });
+            services.AddSingleton<ISubscriptionsClient, SubscriptionsClient>(provider =>
+            {
+                return new SubscriptionsClient("http://subscriptions:8089", loggerFactory.CreateLogger<SubscriptionsClient>());
+            });
 
             services.AddCors();
 

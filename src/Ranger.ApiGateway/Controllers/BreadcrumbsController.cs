@@ -27,7 +27,7 @@ namespace Ranger.ApiGateway.Controllers
             var environment = Enum.Parse<EnvironmentEnum>(HttpContext.Items["ApiKeyEnvironment"] as string);
             var databaseUsername = HttpContext.Items["DatabaseUsername"] as string;
             var projectId = Guid.Parse(HttpContext.Items["ProjectId"] as string);
-            var domain = HttpContext.Items["Domain"] as string;
+            var domain = HttpContext.Items["UserFromClaims.Domain"] as string;
             return base.Send(
                 new ComputeGeofenceIntersections(
                     databaseUsername,

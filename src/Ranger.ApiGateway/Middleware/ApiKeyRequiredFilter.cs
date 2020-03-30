@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
-using Ranger.ApiUtilities;
+
 using Ranger.InternalHttpClient;
 
 namespace Ranger.ApiGateway.Middleware

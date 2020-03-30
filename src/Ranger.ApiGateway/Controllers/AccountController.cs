@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Ranger.ApiUtilities;
 using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
@@ -13,7 +12,6 @@ namespace Ranger.ApiGateway
 {
     [ApiVersion("1.0")]
     [ApiController]
-    [TenantDomainRequired]
     public class AccountController : BaseController<AccountController>
     {
         private readonly IIdentityClient identityClient;
@@ -28,12 +26,12 @@ namespace Ranger.ApiGateway
         }
 
 
-        [HttpPut("/account/{email}")]
-        public async Task<IActionResult> AccountUpdate([FromRoute] string email, AccountUpdateModel accountUpdateModel)
+        [HttpPut("/account/")]
+        public async Task<IActionResult> AccountUpdate(AccountUpdateModel accountUpdateModel)
         {
             try
             {
-                await identityClient.UpdateUserAsync(Domain, email, JsonConvert.SerializeObject(accountUpdateModel));
+                await identityClient.UpdateUserAsync(UserFromClaims.Domain, UserFromClaims.Email, JsonConvert.SerializeObject(accountUpdateModel));
             }
             catch (HttpClientException ex)
             {
@@ -45,21 +43,17 @@ namespace Ranger.ApiGateway
             return Ok();
         }
 
-        [HttpDelete("/account/{email}")]
-        public async Task<IActionResult> DeleteAccount([FromRoute] string email, AccountDeleteModel accountDeleteModel)
+        [HttpDelete("/account/")]
+        public async Task<IActionResult> DeleteAccount(AccountDeleteModel accountDeleteModel)
         {
-            if (email.ToLowerInvariant() != User.UserFromClaims().Email.ToLowerInvariant())
-            {
-                return Forbid();
-            }
-            if (User.UserFromClaims().Role.ToLowerInvariant() == Enum.GetName(typeof(RolesEnum), RolesEnum.PrimaryOwner))
+            if (UserFromClaims.Role.ToLowerInvariant() == Enum.GetName(typeof(RolesEnum), RolesEnum.PrimaryOwner))
             {
                 return Forbid("Primary Owners must transfer ownership of the domain before deleting their account.");
             }
 
             try
             {
-                await identityClient.DeleteAccountAsync(Domain, email, JsonConvert.SerializeObject(accountDeleteModel));
+                await identityClient.DeleteAccountAsync(UserFromClaims.Domain, UserFromClaims.Email, JsonConvert.SerializeObject(accountDeleteModel));
             }
             catch (HttpClientException ex)
             {
@@ -77,19 +71,19 @@ namespace Ranger.ApiGateway
                 }
                 return InternalServerError();
             }
-            busPublisher.Send(new SendPusherDomainUserPredefinedNotification("ForceSignoutNotification", Domain, email), CorrelationContext.Empty);
+            busPublisher.Send(new SendPusherDomainUserPredefinedNotification("ForceSignoutNotification", UserFromClaims.Domain, UserFromClaims.Email), CorrelationContext.Empty);
             return NoContent();
         }
 
         [HttpPost("/account/transfer-primary-ownership")]
         public async Task<IActionResult> TransferPrimaryOwnership([FromBody] TransferPrimaryOwnershipModel model)
         {
-            if (User.UserFromClaims().Role != Enum.GetName(typeof(RolesEnum), RolesEnum.PrimaryOwner))
+            if (UserFromClaims.Role != Enum.GetName(typeof(RolesEnum), RolesEnum.PrimaryOwner))
             {
                 return BadRequest("Only Primary Owners have the ability to transfer their role.");
             }
 
-            return await Task.Run(() => Send(new TransferPrimaryOwnershipSagaInitializer(User.UserFromClaims().Email, model.Email, Domain)));
+            return await Task.Run(() => Send(new TransferPrimaryOwnershipSagaInitializer(UserFromClaims.Email, model.Email, UserFromClaims.Domain)));
         }
 
 

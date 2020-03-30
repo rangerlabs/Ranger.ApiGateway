@@ -6,23 +6,25 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Ranger.ApiUtilities;
 using Ranger.InternalHttpClient;
 using Ranger.Common;
 using System.Linq;
+using Ranger.RabbitMQ;
 
 namespace Ranger.ApiGateway
 {
     [ApiVersion("1.0")]
     [ApiController]
-    [TenantDomainRequired]
-    public class ProjectController : ControllerBase
+    public class ProjectController : BaseController<ProjectController>
     {
+        private readonly IBusPublisher busPublisher;
         private readonly IProjectsClient projectsClient;
         private readonly ILogger<ProjectController> logger;
-        public ProjectController(IProjectsClient projectsClient, ILogger<ProjectController> logger)
+
+        public ProjectController(IBusPublisher busPublisher, IProjectsClient projectsClient, ILogger<ProjectController> logger) : base(busPublisher, logger)
         {
             this.logger = logger;
+            this.busPublisher = busPublisher;
             this.projectsClient = projectsClient;
         }
 
@@ -30,11 +32,9 @@ namespace Ranger.ApiGateway
         [Authorize(Roles = "User")]
         public async Task<IActionResult> GetAllProjects()
         {
-            var user = HttpContext.User.UserFromClaims();
-            var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
             try
             {
-                var projects = await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectResponseModel>>(domain, User.UserFromClaims().Email);
+                var projects = await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectResponseModel>>(UserFromClaims.Domain, UserFromClaims.Email);
                 if (projects.Count() > 0)
                 {
                     return Ok(projects);
@@ -55,17 +55,17 @@ namespace Ranger.ApiGateway
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateProject([FromRoute]Guid projectId, PutProjectModel projectModel)
         {
-            var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
-            var request = new { Name = projectModel.Name, Description = projectModel.Description, Enabled = projectModel.Enabled, Version = projectModel.Version, UserEmail = User.UserFromClaims().Email };
+            var user = UserFromClaims;
+            var request = new { Name = projectModel.Name, Description = projectModel.Description, Enabled = projectModel.Enabled, Version = projectModel.Version, UserEmail = user.Email };
 
             ProjectResponseModel response = null;
             try
             {
-                response = await projectsClient.PutProjectAsync<ProjectResponseModel>(domain, projectId, JsonConvert.SerializeObject(request));
+                response = await projectsClient.PutProjectAsync<ProjectResponseModel>(UserFromClaims.Domain, projectId, JsonConvert.SerializeObject(request));
             }
             catch (HttpClientException<ProjectResponseModel> ex)
             {
-                logger.LogError(ex, $"Failed to put project '{projectModel.Name}' for domain '{domain}'. The Projects Service responded with code '{ex.ApiResponse.StatusCode}'.", projectModel.Name, domain, ex.ApiResponse.StatusCode);
+                logger.LogError(ex, $"Failed to put project '{projectModel.Name}' for domain '{UserFromClaims.Domain}'. The Projects Service responded with code '{ex.ApiResponse.StatusCode}'.", projectModel.Name, UserFromClaims.Domain, ex.ApiResponse.StatusCode);
                 if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status409Conflict)
                 {
                     return Conflict(ex.ApiResponse.Errors);
@@ -91,18 +91,17 @@ namespace Ranger.ApiGateway
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateProject(PostProjectModel projectModel)
         {
-            var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
-
-            var request = new { Name = projectModel.Name, Description = projectModel.Description, Enabled = projectModel.Enabled, UserEmail = User.UserFromClaims().Email };
+            var user = UserFromClaims;
+            var request = new { Name = projectModel.Name, Description = projectModel.Description, Enabled = projectModel.Enabled, UserEmail = user.Email };
 
             ProjectResponseModel response = null;
             try
             {
-                response = await projectsClient.PostProjectAsync<ProjectResponseModel>(domain, JsonConvert.SerializeObject(request));
+                response = await projectsClient.PostProjectAsync<ProjectResponseModel>(UserFromClaims.Domain, JsonConvert.SerializeObject(request));
             }
             catch (HttpClientException<ProjectResponseModel> ex)
             {
-                logger.LogError(ex, $"Failed to post project '{projectModel.Name}' for domain '{domain}'. The Projects Service responded with code '{ex.ApiResponse.StatusCode}'.", projectModel.Name, domain, ex.ApiResponse.StatusCode);
+                logger.LogError(ex, $"Failed to post project '{projectModel.Name}' for domain '{UserFromClaims.Domain}'. The Projects Service responded with code '{ex.ApiResponse.StatusCode}'.", projectModel.Name, UserFromClaims.Domain, ex.ApiResponse.StatusCode);
                 var errors = new ApiErrorContent();
                 if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status409Conflict)
                 {
@@ -118,10 +117,10 @@ namespace Ranger.ApiGateway
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> SoftDeleteProject([FromRoute]Guid projectId)
         {
-            var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
             try
             {
-                await projectsClient.SoftDeleteProjectAsync(domain, projectId, User.UserFromClaims().Email);
+                var user = UserFromClaims;
+                await projectsClient.SoftDeleteProjectAsync(UserFromClaims.Domain, projectId, user.Email);
             }
             catch (HttpClientException<ProjectResponseModel> ex)
             {
@@ -135,12 +134,12 @@ namespace Ranger.ApiGateway
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ApiKeyReset([FromRoute]Guid projectId, [FromRoute]string environment, ApiKeyResetModel apiKeyResetModel)
         {
-            var domain = HttpContext.Request.Headers.GetPreviouslyVerifiedTenantHeader();
-            var request = new { Version = apiKeyResetModel.Version, UserEmail = User.UserFromClaims().Email };
+            var user = UserFromClaims;
+            var request = new { Version = apiKeyResetModel.Version, UserEmail = user.Email };
             ProjectResponseModel response = null;
             try
             {
-                response = await projectsClient.ApiKeyResetAsync<ProjectResponseModel>(domain, projectId, environment, JsonConvert.SerializeObject(request));
+                response = await projectsClient.ApiKeyResetAsync<ProjectResponseModel>(UserFromClaims.Domain, projectId, environment, JsonConvert.SerializeObject(request));
             }
             catch (HttpClientException<ProjectResponseModel> ex)
             {
