@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using ChargeBee.Api;
 using ChargeBee.Models;
@@ -5,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
+using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
 
@@ -25,16 +26,38 @@ namespace Ranger.ApiGateway.Controllers
         }
 
         [HttpGet("/subscriptions/checkout-existing-hosted-page-url")]
-        public async Task<IActionResult> GetAllProjects()
+        public async Task<IActionResult> GetAllProjects([FromQuery] string planId)
+        {
+            if (String.IsNullOrWhiteSpace(planId))
+            {
+                var apiErrorContent = new ApiErrorContent();
+                apiErrorContent.Errors.Add($"{nameof(planId)} was missing from the query parameters.");
+                return BadRequest(apiErrorContent);
+            }
+
+            try
+            {
+                var hostedPage = await subscriptionsClient.GenerateCheckoutExistingUrl<RangerChargeBeeHostedPage>(UserFromClaims.Domain, planId);
+                return Ok(hostedPage);
+            }
+            catch (HttpClientException<RangerChargeBeeHostedPage> ex)
+            {
+                logger.LogError(ex, "Failed to retrieve hosted page url.");
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        [HttpGet("/subscriptions/plan-id")]
+        public async Task<IActionResult> GetPlanId()
         {
             try
             {
-                var hostedPage = await subscriptionsClient.GenerateCheckoutExistingUrl<RangerChargeBeeHostedPage>(UserFromClaims.Domain);
-                return Ok(hostedPage);
+                var subscription = await subscriptionsClient.GetSubscription<Subscription>(UserFromClaims.Domain);
+                return Ok(subscription);
             }
-            catch (HttpClientException<EntityResult> ex)
+            catch (HttpClientException<Subscription> ex)
             {
-                logger.LogError(ex, "Failed to retrieve hosted page url.");
+                logger.LogError(ex, "Failed to retrieve subscription Plan Id.");
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
