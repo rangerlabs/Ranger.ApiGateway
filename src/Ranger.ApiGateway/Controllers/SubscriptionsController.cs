@@ -52,12 +52,28 @@ namespace Ranger.ApiGateway.Controllers
         {
             try
             {
-                var subscription = await subscriptionsClient.GetSubscription<Subscription>(UserFromClaims.Domain);
+                var subscription = await subscriptionsClient.GetSubscriptionPlanId<Subscription>(UserFromClaims.Domain);
                 return Ok(subscription);
             }
             catch (HttpClientException<Subscription> ex)
             {
                 logger.LogError(ex, "Failed to retrieve subscription Plan Id.");
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        [HttpGet("/subscriptions/limit-details")]
+        [Authorize(Roles = "User")]
+        public async Task<IActionResult> GetLimitDetails()
+        {
+            try
+            {
+                var limitDetails = await subscriptionsClient.GetLimitDetails<SubscriptionLimitDetails>(UserFromClaims.Domain);
+                return Ok(limitDetails);
+            }
+            catch (HttpClientException<Subscription> ex)
+            {
+                logger.LogError(ex, "Failed to retrieve limit details.");
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
