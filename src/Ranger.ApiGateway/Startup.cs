@@ -16,6 +16,7 @@ using NodaTime;
 using NodaTime.Serialization.JsonNet;
 using Ranger.ApiGateway.Authorization;
 using Ranger.ApiGateway.Data;
+using Ranger.ApiUtilities;
 using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
@@ -43,6 +44,11 @@ namespace Ranger.ApiGateway
                     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                     options.SerializerSettings.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
                 });
+            services.AddAutoWrapper();
+            if (Environment.IsDevelopment())
+            {
+                services.AddSwaggerGen("API Gateway", "v1");
+            }
 
             services.AddAuthorization(options =>
             {
@@ -55,44 +61,43 @@ namespace Ranger.ApiGateway
                 {
                     policyBuilder.RequireAuthenticatedUser().AddRequirements(new BelongsToProjectRequirement());
                 });
+                options.AddPolicy("ValidApiKey", policyBuilder =>
+                {
+                    policyBuilder.AddRequirements(new ValidApiKeyRequirement());
+                });
+                options.AddPolicy("DomainExists", policyBuilder =>
+                {
+                    policyBuilder.AddRequirements(new DomainExistsRequirement());
+                });
             });
+
+            services.AddIdentityHttpClient("http://identity:5000", "IdentityServerApi", "89pCcXHuDYTXY");
+            services.AddTenantsHttpClient("http://tenants:8082", "tenantsApi", "cKprgh9wYKWcsm");
+            services.AddProjectsHttpClient("http://projects:8086", "projectsApi", "usGwT8Qsp4La2");
+            services.AddSubscriptionsHttpClient("http://subscriptions:8089", "subscriptionsApi", "4T3SXqXaD6GyGHn4RY");
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IAuthorizationHandler, BelongsToProjectHandler>();
-            services.AddSingleton<ITenantsClient, TenantsClient>(provider =>
-            {
-                return new TenantsClient("http://tenants:8082", loggerFactory.CreateLogger<TenantsClient>());
-            });
-            services.AddSingleton<IProjectsClient, ProjectsClient>(provider =>
-            {
-                return new ProjectsClient("http://projects:8086", loggerFactory.CreateLogger<ProjectsClient>());
-            });
-            services.AddSingleton<IIdentityClient, IdentityClient>(provider =>
-            {
-                return new IdentityClient("http://identity:5000", loggerFactory.CreateLogger<IdentityClient>());
-            });
-            services.AddSingleton<IGeofencesClient, GeofencesClient>(provider =>
-            {
-                return new GeofencesClient("http://geofences:8085", loggerFactory.CreateLogger<GeofencesClient>());
-            });
-            services.AddSingleton<IOperationsClient, OperationsClient>(provider =>
-            {
-                return new OperationsClient("http://operations:8083", loggerFactory.CreateLogger<OperationsClient>());
-            });
-            services.AddSingleton<IIntegrationsClient, IntegrationsClient>(provider =>
-            {
-                return new IntegrationsClient("http://integrations:8087", loggerFactory.CreateLogger<IntegrationsClient>());
-            });
-            services.AddSingleton<ISubscriptionsClient, SubscriptionsClient>(provider =>
-            {
-                return new SubscriptionsClient("http://subscriptions:8089", loggerFactory.CreateLogger<SubscriptionsClient>());
-            });
+            services.AddSingleton<IAuthorizationHandler, ValidApiKeyHandler>();
+
+            // services.AddSingleton<IGeofencesClient, GeofencesClient>(provider =>
+            // {
+            //     return new GeofencesClient("http://geofences:8085", loggerFactory.CreateLogger<GeofencesClient>());
+            // });
+            // services.AddSingleton<IOperationsClient, OperationsClient>(provider =>
+            // {
+            //     return new OperationsClient("http://operations:8083", loggerFactory.CreateLogger<OperationsClient>());
+            // });
+            // services.AddSingleton<IIntegrationsClient, IntegrationsClient>(provider =>
+            // {
+            //     return new IntegrationsClient("http://integrations:8087", loggerFactory.CreateLogger<IntegrationsClient>());
+            // });
 
             services.AddCors();
 
             services.AddApiVersioning(o => o.ApiVersionReader = new HeaderApiVersionReader("api-version"));
 
-            services.AddEntityFrameworkNpgsql().AddDbContext<ApiGatewayDbContext>(options =>
+            services.AddDbContext<ApiGatewayDbContext>(options =>
             {
                 options.UseNpgsql(configuration["cloudSql:ConnectionString"]);
             },
@@ -129,6 +134,11 @@ namespace Ranger.ApiGateway
             {
                 app.UsePathBase("/api");
             }
+            if (Environment.IsDevelopment())
+            {
+                app.UseSwagger("v1", "API Gateway");
+            }
+            app.UseAutoWrapper();
             app.UseRouting();
             app.UseCors(builder =>
             {

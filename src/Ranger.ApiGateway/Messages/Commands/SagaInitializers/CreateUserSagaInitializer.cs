@@ -13,11 +13,11 @@ namespace Ranger.ApiGateway
         public string CommandingUserEmail { get; }
         public IEnumerable<string> AuthorizedProjects { get; }
 
-        public CreateUserSagaInitializer(string domain, string email, string firstName, string lastName, string role, string commandingUserEmail, IEnumerable<string> authorizedProjects)
+        public CreateUserSagaInitializer(string tenantid, string email, string firstName, string lastName, string role, string commandingUserEmail, IEnumerable<string> authorizedProjects)
         {
-            if (string.IsNullOrEmpty(domain))
+            if (string.IsNullOrEmpty(tenantid))
             {
-                throw new System.ArgumentException($"{nameof(domain)} was null or whitespace.");
+                throw new System.ArgumentException($"{nameof(tenantid)} was null or whitespace.");
             }
 
             if (string.IsNullOrEmpty(email))
@@ -45,7 +45,7 @@ namespace Ranger.ApiGateway
                 throw new System.ArgumentException($"{nameof(commandingUserEmail)} was null or whitespace.");
             }
 
-            Domain = domain;
+            TenantId = tenantid;
             this.Email = email;
             this.FirstName = firstName;
             this.LastName = lastName;

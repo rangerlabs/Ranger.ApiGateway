@@ -12,7 +12,7 @@ namespace Ranger.ApiGateway
         public CreateGeofenceSagaInitializer(
             bool frontendRequest,
             string commandingUserEmailOrTokenPrefix,
-            string domain,
+            string tenantid,
             string externalId,
             Guid projectId,
             GeofenceShapeEnum shape,
@@ -34,9 +34,9 @@ namespace Ranger.ApiGateway
             {
                 throw new System.ArgumentException($"{nameof(commandingUserEmailOrTokenPrefix)} was null or whitespace.");
             }
-            if (string.IsNullOrWhiteSpace(domain))
+            if (string.IsNullOrWhiteSpace(tenantid))
             {
-                throw new System.ArgumentException($"{nameof(domain)} was null or whitespace.");
+                throw new System.ArgumentException($"{nameof(tenantid)} was null or whitespace.");
             }
             if (string.IsNullOrWhiteSpace(externalId))
             {
@@ -59,7 +59,7 @@ namespace Ranger.ApiGateway
             this.Shape = shape;
             this.Radius = radius;
 
-            Domain = domain;
+            TenantId = tenantid;
             this.ExternalId = externalId;
             this.ProjectId = projectId;
             this.Labels = labels;

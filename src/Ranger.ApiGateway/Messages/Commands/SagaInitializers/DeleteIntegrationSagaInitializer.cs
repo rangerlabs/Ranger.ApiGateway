@@ -6,15 +6,15 @@ namespace Ranger.ApiGateway
     [MessageNamespaceAttribute("operations")]
     public class DeleteIntegrationSagaInitializer : SagaInitializer, ICommand
     {
-        public DeleteIntegrationSagaInitializer(string commandingUserEmail, string domain, string name, Guid projectId)
+        public DeleteIntegrationSagaInitializer(string commandingUserEmail, string tenantid, string name, Guid projectId)
         {
             if (string.IsNullOrWhiteSpace(commandingUserEmail))
             {
                 throw new System.ArgumentException($"{nameof(commandingUserEmail)} was null or whitespace.");
             }
-            if (string.IsNullOrWhiteSpace(domain))
+            if (string.IsNullOrWhiteSpace(tenantid))
             {
-                throw new System.ArgumentException($"{nameof(domain)} was null or whitespace.");
+                throw new System.ArgumentException($"{nameof(tenantid)} was null or whitespace.");
             }
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -24,7 +24,7 @@ namespace Ranger.ApiGateway
 
             this.CommandingUserEmail = commandingUserEmail;
 
-            Domain = domain;
+            TenantId = tenantid;
             this.Name = name;
             this.ProjectId = projectId;
         }

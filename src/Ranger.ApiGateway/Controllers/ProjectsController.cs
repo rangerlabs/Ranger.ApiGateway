@@ -107,6 +107,11 @@ namespace Ranger.ApiGateway
                 {
                     return Conflict(ex.ApiResponse.Errors);
                 }
+                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status402PaymentRequired)
+                {
+                    errors.Errors = ex.ApiResponse.Errors.Errors;
+                    return StatusCode(StatusCodes.Status402PaymentRequired, errors);
+                }
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
@@ -124,6 +129,12 @@ namespace Ranger.ApiGateway
             }
             catch (HttpClientException<ProjectResponseModel> ex)
             {
+                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status402PaymentRequired)
+                {
+                    var errors = new ApiErrorContent();
+                    errors.Errors = ex.ApiResponse.Errors.Errors;
+                    return StatusCode(StatusCodes.Status402PaymentRequired, errors);
+                }
                 logger.LogError(ex, $"Failed to project with ProjectId '{projectId}'");
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }

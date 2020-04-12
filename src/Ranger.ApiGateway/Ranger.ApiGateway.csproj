@@ -5,6 +5,10 @@
     <OutputType>Exe</OutputType>
     <PackageId>Ranger.ApiGateway</PackageId>
   </PropertyGroup>
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
   <ItemGroup>
     <None Include="./Certs/*.pfx" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
@@ -14,11 +18,13 @@
     <PackageReference Include="Microsoft.AspNetCore.MVC.Versioning" Version="4.1.1" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="3.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.3" />
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="5.0.1" />
     <PackageReference Include="PusherServer" Version="4.2.0" />
-    <PackageReference Include="Ranger.Common" Version="2.4.3" />
-    <PackageReference Include="Ranger.InternalHttpClient" Version="3.3.2" />
+    <PackageReference Include="Ranger.Common" Version="2.5.0" />
+    <PackageReference Include="Ranger.InternalHttpClient" Version="4.1.8" />
+    <PackageReference Include="Ranger.ApiUtilities" Version="3.2.9" />
     <PackageReference Include="Ranger.Monitoring" Version="2.1.0" />
     <PackageReference Include="Ranger.RabbitMQ" version="2.2.2" />
     <PackageReference Include="MongoDB.Driver" Version="2.10.1" />

@@ -45,6 +45,12 @@ namespace Ranger.ApiGateway
             }
             catch (HttpClientException ex)
             {
+                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status402PaymentRequired)
+                {
+                    var errors = new ApiErrorContent();
+                    errors.Errors = ex.ApiResponse.Errors.Errors;
+                    return StatusCode(StatusCodes.Status402PaymentRequired, errors);
+                }
                 if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status403Forbidden)
                 {
                     return Forbid();

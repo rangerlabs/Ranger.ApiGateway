@@ -11,7 +11,7 @@ namespace Ranger.ApiGateway
     {
         public UpdateGeofenceSagaInitializer(bool frontendRequest,
             string commandingUserEmailOrTokenPrefix,
-            string domain,
+            string tenantid,
             Guid id,
             string externalId,
             Guid projectId,
@@ -34,9 +34,9 @@ namespace Ranger.ApiGateway
             {
                 throw new System.ArgumentException($"{nameof(commandingUserEmailOrTokenPrefix)} was null or whitespace.");
             }
-            if (string.IsNullOrWhiteSpace(domain))
+            if (string.IsNullOrWhiteSpace(tenantid))
             {
-                throw new System.ArgumentException($"{nameof(domain)} was null or whitespace.");
+                throw new System.ArgumentException($"{nameof(tenantid)} was null or whitespace.");
             }
             if (string.IsNullOrWhiteSpace(externalId))
             {
@@ -59,7 +59,7 @@ namespace Ranger.ApiGateway
             this.Shape = shape;
             this.Radius = radius;
 
-            Domain = domain;
+            TenantId = tenantid;
             this.Id = id;
             this.ExternalId = externalId;
             this.ProjectId = projectId;

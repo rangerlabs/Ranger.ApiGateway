@@ -9,7 +9,7 @@ namespace Ranger.ApiGateway.Messages.Commands
     {
         public CreateIntegrationSagaInitializer(
             string commandingUserEmail,
-            string domain,
+            string tenantid,
             string name,
             Guid projectId,
             string messageJsonContent,
@@ -20,9 +20,9 @@ namespace Ranger.ApiGateway.Messages.Commands
                 throw new ArgumentException($"{nameof(commandingUserEmail)} was null or whitespace.");
             }
 
-            if (string.IsNullOrEmpty(domain))
+            if (string.IsNullOrEmpty(tenantid))
             {
-                throw new ArgumentException($"{nameof(domain)} was null or whitespace.");
+                throw new ArgumentException($"{nameof(tenantid)} was null or whitespace.");
             }
 
             if (string.IsNullOrEmpty(name))
@@ -36,7 +36,7 @@ namespace Ranger.ApiGateway.Messages.Commands
             }
 
             CommandingUserEmail = commandingUserEmail;
-            Domain = domain;
+            TenantId = tenantid;
             Name = name;
             ProjectId = projectId;
             MessageJsonContent = messageJsonContent;
