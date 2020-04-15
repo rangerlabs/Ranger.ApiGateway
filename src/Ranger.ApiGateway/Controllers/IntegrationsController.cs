@@ -15,6 +15,7 @@ namespace Ranger.ApiGateway
 {
     [ApiVersion("1.0")]
     [ApiController]
+    [Authorize(Policy = "TenantIdResolved")]
     public class IntegrationsController : BaseController<IntegrationsController>
     {
         private readonly IntegrationsHttpClient integrationsClient;
@@ -39,7 +40,7 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> DeleteIntegrationForProject(string projectName, string integrationName)
         {
             var project = HttpContext.Items["AutorizedProject"] as ProjectModel;
-            return await Task.Run(() => base.Send(new DeleteIntegrationSagaInitializer(UserFromClaims.Email, UserFromClaims.Domain, integrationName, project.ProjectId)));
+            return await Task.Run(() => base.Send(new DeleteIntegrationSagaInitializer(UserFromClaims.Email, TenantId, integrationName, project.ProjectId)));
         }
         ///<summary>
         /// Deletes an existing integration within a project
@@ -52,7 +53,7 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> GetAllIntegrationsForProject(string projectName)
         {
             var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
-            var integrations = await integrationsClient.GetAllIntegrationsByProjectId<IEnumerable<dynamic>>(UserFromClaims.Domain, project.ProjectId);
+            var integrations = await integrationsClient.GetAllIntegrationsByProjectId<IEnumerable<dynamic>>(TenantId, project.ProjectId);
             return new ApiResponse("Succesfully retrived integrations", integrations);
         }
     }

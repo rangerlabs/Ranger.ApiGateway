@@ -18,7 +18,7 @@ namespace Ranger.ApiGateway
     [ApiController]
     [Authorize(Roles = "User")]
     [Authorize(Policy = "TenantIdResolved")]
-    [Route("{projectName}/integrations/webhook")]
+    [Route("")]
     public class WebhookIntegrationController : BaseController<WebhookIntegrationController>
     {
         private readonly IBusPublisher busPublisher;
@@ -38,14 +38,14 @@ namespace Ranger.ApiGateway
         ///<param name="projectName">The friendly name of the project</param>
         ///<param name="webhookIntegrationModel">The model necessary to create a new webhook integration</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
-        [HttpPost]
+        [HttpPost("{projectName}/integrations/webhook")]
         [Authorize("BelongsToProject")]
         public async Task<ApiResponse> Post(string projectName, WebhookIntegrationPostModel webhookIntegrationModel)
         {
             var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
             var createIntegrationSagaInitializer = new CreateIntegrationSagaInitializer(
                  UserFromClaims.Email ?? "", //INSERT TOKEN HERE
-                 UserFromClaims.Domain,
+                 TenantId,
                  webhookIntegrationModel.Name,
                  project.ProjectId,
                  JsonConvert.SerializeObject(webhookIntegrationModel),
@@ -61,7 +61,7 @@ namespace Ranger.ApiGateway
         ///<param name="id">The integration id to update</param>
         ///<param name="webhookIntegrationModel">The model necessary to create a new webhook integration</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
-        [HttpPut("{id}")]
+        [HttpPut("{projectName}/integrations/webhook/{id}")]
         [Authorize("BelongsToProject")]
         public async Task<ApiResponse> UpdateIntegration(string projectName, Guid id, WebhookIntegrationPutModel webhookIntegrationModel)
         {
@@ -69,7 +69,7 @@ namespace Ranger.ApiGateway
             webhookIntegrationModel.IntegrationId = id;
             var updateIntegrationSagaInitializer = new UpdateIntegrationSagaInitializer(
                 UserFromClaims.Email,
-                UserFromClaims.Domain,
+                TenantId,
                 webhookIntegrationModel.Name,
                 project.ProjectId,
                 JsonConvert.SerializeObject(webhookIntegrationModel),
