@@ -1,12 +1,11 @@
-using System;
 using System.Threading.Tasks;
+using AutoWrapper.Wrappers;
 using ChargeBee.Api;
 using ChargeBee.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
 
@@ -15,67 +14,66 @@ namespace Ranger.ApiGateway.Controllers
     [ApiVersion("1.0")]
     [ApiController]
     [Authorize(Roles = "Owner")]
+    [Authorize(Policy = "TenantIdResolved")]
     public class SubscriptionsController : BaseController<SubscriptionsController>
     {
-        private readonly ISubscriptionsClient subscriptionsClient;
+        private readonly SubscriptionsHttpClient subscriptionsClient;
         private readonly ILogger<SubscriptionsController> logger;
-        public SubscriptionsController(IBusPublisher busPublisher, ISubscriptionsClient subscriptionsClient, ILogger<SubscriptionsController> logger) : base(busPublisher, logger)
+        public SubscriptionsController(IBusPublisher busPublisher, SubscriptionsHttpClient subscriptionsClient, ILogger<SubscriptionsController> logger) : base(busPublisher, logger)
         {
             this.logger = logger;
             this.subscriptionsClient = subscriptionsClient;
         }
 
-        [HttpGet("/subscriptions/checkout-existing-hosted-page-url")]
-        public async Task<IActionResult> GetAllProjects([FromQuery] string planId)
+        ///<summary>
+        /// Get hosted checkout page url
+        ///</summary>
+        ///<param name="planId">The plan id to retrieve the hosted page for</param>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpGet("/subscriptions/{planId}/checkout-existing-hosted-page-url")]
+        public async Task<ApiResponse> GetHostedCheckoutPageUrl(string planId)
         {
-            if (String.IsNullOrWhiteSpace(planId))
-            {
-                var apiErrorContent = new ApiErrorContent();
-                apiErrorContent.Errors.Add($"{nameof(planId)} was missing from the query parameters.");
-                return BadRequest(apiErrorContent);
-            }
 
-            try
+            var apiResponse = await subscriptionsClient.GenerateCheckoutExistingUrl(TenantId, planId);
+            if (apiResponse.IsError)
             {
-                var hostedPage = await subscriptionsClient.GenerateCheckoutExistingUrl<RangerChargeBeeHostedPage>(UserFromClaims.Domain, planId);
-                return Ok(hostedPage);
+                throw new AutoWrapper.Wrappers.ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, apiResponse.StatusCode);
             }
-            catch (HttpClientException<RangerChargeBeeHostedPage> ex)
-            {
-                logger.LogError(ex, "Failed to retrieve hosted page url.");
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            return new ApiResponse("Successfully retrieved hosted checkout page url", apiResponse.Result);
         }
 
+        ///<summary>
+        /// Get tenant's plan id
+        ///</summary>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("/subscriptions/plan-id")]
-        public async Task<IActionResult> GetPlanId()
+        public async Task<ApiResponse> GetPlanId()
         {
-            try
+            var apiResponse = await subscriptionsClient.GetSubscriptionPlanId(TenantId);
+            if (apiResponse.IsError)
             {
-                var subscription = await subscriptionsClient.GetSubscriptionPlanId<Subscription>(UserFromClaims.Domain);
-                return Ok(subscription);
+                throw new AutoWrapper.Wrappers.ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, apiResponse.StatusCode);
             }
-            catch (HttpClientException<Subscription> ex)
-            {
-                logger.LogError(ex, "Failed to retrieve subscription Plan Id.");
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            return new ApiResponse("Successfully retrieved plan id", apiResponse.Result);
         }
 
+        ///<summary>
+        /// Get tenant's subscription details
+        ///</summary>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("/subscriptions/limit-details")]
         [Authorize(Roles = "User")]
-        public async Task<IActionResult> GetLimitDetails()
+        public async Task<ApiResponse> GetLimitDetails()
         {
-            try
+            var apiResponse = await subscriptionsClient.GetLimitDetails<SubscriptionLimitDetails>(TenantId);
+            if (apiResponse.IsError)
             {
-                var limitDetails = await subscriptionsClient.GetLimitDetails<SubscriptionLimitDetails>(UserFromClaims.Domain);
-                return Ok(limitDetails);
+                throw new AutoWrapper.Wrappers.ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, apiResponse.StatusCode);
             }
-            catch (HttpClientException<Subscription> ex)
-            {
-                logger.LogError(ex, "Failed to retrieve limit details.");
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            return new ApiResponse("Successfully retrieved tenant limit details", apiResponse.Result);
         }
     }
 }

@@ -10,12 +10,12 @@ using Ranger.InternalHttpClient;
 
 namespace Ranger.ApiGateway.Authorization
 {
-    public class DomainExistsHandler : AuthorizationHandler<DomainExistsRequirement>
+    public class TenantIdResolvedHandler : AuthorizationHandler<TenantIdResolvedRequirement>
     {
         private readonly TenantsHttpClient tenantsClient;
         private readonly IHttpContextAccessor httpContextAccessor;
-        private readonly ILogger<DomainExistsHandler> logger;
-        public DomainExistsHandler(TenantsHttpClient tenantsClient, IHttpContextAccessor httpContextAccessor, ILogger<DomainExistsHandler> logger)
+        private readonly ILogger<TenantIdResolvedHandler> logger;
+        public TenantIdResolvedHandler(TenantsHttpClient tenantsClient, IHttpContextAccessor httpContextAccessor, ILogger<TenantIdResolvedHandler> logger)
         {
             this.logger = logger;
             this.httpContextAccessor = httpContextAccessor;
@@ -27,7 +27,7 @@ namespace Ranger.ApiGateway.Authorization
             public bool Confirmed { get; set; }
         }
 
-        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, DomainExistsRequirement requirement)
+        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, TenantIdResolvedRequirement requirement)
         {
             var domain = GetDomainFromUserClaims(httpContextAccessor);
             if (!String.IsNullOrWhiteSpace(domain))

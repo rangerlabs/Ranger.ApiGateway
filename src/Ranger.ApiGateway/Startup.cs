@@ -53,9 +53,9 @@ namespace Ranger.ApiGateway
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("apiGateway", policyBuilder =>
-                    {
-                        policyBuilder.RequireScope("apiGateway");
-                    });
+                {
+                    policyBuilder.RequireScope("apiGateway");
+                });
 
                 options.AddPolicy("BelongsToProject", policyBuilder =>
                 {
@@ -65,9 +65,9 @@ namespace Ranger.ApiGateway
                 {
                     policyBuilder.AddRequirements(new ValidApiKeyRequirement());
                 });
-                options.AddPolicy("DomainExists", policyBuilder =>
+                options.AddPolicy("TenantIdResolved", policyBuilder =>
                 {
-                    policyBuilder.AddRequirements(new DomainExistsRequirement());
+                    policyBuilder.AddRequirements(new TenantIdResolvedRequirement());
                 });
             });
 

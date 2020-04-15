@@ -38,8 +38,15 @@ namespace Ranger.ApiGateway.Authorization
                         {
                             logger.LogError($"Failed to retrieve authorized projects to validate user's project authorization. Domain: '{user.Domain}', Email: '{user.Email}'.");
                         }
-                        else if (apiResponse.Result.Select(_ => _.Name).Contains(projectName))
+                        else
                         {
+                            var project = apiResponse.Result.Where(_ => _.Name == projectName).SingleOrDefault();
+                            if (project is null)
+                            {
+                                logger.LogDebug("The user is not authorized to access the requested project");
+                                context.Fail();
+                            }
+                            httpContextAccessor.HttpContext.Items["AuthorizedProject"] = project;
                             context.Succeed(requirement);
                         }
                     }

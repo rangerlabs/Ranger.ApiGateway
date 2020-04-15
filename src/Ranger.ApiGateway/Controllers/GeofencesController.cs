@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,256 +18,169 @@ namespace Ranger.ApiGateway
     [Authorize(Roles = "User")]
     public class GeofenceController : BaseController<GeofenceController>
     {
-        private readonly IGeofencesClient geofencesClient;
+        private readonly GeofencesHttpClient geofencesClient;
         private readonly ILogger<GeofenceController> logger;
-        private readonly IProjectsClient projectsClient;
+        private readonly ProjectsHttpClient projectsClient;
 
-        public GeofenceController(IBusPublisher busPublisher, IGeofencesClient geofencesClient, IProjectsClient projectsClient, ILogger<GeofenceController> logger) : base(busPublisher, logger)
+        public GeofenceController(IBusPublisher busPublisher, GeofencesHttpClient geofencesClient, ProjectsHttpClient projectsClient, ILogger<GeofenceController> logger) : base(busPublisher, logger)
         {
             this.projectsClient = projectsClient;
             this.logger = logger;
             this.geofencesClient = geofencesClient;
         }
 
+        ///<summary>
+        /// Gets all geofences for a tenant's project
+        ///</summary>
+        ///<param name="projectName">The friendly name of the project</param>
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("/{projectName}/geofences")]
         [Authorize("BelongsToProject")]
-        public async Task<IActionResult> GetAllGeofences(string projectName)
+        public async Task<ApiResponse> GetAllGeofences(string projectName)
         {
-            try
+            var authorizedProject = HttpContext.Items["AuthorizedProject"] as ProjectModel;
+            var apiResponse = await geofencesClient.GetAllGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(TenantId, authorizedProject.ProjectId);
+            if (apiResponse.IsError)
             {
-                var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(UserFromClaims.Domain, UserFromClaims.Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
-                if (!(projectId is null) || !projectId.Equals(Guid.Empty))
-                {
-                    var geofences = await geofencesClient.GetAllGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(UserFromClaims.Domain, projectId.GetValueOrDefault());
-                    if (geofences.Count() > 0)
-                    {
-                        return Ok(geofences);
-                    }
-                    else
-                    {
-                        return NoContent();
-                    }
-                }
-                logger.LogWarning("The user was authorized for a project but the project ID was not successfully retrieved.");
-                return NotFound();
+                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, apiResponse.StatusCode);
             }
-            catch (HttpClientException<IEnumerable<GeofenceResponseModel>> ex)
-            {
-                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status404NotFound)
-                {
-                    return NotFound();
-                }
-                logger.LogError(ex, "Failed to retrieve geofences.");
-                throw;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to retrieve geofences.");
-            }
-            return StatusCode(StatusCodes.Status500InternalServerError);
+            return new ApiResponse("Successfully retrieved geofences", apiResponse.Result);
         }
 
+        ///<summary>
+        /// Initiates the creation of a new geofence within a project 
+        ///</summary>
+        ///<param name="projectName">The friendly name of the project</param>
+        ///<param name="geofenceModel">The model necessary to create a new geofence</param>
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("/{projectName}/geofences")]
         [Authorize("BelongsToProject")]
-        public async Task<IActionResult> Post([FromRoute] string projectName, [FromBody] GeofencePostModel geoFenceModel)
+        public async Task<ApiResponse> Post(string projectName, GeofenceRequestModel geofenceModel)
         {
-            try
-            {
-                var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(UserFromClaims.Domain, UserFromClaims.Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
-                if (!(projectId is null) || !projectId.Equals(Guid.Empty))
-                {
-                    if (geoFenceModel.Shape == GeofenceShapeEnum.Circle)
-                    {
-                        if (geoFenceModel.Radius < 50)
-                        {
-                            return BadRequest("Circular geofence radius must be greater than or equal to 50 meters.");
-                        }
-                        if (geoFenceModel.Radius > 10000)
-                        {
-                            return BadRequest("Circular geofence radius must be less than 10000 meters.");
-                        }
-                        if (geoFenceModel.Coordinates.Count() == 0 || geoFenceModel.Coordinates.Count() > 1)
-                        {
-                            return BadRequest("Circular geofence must have exactly one coordinate in their Coordinate array.");
-                        }
-                    }
-                    else
-                    {
-                        if (geoFenceModel.Coordinates.First().Equals(geoFenceModel.Coordinates.Last()))
-                        {
-                            return BadRequest("The first and last coordinates in a polygon are implicitely connected. Remove the explicit closing edge.");
-                        }
-                        geoFenceModel.Radius = 0;
-                        if (geoFenceModel.Coordinates.Count() < 3)
-                        {
-                            return BadRequest("Polygon geofence must have three or more coordinate in their Coordinate array.");
-                        }
-                    }
+            var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
+            ValidateGeofence(geofenceModel);
 
-                    if (geoFenceModel.ExpirationDate < geoFenceModel.LaunchDate)
-                    {
-                        return BadRequest("The geofence expiration date was before the launch date.");
-                    }
-
-                    var createGeofenceSagaInitializer = new CreateGeofenceSagaInitializer(
-                        User is null ? false : true,
-                        User?.UserFromClaims().Email ?? "", //INSERT TOKEN HERE
-                        UserFromClaims.Domain,
-                        geoFenceModel.ExternalId,
-                        projectId.GetValueOrDefault(),
-                        geoFenceModel.Shape,
-                        geoFenceModel.Coordinates,
-                        geoFenceModel.Labels,
-                        geoFenceModel.IntegrationIds,
-                        geoFenceModel.Metadata,
-                        geoFenceModel.Description,
-                        geoFenceModel.Radius,
-                        geoFenceModel.Enabled,
-                        geoFenceModel.OnEnter,
-                        geoFenceModel.OnDwell,
-                        geoFenceModel.OnExit,
-                        geoFenceModel.ExpirationDate,
-                        geoFenceModel.LaunchDate,
-                        geoFenceModel.Schedule
-                    );
-                    return await Task.Run(() => base.Send(createGeofenceSagaInitializer));
-                }
-                logger.LogWarning("The user was authorized for a project but the project ID was not successfully retrieved. This may be the result of a concurrency issue. Verify the project still exists.");
-                return NotFound();
-            }
-            catch (HttpClientException<IEnumerable<GeofenceResponseModel>> ex)
-            {
-                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status404NotFound)
-                {
-                    return NotFound();
-                }
-                throw;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to create geofence.");
-            }
-            return StatusCode(StatusCodes.Status500InternalServerError);
+            var createGeofenceSagaInitializer = new CreateGeofenceSagaInitializer(
+                User is null ? false : true,
+                User?.UserFromClaims().Email ?? "", //INSERT TOKEN HERE
+                TenantId,
+                geofenceModel.ExternalId,
+                project.ProjectId,
+                geofenceModel.Shape,
+                geofenceModel.Coordinates,
+                geofenceModel.Labels,
+                geofenceModel.IntegrationIds,
+                geofenceModel.Metadata,
+                geofenceModel.Description,
+                geofenceModel.Radius,
+                geofenceModel.Enabled,
+                geofenceModel.OnEnter,
+                geofenceModel.OnDwell,
+                geofenceModel.OnExit,
+                geofenceModel.ExpirationDate,
+                geofenceModel.LaunchDate,
+                geofenceModel.Schedule
+            );
+            return await Task.Run(() => base.Send(createGeofenceSagaInitializer));
         }
 
-        [HttpPut("/{projectName}/geofences/{id}")]
+        private static void ValidateGeofence(GeofenceRequestModel geofenceModel)
+        {
+            if (geofenceModel.Shape == GeofenceShapeEnum.Circle)
+            {
+                if (geofenceModel.Radius < 50)
+                {
+                    throw new ApiException("Circular geofence radius must be greater than or equal to 50 meters.", StatusCodes.Status400BadRequest);
+                }
+                if (geofenceModel.Radius > 10000)
+                {
+                    throw new ApiException("Circular geofence radius must be less than 10000 meters.", StatusCodes.Status400BadRequest);
+                }
+                if (geofenceModel.Coordinates.Count() == 0 || geofenceModel.Coordinates.Count() > 1)
+                {
+                    throw new ApiException("Circular geofence must have exactly one coordinate in their Coordinate array.", StatusCodes.Status400BadRequest);
+                }
+            }
+            else
+            {
+                if (geofenceModel.Coordinates.First().Equals(geofenceModel.Coordinates.Last()))
+                {
+                    throw new ApiException("The first and last coordinates in a polygon are implicitely connected. Remove the explicit closing edge.", StatusCodes.Status400BadRequest);
+                }
+                geofenceModel.Radius = 0;
+                if (geofenceModel.Coordinates.Count() < 3)
+                {
+                    throw new ApiException("Polygon geofence must have three or more coordinate in their Coordinate array.", StatusCodes.Status400BadRequest);
+                }
+            }
+
+            if (geofenceModel.ExpirationDate < geofenceModel.LaunchDate)
+            {
+                throw new ApiException("The geofence expiration date was before the launch date.", StatusCodes.Status400BadRequest);
+            }
+        }
+
+        ///<summary>
+        /// Updates an existing geofence within a project
+        ///</summary>
+        ///<param name="projectName">The friendly name of the project</param>
+        ///<param name="geofenceId">The unique identifier of the geofence to update</param>
+        ///<param name="geofenceModel">The model necessary to create a new geofence</param>
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [HttpPut("/{projectName}/geofences/{geofenceId}")]
         [Authorize("BelongsToProject")]
-        public async Task<IActionResult> UpdateGeofence([FromRoute] string projectName, [FromRoute] Guid id, [FromBody] GeofencePutModel geoFenceModel)
+        public async Task<ApiResponse> UpdateGeofence(string projectName, Guid geofenceId, GeofenceRequestModel geofenceModel)
         {
-            try
-            {
-                var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(UserFromClaims.Domain, UserFromClaims.Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
-                if (!(projectId is null) || !projectId.Equals(Guid.Empty))
-                {
-                    if (geoFenceModel.Shape == GeofenceShapeEnum.Circle)
-                    {
-                        if (geoFenceModel.Radius < 50)
-                        {
-                            return BadRequest("Circular geofence radii must be greater than or equal to 50 meters.");
-                        }
-                        if (geoFenceModel.Radius > 10000)
-                        {
-                            return BadRequest("Circular geofence radius must be less than 10000 meters.");
-                        }
-                        if (geoFenceModel.Coordinates.Count() == 0 || geoFenceModel.Coordinates.Count() > 1)
-                        {
-                            return BadRequest("Circular geofence must have exactly one coordinate in their Coordinate array.");
-                        }
-                    }
-                    else
-                    {
-                        if (geoFenceModel.Coordinates.First().Equals(geoFenceModel.Coordinates.Last()))
-                        {
-                            return BadRequest("The first and last coordinates in a polygon are implicitely connected. Remove the explicit closing edge.");
-                        }
-                        geoFenceModel.Radius = 0;
-                        if (geoFenceModel.Coordinates.Count() < 3)
-                        {
-                            return BadRequest("Polygon geofence must have three or more coordinate in their Coordinate array.");
-                        }
-                    }
+            var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
+            ValidateGeofence(geofenceModel);
 
-                    if (geoFenceModel.ExpirationDate < geoFenceModel.LaunchDate)
-                    {
-                        return BadRequest("The geofence expiration date was before the launch date.");
-                    }
+            var createGeofenceSagaInitializer = new UpdateGeofenceSagaInitializer(
+                User is null ? false : true,
+                User?.UserFromClaims().Email ?? "", //INSERT TOKEN HERE
+                TenantId,
+                geofenceId,
+                geofenceModel.ExternalId,
+                project.ProjectId,
+                geofenceModel.Shape,
+                geofenceModel.Coordinates,
+                geofenceModel.Labels,
+                geofenceModel.IntegrationIds,
+                geofenceModel.Metadata,
+                geofenceModel.Description,
+                geofenceModel.Radius,
+                geofenceModel.Enabled,
+                geofenceModel.OnEnter,
+                geofenceModel.OnDwell,
+                geofenceModel.OnExit,
+                geofenceModel.ExpirationDate,
+                geofenceModel.LaunchDate,
+                geofenceModel.Schedule
+            );
 
-                    var createGeofenceSagaInitializer = new UpdateGeofenceSagaInitializer(
-                        User is null ? false : true,
-                        User?.UserFromClaims().Email ?? "", //INSERT TOKEN HERE
-                        UserFromClaims.Domain,
-                        id,
-                        geoFenceModel.ExternalId,
-                        projectId.GetValueOrDefault(),
-                        geoFenceModel.Shape,
-                        geoFenceModel.Coordinates,
-                        geoFenceModel.Labels,
-                        geoFenceModel.IntegrationIds,
-                        geoFenceModel.Metadata,
-                        geoFenceModel.Description,
-                        geoFenceModel.Radius,
-                        geoFenceModel.Enabled,
-                        geoFenceModel.OnEnter,
-                        geoFenceModel.OnDwell,
-                        geoFenceModel.OnExit,
-                        geoFenceModel.ExpirationDate,
-                        geoFenceModel.LaunchDate,
-                        geoFenceModel.Schedule
-                    );
-                    return await Task.Run(() => base.Send(createGeofenceSagaInitializer));
-                }
-                logger.LogWarning("The user was authorized for a project but the project ID was not successfully retrieved. This may be the result of a concurrency issue. Verify the project still exists.");
-                return NotFound();
-            }
-            catch (HttpClientException<IEnumerable<GeofenceResponseModel>> ex)
-            {
-                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status404NotFound)
-                {
-                    return NotFound();
-                }
-                throw;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to upsert geofence.");
-            }
-            return StatusCode(StatusCodes.Status500InternalServerError);
+            return await Task.Run(() => base.Send(createGeofenceSagaInitializer));
         }
 
+        ///<summary>
+        /// Deletes an existing geofence within a project
+        ///</summary>
+        ///<param name="projectName">The friendly name of the project</param>
+        ///<param name="externalId">The friendly name of the geofence to delete</param>
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpDelete("/{projectName}/geofences/{externalId}")]
         [Authorize("BelongsToProject")]
-        public async Task<IActionResult> DeleteGeofence([FromRoute] string projectName, [FromRoute] string externalId)
+        public async Task<ApiResponse> DeleteGeofence(string projectName, string externalId)
         {
-            try
-            {
-                var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(UserFromClaims.Domain, UserFromClaims.Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
-                if (!(projectId is null) || !projectId.Equals(Guid.Empty))
-                {
-                    var deleteGeofenceSagaInitializer = new DeleteGeofenceSagaInitializer(
-                        User is null ? false : true,
-                        User?.UserFromClaims().Email ?? "", //INSERT TOKEN HERE
-                        UserFromClaims.Domain,
-                        externalId,
-                        projectId.GetValueOrDefault()
-                    );
-                    return await Task.Run(() => base.Send(deleteGeofenceSagaInitializer));
-                }
-                logger.LogWarning("The user was authorized for a project but the project ID was not successfully retrieved. This may be the result of a concurrency issue. Verify the project still exists.");
-                return NotFound();
-            }
-            catch (HttpClientException<IEnumerable<GeofenceResponseModel>> ex)
-            {
-                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status404NotFound)
-                {
-                    return NotFound();
-                }
-                throw;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to delete geofence.");
-            }
-            return StatusCode(StatusCodes.Status500InternalServerError);
+            var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
+            var deleteGeofenceSagaInitializer = new DeleteGeofenceSagaInitializer(
+                 User is null ? false : true,
+                 User?.UserFromClaims().Email ?? "", //TODO: INSERT POSSIBLE TOKEN HERE
+                 TenantId,
+                 externalId,
+                 project.ProjectId
+             );
+            return await Task.Run(() => base.Send(deleteGeofenceSagaInitializer));
         }
     }
 }

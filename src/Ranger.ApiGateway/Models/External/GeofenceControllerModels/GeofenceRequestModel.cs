@@ -5,7 +5,8 @@ using Ranger.Common;
 
 namespace Ranger.ApiGateway
 {
-    public class GeofencePutModel
+
+    public class GeofenceRequestModel
     {
         [Required]
         [StringLength(140)]

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -27,22 +28,22 @@ namespace Ranger.ApiGateway
             this.Logger = logger;
         }
 
-        protected IActionResult Send<T>(T command, Guid? resourceId = null, string resource = "") where T : ICommand
+        protected ApiResponse Send<T>(T command, string clientMessage = "", Guid? resourceId = null, string resource = "") where T : ICommand
         {
             var context = GetContext<T>(resourceId, resource);
             try
             {
                 busPublisher.Send(command, context);
-                return Accepted(context);
+                return Accepted(context, clientMessage);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "An exception occurred publishing a command. Ensure the service is connect to a running RabbitMQ instance.");
-                return InternalServerError();
+                Logger.LogError(ex, "An exception occurred publishing a command. Ensure the service is connected to a running RabbitMQ instance.");
+                throw new ApiException("An error occurred publishing the command", statusCode: StatusCodes.Status500InternalServerError);
             }
         }
 
-        protected IActionResult Accepted(ICorrelationContext context)
+        protected ApiResponse Accepted(ICorrelationContext context, string clientMessage = "")
         {
             Response.Headers.Add(OperationHeader, $"operations/{context.CorrelationContextId}");
             if (!string.IsNullOrWhiteSpace(context.Resource))
@@ -50,12 +51,7 @@ namespace Ranger.ApiGateway
                 Response.Headers.Add(ResourceHeader, context.Resource);
             }
 
-            return base.Accepted();
-        }
-
-        protected IActionResult InternalServerError(string errors = "")
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { errors = errors });
+            return new ApiResponse(clientMessage, statusCode: StatusCodes.Status202Accepted);
         }
 
         private ICorrelationContext GetContext<T>(Guid? resourceId, string resource)
@@ -78,20 +74,8 @@ namespace Ranger.ApiGateway
             );
         }
 
-        protected User UserFromClaims
-        {
-            get
-            {
-                return User.UserFromClaims();
-            }
-        }
-
-        protected string Culture
-        {
-            get
-            {
-                return Request.Headers.ContainsKey(AcceptLanguageHeader) ? Request.Headers[AcceptLanguageHeader].First().ToLowerInvariant() : DefaultCulture;
-            }
-        }
+        protected User UserFromClaims => User.UserFromClaims();
+        protected string Culture => Request.Headers.ContainsKey(AcceptLanguageHeader) ? Request.Headers[AcceptLanguageHeader].First().ToLowerInvariant() : DefaultCulture;
+        protected string TenantId => HttpContext.Items["TenantId"] as string;
     }
 }

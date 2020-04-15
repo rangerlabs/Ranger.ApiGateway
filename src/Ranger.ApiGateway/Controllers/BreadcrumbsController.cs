@@ -1,5 +1,8 @@
 using System;
+using System.Threading.Tasks;
+using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Ranger.Common;
@@ -20,29 +23,33 @@ namespace Ranger.ApiGateway.Controllers
             this.busPublisher = busPublisher;
         }
 
+        ///<summary>
+        /// Accepts new breadcrumbs for geofence determination
+        ///</summary>
+        ///<param name="breadcrumbModel">The model necessary to compute geofence resuts</param>
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpPost("/breadcrumbs")]
-        public IActionResult PostBreadcrumb([FromBody] BreadcrumbModel model)
+        public async Task<ApiResponse> PostBreadcrumb([FromBody] BreadcrumbModel breadcrumbModel)
         {
             logger.LogDebug("Breadcrumb received.");
             var environment = Enum.Parse<EnvironmentEnum>(HttpContext.Items["ApiKeyEnvironment"] as string);
-            var TenantId = HttpContext.Items["TenantId"] as string;
+            var tenantId = HttpContext.Items["TenantId"] as string;
             var projectId = Guid.Parse(HttpContext.Items["ProjectId"] as string);
-            var domain = HttpContext.Items["UserFromClaims.Domain"] as string;
-            return base.Send(
-                new ComputeGeofenceIntersections(
-                    TenantId,
-                    domain,
-                    projectId,
-                    environment,
-                    new Breadcrumb(
-                        model.DeviceId,
-                        model.ExternalUserId,
-                        model.Position,
-                        model.RecordedAt,
-                        model.Metadata,
-                        model.Accuracy)
-                    )
-                );
+            return await Task.Run(() =>
+                base.Send(new ComputeGeofenceIntersections(
+                        tenantId,
+                        projectId,
+                        environment,
+                        new Breadcrumb(
+                            breadcrumbModel.DeviceId,
+                            breadcrumbModel.ExternalUserId,
+                            breadcrumbModel.Position,
+                            breadcrumbModel.RecordedAt,
+                            breadcrumbModel.Metadata,
+                            breadcrumbModel.Accuracy)
+                        )
+                )
+            );
         }
     }
 }

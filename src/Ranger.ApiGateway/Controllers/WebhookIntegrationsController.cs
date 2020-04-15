@@ -1,7 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,98 +17,66 @@ namespace Ranger.ApiGateway
     [ApiVersion("1.0")]
     [ApiController]
     [Authorize(Roles = "User")]
+    [Authorize(Policy = "TenantIdResolved")]
     [Route("{projectName}/integrations/webhook")]
     public class WebhookIntegrationController : BaseController<WebhookIntegrationController>
     {
         private readonly IBusPublisher busPublisher;
-        private readonly IProjectsClient projectsClient;
+        private readonly ProjectsHttpClient projectsClient;
         private readonly ILogger<WebhookIntegrationController> logger;
 
-        public WebhookIntegrationController(IBusPublisher busPublisher, IProjectsClient projectsClient, ILogger<WebhookIntegrationController> logger) : base(busPublisher, logger)
+        public WebhookIntegrationController(IBusPublisher busPublisher, ProjectsHttpClient projectsClient, ILogger<WebhookIntegrationController> logger) : base(busPublisher, logger)
         {
             this.busPublisher = busPublisher;
             this.projectsClient = projectsClient;
             this.logger = logger;
         }
 
+        ///<summary>
+        /// Creates a new WebHook Integration
+        ///</summary>
+        ///<param name="projectName">The friendly name of the project</param>
+        ///<param name="webhookIntegrationModel">The model necessary to create a new webhook integration</param>
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpPost]
         [Authorize("BelongsToProject")]
-        public async Task<IActionResult> Post([FromRoute]string projectName, [FromBody]WebhookIntegrationPostModel webhookIntegrationModel)
+        public async Task<ApiResponse> Post(string projectName, WebhookIntegrationPostModel webhookIntegrationModel)
         {
-            try
-            {
-                var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(UserFromClaims.Domain, UserFromClaims.Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
-                if (!(projectId is null) || !projectId.Equals(Guid.Empty))
-                {
-                    var createIntegrationSagaInitializer = new CreateIntegrationSagaInitializer(
-                        UserFromClaims.Email ?? "", //INSERT TOKEN HERE
-                        UserFromClaims.Domain,
-                        webhookIntegrationModel.Name,
-                        projectId.GetValueOrDefault(),
-                        JsonConvert.SerializeObject(webhookIntegrationModel),
-                        IntegrationsEnum.WEBHOOK
-                    );
-                    return await Task.Run(() => base.Send(createIntegrationSagaInitializer));
-                }
-                else
-                {
-                    logger.LogWarning("The user was authorized for a project but the project ID was not successfully retrieved. This may be the result of a concurrency issue. Verify the project still exists.");
-                    return NotFound();
-                }
-            }
-            catch (HttpClientException<IEnumerable<GeofenceResponseModel>> ex)
-            {
-                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status404NotFound)
-                {
-                    return NotFound();
-                }
-                throw;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to create integration.");
-            }
-            return StatusCode(StatusCodes.Status500InternalServerError);
+            var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
+            var createIntegrationSagaInitializer = new CreateIntegrationSagaInitializer(
+                 UserFromClaims.Email ?? "", //INSERT TOKEN HERE
+                 UserFromClaims.Domain,
+                 webhookIntegrationModel.Name,
+                 project.ProjectId,
+                 JsonConvert.SerializeObject(webhookIntegrationModel),
+                 IntegrationsEnum.WEBHOOK
+             );
+            return await Task.Run(() => base.Send(createIntegrationSagaInitializer));
         }
 
+        ///<summary>
+        /// Creates a new WebHook Integration
+        ///</summary>
+        ///<param name="projectName">The friendly name of the project</param>
+        ///<param name="id">The integration id to update</param>
+        ///<param name="webhookIntegrationModel">The model necessary to create a new webhook integration</param>
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpPut("{id}")]
         [Authorize("BelongsToProject")]
-        public async Task<IActionResult> UpdateIntegration([FromRoute] string projectName, [FromRoute] Guid id, [FromBody] WebhookIntegrationPutModel model)
+        public async Task<ApiResponse> UpdateIntegration(string projectName, Guid id, WebhookIntegrationPutModel webhookIntegrationModel)
         {
-            try
-            {
-                var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(UserFromClaims.Domain, UserFromClaims.Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
-                if (!(projectId is null) || !projectId.Equals(Guid.Empty))
-                {
-                    model.IntegrationId = id;
-                    var updateIntegrationSagaInitializer = new UpdateIntegrationSagaInitializer(
-                        UserFromClaims.Email,
-                        UserFromClaims.Domain,
-                        model.Name,
-                        projectId.GetValueOrDefault(),
-                        JsonConvert.SerializeObject(model),
-                        IntegrationsEnum.WEBHOOK,
-                        model.Version
-                    );
-                    return await Task.Run(() => base.Send(updateIntegrationSagaInitializer));
-                }
-                logger.LogWarning("The user was authorized for a project but the project ID was not successfully retrieved. This may be the result of a concurrency issue. Verify the project still exists.");
-                return NotFound();
-            }
-            catch (HttpClientException<IEnumerable<GeofenceResponseModel>> ex)
-            {
-                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status404NotFound)
-                {
-                    return NotFound();
-                }
-                throw;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to upsert geofence.");
-            }
-            return StatusCode(StatusCodes.Status500InternalServerError);
-
+            var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
+            webhookIntegrationModel.IntegrationId = id;
+            var updateIntegrationSagaInitializer = new UpdateIntegrationSagaInitializer(
+                UserFromClaims.Email,
+                UserFromClaims.Domain,
+                webhookIntegrationModel.Name,
+                project.ProjectId,
+                JsonConvert.SerializeObject(webhookIntegrationModel),
+                IntegrationsEnum.WEBHOOK,
+                webhookIntegrationModel.Version
+            );
+            return await Task.Run(() => base.Send(updateIntegrationSagaInitializer));
         }
     }
 }
