@@ -14,12 +14,12 @@ namespace Ranger.ApiGateway
 {
     [ApiVersion("1.0")]
     [ApiController]
-    public class TenantController : BaseController<TenantController>
+    public class TenantsController : BaseController<TenantsController>
     {
         private readonly TenantsHttpClient tenantsClient;
         private readonly IBusPublisher busPublisher;
 
-        public TenantController(TenantsHttpClient tenantsClient, IBusPublisher busPublisher, ILogger<TenantController> logger) : base(busPublisher, logger)
+        public TenantsController(TenantsHttpClient tenantsClient, IBusPublisher busPublisher, ILogger<TenantsController> logger) : base(busPublisher, logger)
         {
             this.busPublisher = busPublisher;
             this.tenantsClient = tenantsClient;

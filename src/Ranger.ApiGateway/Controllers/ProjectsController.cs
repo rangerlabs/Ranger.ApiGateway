@@ -17,13 +17,13 @@ namespace Ranger.ApiGateway
     [ApiVersion("1.0")]
     [ApiController]
     [Authorize(Policy = "TenantIdResolved")]
-    public class ProjectController : BaseController<ProjectController>
+    public class ProjectsController : BaseController<ProjectsController>
     {
         private readonly IBusPublisher busPublisher;
         private readonly ProjectsHttpClient projectsClient;
-        private readonly ILogger<ProjectController> logger;
+        private readonly ILogger<ProjectsController> logger;
 
-        public ProjectController(IBusPublisher busPublisher, ProjectsHttpClient projectsClient, ILogger<ProjectController> logger) : base(busPublisher, logger)
+        public ProjectsController(IBusPublisher busPublisher, ProjectsHttpClient projectsClient, ILogger<ProjectsController> logger) : base(busPublisher, logger)
         {
             this.logger = logger;
             this.busPublisher = busPublisher;

@@ -75,23 +75,12 @@ namespace Ranger.ApiGateway
             services.AddTenantsHttpClient("http://tenants:8082", "tenantsApi", "cKprgh9wYKWcsm");
             services.AddProjectsHttpClient("http://projects:8086", "projectsApi", "usGwT8Qsp4La2");
             services.AddSubscriptionsHttpClient("http://subscriptions:8089", "subscriptionsApi", "4T3SXqXaD6GyGHn4RY");
+            services.AddGeofencesHttpClient("http://geofences:8085", "geofencesApi", "9pwJgpgpu6PNJi");
+            services.AddIntegrationsHttpClient("http://integrations:8087", "integrationsApi", "6HyhzSoSHvxTG");
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IAuthorizationHandler, BelongsToProjectHandler>();
             services.AddSingleton<IAuthorizationHandler, ValidApiKeyHandler>();
-
-            // services.AddSingleton<IGeofencesClient, GeofencesClient>(provider =>
-            // {
-            //     return new GeofencesClient("http://geofences:8085", loggerFactory.CreateLogger<GeofencesClient>());
-            // });
-            // services.AddSingleton<IOperationsClient, OperationsClient>(provider =>
-            // {
-            //     return new OperationsClient("http://operations:8083", loggerFactory.CreateLogger<OperationsClient>());
-            // });
-            // services.AddSingleton<IIntegrationsClient, IntegrationsClient>(provider =>
-            // {
-            //     return new IntegrationsClient("http://integrations:8087", loggerFactory.CreateLogger<IntegrationsClient>());
-            // });
 
             services.AddCors();
 
@@ -138,15 +127,15 @@ namespace Ranger.ApiGateway
             {
                 app.UseSwagger("v1", "API Gateway");
             }
+            app.UseCors(builder =>
+           {
+               builder.AllowAnyHeader()
+                   .AllowAnyMethod()
+                   .AllowAnyOrigin()
+                   .WithExposedHeaders("X-Operation");
+           });
             app.UseAutoWrapper();
             app.UseRouting();
-            app.UseCors(builder =>
-            {
-                builder.AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowAnyOrigin()
-                    .WithExposedHeaders("X-Operation");
-            });
 
             app.UseAuthentication();
             app.UseAuthorization();

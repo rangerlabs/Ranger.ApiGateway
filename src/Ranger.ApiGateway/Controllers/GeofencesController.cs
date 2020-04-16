@@ -16,13 +16,13 @@ namespace Ranger.ApiGateway
     [ApiVersion("1.0")]
     [ApiController]
     [Authorize(Roles = "User")]
-    public class GeofenceController : BaseController<GeofenceController>
+    public class GeofencesController : BaseController<GeofencesController>
     {
         private readonly GeofencesHttpClient geofencesClient;
-        private readonly ILogger<GeofenceController> logger;
+        private readonly ILogger<GeofencesController> logger;
         private readonly ProjectsHttpClient projectsClient;
 
-        public GeofenceController(IBusPublisher busPublisher, GeofencesHttpClient geofencesClient, ProjectsHttpClient projectsClient, ILogger<GeofenceController> logger) : base(busPublisher, logger)
+        public GeofencesController(IBusPublisher busPublisher, GeofencesHttpClient geofencesClient, ProjectsHttpClient projectsClient, ILogger<GeofencesController> logger) : base(busPublisher, logger)
         {
             this.projectsClient = projectsClient;
             this.logger = logger;
