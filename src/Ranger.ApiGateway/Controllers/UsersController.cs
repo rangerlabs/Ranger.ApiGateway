@@ -46,10 +46,6 @@ namespace Ranger.ApiGateway
                 CommandingUserEmail = UserFromClaims.Email
             };
             var apiResponse = await identityClient.DeleteUserAsync(TenantId, email, JsonConvert.SerializeObject(deleteUserContent));
-            if (apiResponse.IsError)
-            {
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, statusCode: apiResponse.StatusCode);
-            }
             busPublisher.Send(new SendPusherDomainUserPredefinedNotification("ForceSignoutNotification", TenantId, email), CorrelationContext.Empty);
             return new ApiResponse("Successfully deleted user");
         }
@@ -64,10 +60,6 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> PasswordResetRequest(PasswordResetModel passwordResetModel)
         {
             var apiResponse = await identityClient.RequestPasswordReset(TenantId, UserFromClaims.Email, JsonConvert.SerializeObject(passwordResetModel));
-            if (apiResponse.IsError)
-            {
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, statusCode: apiResponse.StatusCode);
-            }
             return new ApiResponse("Successfully requested password reset");
         }
 
@@ -81,10 +73,6 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> EmailChangeRequest(EmailChangeModel emailChangeModel)
         {
             var apiResponse = await identityClient.RequestEmailChange(TenantId, UserFromClaims.Email, JsonConvert.SerializeObject(emailChangeModel));
-            if (apiResponse.IsError)
-            {
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, statusCode: apiResponse.StatusCode);
-            }
             return new ApiResponse("Successfully requested email change");
         }
 
@@ -101,10 +89,6 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> PasswordReset(string email, UserConfirmPasswordResetModel confirmModel)
         {
             var tenantApiResponse = await tenantsClient.GetTenantByDomainAsync<ContextTenant>(confirmModel.Domain);
-            if (tenantApiResponse.IsError)
-            {
-                throw new ApiException(tenantApiResponse.ResponseException.ExceptionMessage.Error, statusCode: tenantApiResponse.StatusCode);
-            }
             var requestContent = JsonConvert.SerializeObject(new
             {
                 NewPassword = confirmModel.NewPassword,
@@ -112,10 +96,6 @@ namespace Ranger.ApiGateway
                 Token = confirmModel.Token
             });
             var apiResponse = await identityClient.UserConfirmPasswordResetAsync(tenantApiResponse.Result.TenantId, email, requestContent);
-            if (apiResponse.IsError)
-            {
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, statusCode: apiResponse.StatusCode);
-            }
             return new ApiResponse("Successfully set new password");
         }
 
@@ -133,20 +113,12 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> EmailChange(string email, UserConfirmEmailChangeModel confirmModel)
         {
             var tenantApiResponse = await tenantsClient.GetTenantByDomainAsync<ContextTenant>(confirmModel.Domain);
-            if (tenantApiResponse.IsError)
-            {
-                throw new ApiException(tenantApiResponse.ResponseException.ExceptionMessage.Error, statusCode: tenantApiResponse.StatusCode);
-            }
             var requestContent = new
             {
                 Email = confirmModel.Email,
                 Token = confirmModel.Token
             };
             var apiResponse = await identityClient.UserConfirmEmailChangeAsync(tenantApiResponse.Result.TenantId, email, JsonConvert.SerializeObject(requestContent));
-            if (apiResponse.IsError)
-            {
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, statusCode: apiResponse.StatusCode);
-            }
             return new ApiResponse("Successfully set new email address");
         }
 
@@ -160,10 +132,6 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> GetAuthorizedProjectsForUser(string email)
         {
             var apiResponse = await projectsClient.GetProjectIdsForUser(TenantId, email);
-            if (apiResponse.IsError)
-            {
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, statusCode: apiResponse.StatusCode);
-            }
             return new ApiResponse("Successfully retrieved authorized projects", apiResponse.Result);
         }
 
@@ -180,10 +148,6 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> ConfirmUser(string email, UserConfirmModel confirmModel)
         {
             var tenantApiResponse = await tenantsClient.GetTenantByDomainAsync<ContextTenant>(confirmModel.Domain);
-            if (tenantApiResponse.IsError)
-            {
-                throw new ApiException(tenantApiResponse.ResponseException.ExceptionMessage.Error, statusCode: tenantApiResponse.StatusCode);
-            }
             var requestContent = JsonConvert.SerializeObject(new
             {
                 NewPassword = confirmModel.NewPassword,
@@ -191,10 +155,6 @@ namespace Ranger.ApiGateway
                 Token = confirmModel.Token
             });
             var apiResponse = await identityClient.ConfirmUserAsync(tenantApiResponse.Result.TenantId, email, requestContent);
-            if (apiResponse.IsError)
-            {
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, statusCode: apiResponse.StatusCode);
-            }
             return new ApiResponse("Successfully confirmed new user");
         }
 
@@ -209,11 +169,6 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> GetUser(string email)
         {
             var apiResponse = await identityClient.GetUserAsync<UserApiResponseModel>(TenantId, email);
-            if (apiResponse.IsError)
-            {
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, statusCode: apiResponse.StatusCode);
-            }
-
             var userResponseModel = new UserApiResponseModel
             {
                 Email = apiResponse.Result.Email,
@@ -234,11 +189,6 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> GetAllUsers()
         {
             var apiResponse = await identityClient.GetAllUsersAsync<IEnumerable<UserApiResponseModel>>(TenantId);
-            if (apiResponse.IsError)
-            {
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, statusCode: apiResponse.StatusCode);
-            }
-
             var userResponseCollection = new List<UserApiResponseModel>();
             foreach (var user in apiResponse.Result)
             {

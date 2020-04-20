@@ -43,10 +43,6 @@ namespace Ranger.ApiGateway
         public async Task<IActionResult> Index([FromForm] PusherAuthModel pusherAuthModel)
         {
             var apiResponse = await this.identityClient.GetUserAsync<User>(TenantId, pusherAuthModel.userEmail);
-            if (apiResponse.IsError)
-            {
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, apiResponse.StatusCode);
-            }
             if (apiResponse.Result.Email == UserFromClaims.Email)
             {
                 var pusher = new Pusher(pusherOptions.AppId, pusherOptions.Key, pusherOptions.Secret, new PusherOptions { Cluster = pusherOptions.Cluster, Encrypted = bool.Parse(pusherOptions.Encrypted) });

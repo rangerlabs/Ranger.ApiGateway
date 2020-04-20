@@ -36,10 +36,6 @@ namespace Ranger.ApiGateway.Controllers
         {
 
             var apiResponse = await subscriptionsClient.GenerateCheckoutExistingUrl(TenantId, planId);
-            if (apiResponse.IsError)
-            {
-                throw new AutoWrapper.Wrappers.ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, apiResponse.StatusCode);
-            }
             return new ApiResponse("Successfully retrieved hosted checkout page url", apiResponse.Result);
         }
 
@@ -52,10 +48,6 @@ namespace Ranger.ApiGateway.Controllers
         public async Task<ApiResponse> GetPlanId()
         {
             var apiResponse = await subscriptionsClient.GetSubscriptionPlanId(TenantId);
-            if (apiResponse.IsError)
-            {
-                throw new AutoWrapper.Wrappers.ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, apiResponse.StatusCode);
-            }
             return new ApiResponse("Successfully retrieved plan id", apiResponse.Result);
         }
 
@@ -69,10 +61,6 @@ namespace Ranger.ApiGateway.Controllers
         public async Task<ApiResponse> GetLimitDetails()
         {
             var apiResponse = await subscriptionsClient.GetLimitDetails<SubscriptionLimitDetails>(TenantId);
-            if (apiResponse.IsError)
-            {
-                throw new AutoWrapper.Wrappers.ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, apiResponse.StatusCode);
-            }
             return new ApiResponse("Successfully retrieved tenant limit details", apiResponse.Result);
         }
     }

@@ -1,4 +1,5 @@
 using System.Security.Cryptography.X509Certificates;
+using System.Timers;
 using Autofac;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -52,11 +53,6 @@ namespace Ranger.ApiGateway
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("apiGateway", policyBuilder =>
-                {
-                    policyBuilder.RequireScope("apiGateway");
-                });
-
                 options.AddPolicy("BelongsToProject", policyBuilder =>
                 {
                     policyBuilder.RequireAuthenticatedUser().AddRequirements(new BelongsToProjectRequirement());
@@ -71,6 +67,7 @@ namespace Ranger.ApiGateway
                 });
             });
 
+            services.AddPollyPolicyRegistry();
             services.AddIdentityHttpClient("http://identity:5000", "IdentityServerApi", "89pCcXHuDYTXY");
             services.AddTenantsHttpClient("http://tenants:8082", "tenantsApi", "cKprgh9wYKWcsm");
             services.AddProjectsHttpClient("http://projects:8086", "projectsApi", "usGwT8Qsp4La2");
@@ -79,8 +76,9 @@ namespace Ranger.ApiGateway
             services.AddIntegrationsHttpClient("http://integrations:8087", "integrationsApi", "6HyhzSoSHvxTG");
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddSingleton<IAuthorizationHandler, BelongsToProjectHandler>();
-            services.AddSingleton<IAuthorizationHandler, ValidApiKeyHandler>();
+            services.AddScoped<IAuthorizationHandler, BelongsToProjectHandler>();
+            services.AddScoped<IAuthorizationHandler, ValidApiKeyHandler>();
+            services.AddScoped<IAuthorizationHandler, TenantIdResolvedHandler>();
 
             services.AddCors();
 

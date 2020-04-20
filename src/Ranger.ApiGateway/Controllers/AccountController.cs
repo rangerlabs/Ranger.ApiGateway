@@ -36,15 +36,10 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPut("/account/")]
-        public async Task<IActionResult> AccountUpdate(AccountUpdateModel accountUpdateModel)
+        public async Task<ApiResponse> AccountUpdate(AccountUpdateModel accountUpdateModel)
         {
             var apiResponse = await identityClient.UpdateUserOrAccountAsync(TenantId, UserFromClaims.Email, JsonConvert.SerializeObject(accountUpdateModel));
-            if (apiResponse.IsError)
-            {
-                logger.LogDebug("Received {Status} when attempting to update account", apiResponse.StatusCode);
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, apiResponse.StatusCode);
-            }
-            return Ok();
+            return new ApiResponse("Successfully updated account");
         }
 
         ///<summary>
@@ -59,14 +54,11 @@ namespace Ranger.ApiGateway
         {
             if (UserFromClaims.Role.ToLowerInvariant() == Enum.GetName(typeof(RolesEnum), RolesEnum.PrimaryOwner))
             {
-                throw new ApiException("Primary Owners must transfer ownership of the domain before deleting their account.", statusCode: StatusCodes.Status403Forbidden);
+                throw new ApiException(new RangerApiError("Primary Owners must transfer ownership of the domain before deleting their account."), StatusCodes.Status403Forbidden);
             }
 
             var apiResponse = await identityClient.DeleteAccountAsync(TenantId, UserFromClaims.Email, JsonConvert.SerializeObject(accountDeleteModel));
-            if (apiResponse.IsError)
-            {
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, apiResponse.StatusCode);
-            }
+
 
             busPublisher.Send(new SendPusherDomainUserPredefinedNotification("ForceSignoutNotification", TenantId, UserFromClaims.Email), CorrelationContext.Empty);
             return new ApiResponse("Successfully deleted account");
@@ -83,14 +75,13 @@ namespace Ranger.ApiGateway
         {
             if (UserFromClaims.Role != Enum.GetName(typeof(RolesEnum), RolesEnum.PrimaryOwner))
             {
-                throw new ApiException("Only Primary Owners have the ability to transfer their role.", statusCode: StatusCodes.Status400BadRequest);
+                throw new ApiException(new RangerApiError("Only Primary Owners have the ability to transfer their role."), StatusCodes.Status400BadRequest);
             }
 
             return await Task.Run(() =>
-                Send(new TransferPrimaryOwnershipSagaInitializer(UserFromClaims.Email, transferPrimaryOwnerModel.Email, TenantId), "Successfully initiated owner transfer")
+               Send(new TransferPrimaryOwnershipSagaInitializer(UserFromClaims.Email, transferPrimaryOwnerModel.Email, TenantId), "Successfully initiated owner transfer")
             );
         }
-
 
         ///<summary>
         /// Accepts a primary owner transfer
@@ -103,7 +94,7 @@ namespace Ranger.ApiGateway
         {
             if (Guid.Equals(Guid.Empty, acceptPrimaryOwnerModel.CorrelationId))
             {
-                throw new ApiException("The correlationId parameter cannot be an empty GUID.", statusCode: StatusCodes.Status400BadRequest);
+                throw new ApiException(new RangerApiError("The correlationId parameter cannot be an empty GUID."), StatusCodes.Status400BadRequest);
             }
             await Task.Run(() => busPublisher.Send(new AcceptPrimaryOwnershipTransfer(acceptPrimaryOwnerModel.Token), CorrelationContext.FromId(acceptPrimaryOwnerModel.CorrelationId)));
             return new ApiResponse("Successfully accepted primary owner transfer", statusCode: StatusCodes.Status202Accepted);
@@ -120,7 +111,7 @@ namespace Ranger.ApiGateway
         {
             if (Guid.Equals(Guid.Empty, rejectPrimaryOwnerModel.CorrelationId))
             {
-                throw new ApiException("The correlationId parameter cannot be an empty GUID.", statusCode: StatusCodes.Status400BadRequest);
+                throw new ApiException(new RangerApiError("The correlationId parameter cannot be an empty GUID."), StatusCodes.Status400BadRequest);
             }
             await Task.Run(() => busPublisher.Send(new RefusePrimaryOwnershipTransfer(), CorrelationContext.FromId(rejectPrimaryOwnerModel.CorrelationId)));
             return new ApiResponse("Successfully rejected primary owner transfer", statusCode: StatusCodes.Status202Accepted);
@@ -133,14 +124,14 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("/account/cancel-ownership-transfer")]
-        public async Task<IActionResult> CancelPrimaryOwnershipTransfer([FromBody] CancelPrimaryOwnershipModel cancelPrimaryOwnerModel)
+        public async Task<ApiResponse> CancelPrimaryOwnershipTransfer([FromBody] CancelPrimaryOwnershipModel cancelPrimaryOwnerModel)
         {
             if (Guid.Equals(Guid.Empty, cancelPrimaryOwnerModel.CorrelationId))
             {
-                return BadRequest("The correlationId parameter cannot be an empty GUID.");
+                throw new ApiException(new RangerApiError("The correlationId parameter cannot be an empty GUID."), StatusCodes.Status400BadRequest);
             }
             await Task.Run(() => busPublisher.Send(new CancelPrimaryOwnershipTransfer(), CorrelationContext.FromId(cancelPrimaryOwnerModel.CorrelationId)));
-            return Accepted();
+            return new ApiResponse("Successfully cancelled primary owner transfer", statusCode: StatusCodes.Status202Accepted);
         }
     }
 }

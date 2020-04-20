@@ -40,10 +40,6 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> GetAllProjects()
         {
             var apiResponse = await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectResponseModel>>(TenantId, UserFromClaims.Email);
-            if (apiResponse.IsError)
-            {
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, apiResponse.StatusCode);
-            }
             return new ApiResponse("Successfully retrieved all projects", apiResponse.Result);
         }
 
@@ -62,10 +58,6 @@ namespace Ranger.ApiGateway
         {
             var request = new { Name = projectModel.Name, Description = projectModel.Description, Enabled = projectModel.Enabled, Version = projectModel.Version, UserEmail = UserFromClaims.Email };
             var apiResponse = await projectsClient.PutProjectAsync<ProjectResponseModel>(TenantId, projectId, JsonConvert.SerializeObject(request));
-            if (apiResponse.IsError)
-            {
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, apiResponse.StatusCode);
-            }
             return new ApiResponse("Successfully updated project", apiResponse.Result);
         }
 
@@ -80,10 +72,6 @@ namespace Ranger.ApiGateway
         {
             var request = new { Name = projectModel.Name, Description = projectModel.Description, Enabled = projectModel.Enabled, UserEmail = UserFromClaims.Email };
             var apiResponse = await projectsClient.PostProjectAsync<ProjectResponseModel>(TenantId, JsonConvert.SerializeObject(request));
-            if (apiResponse.IsError)
-            {
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, apiResponse.StatusCode);
-            }
             return new ApiResponse("Successfully created project", apiResponse.Result);
         }
 
@@ -99,10 +87,6 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> SoftDeleteProject(Guid projectId)
         {
             var apiResponse = await projectsClient.SoftDeleteProjectAsync(TenantId, projectId, UserFromClaims.Email);
-            if (apiResponse.IsError)
-            {
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, apiResponse.StatusCode);
-            }
             return new ApiResponse("Successfully deleted project", apiResponse.Result);
         }
 
@@ -121,10 +105,6 @@ namespace Ranger.ApiGateway
         {
             var request = new { Version = apiKeyResetModel.Version, UserEmail = UserFromClaims.Email };
             var apiResponse = await projectsClient.ApiKeyResetAsync<ProjectResponseModel>(TenantId, projectId, environment, JsonConvert.SerializeObject(request));
-            if (apiResponse.IsError)
-            {
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, apiResponse.StatusCode);
-            }
             return new ApiResponse("Successfully reset environment API key", apiResponse.Result);
         }
     }

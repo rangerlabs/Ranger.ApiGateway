@@ -12,8 +12,8 @@ using Ranger.RabbitMQ;
 
 namespace Ranger.ApiGateway
 {
-    [ApiVersion("1.0")]
     [ApiController]
+    [ApiVersion("1.0")]
     public class TenantsController : BaseController<TenantsController>
     {
         private readonly TenantsHttpClient tenantsClient;
@@ -62,15 +62,7 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> TenantExists(string domain)
         {
             var apiResponse = await tenantsClient.DoesExistAsync(domain);
-            if (apiResponse.IsError)
-            {
-                if (apiResponse.StatusCode == StatusCodes.Status404NotFound)
-                {
-                    return new ApiResponse("Successfully determined tenant existence", false);
-                }
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, apiResponse.StatusCode);
-            }
-            return new ApiResponse("Successfully determined tenant existence", true);
+            return new ApiResponse("Successfully determined tenant existence", apiResponse.Result);
         }
 
         ///<summary>
@@ -84,10 +76,6 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> TenantConfirmed(string domain)
         {
             var apiResponse = await tenantsClient.IsConfirmedAsync(domain);
-            if (apiResponse.IsError)
-            {
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, apiResponse.StatusCode);
-            }
             return new ApiResponse("Successfully determined tenant confirmation status", apiResponse.Result);
         }
 
@@ -103,10 +91,6 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> GetPrimaryOwnerTransfer(string domain)
         {
             var apiResponse = await tenantsClient.GetPrimaryOwnerTransferByDomain<PrimaryOwnerTransferModel>(domain);
-            if (apiResponse.IsError)
-            {
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, apiResponse.StatusCode);
-            }
             return new ApiResponse("Successfully retrieved primary owner transfer", apiResponse.Result);
         }
 
@@ -123,10 +107,6 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> ConfirmTenant(string domain, TenantConfirmModel confirmModel)
         {
             var apiResponse = await tenantsClient.ConfirmTenantAsync(domain, JsonConvert.SerializeObject(confirmModel));
-            if (apiResponse.IsError)
-            {
-                throw new ApiException(apiResponse.ResponseException.ExceptionMessage.Error.Message, apiResponse.StatusCode);
-            }
             return new ApiResponse(apiResponse.Message, apiResponse.Result);
         }
     }
