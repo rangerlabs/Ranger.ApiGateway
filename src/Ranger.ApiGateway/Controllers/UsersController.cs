@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Authorization;
@@ -131,8 +132,8 @@ namespace Ranger.ApiGateway
         [Authorize(Policy = "TenantIdResolved")]
         public async Task<ApiResponse> GetAuthorizedProjectsForUser(string email)
         {
-            var apiResponse = await projectsClient.GetProjectIdsForUser(TenantId, email);
-            return new ApiResponse("Successfully retrieved authorized projects", apiResponse.Result);
+            var apiResponse = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(TenantId, UserFromClaims.Email));
+            return new ApiResponse("Successfully retrieved authorized projects", apiResponse.Result.Select(_ => _.ProjectId));
         }
 
         ///<summary>

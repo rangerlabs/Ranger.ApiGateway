@@ -35,7 +35,7 @@ namespace Ranger.ApiGateway
         ///<param name="projectName">The friendly name of the project</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("/{projectName}/geofences")]
-        [Authorize("BelongsToProject")]
+        [Authorize(Policy = "BelongsToProject")]
         public async Task<ApiResponse> GetAllGeofences(string projectName)
         {
             var authorizedProject = HttpContext.Items["AuthorizedProject"] as ProjectModel;
@@ -51,7 +51,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("/{projectName}/geofences")]
-        [Authorize("BelongsToProject")]
+        [Authorize(Policy = "BelongsToProject")]
         public async Task<ApiResponse> Post(string projectName, GeofenceRequestModel geofenceModel)
         {
             var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
@@ -86,33 +86,33 @@ namespace Ranger.ApiGateway
             {
                 if (geofenceModel.Radius < 50)
                 {
-                    throw new ApiException(new RangerApiError("Circular geofence radius must be greater than or equal to 50 meters"), StatusCodes.Status400BadRequest);
+                    throw new ApiException("Circular geofence radius must be greater than or equal to 50 meters", StatusCodes.Status400BadRequest);
                 }
                 if (geofenceModel.Radius > 10000)
                 {
-                    throw new ApiException(new RangerApiError("Circular geofence radius must be less than 10000 meters"), StatusCodes.Status400BadRequest);
+                    throw new ApiException("Circular geofence radius must be less than 10000 meters", StatusCodes.Status400BadRequest);
                 }
                 if (geofenceModel.Coordinates.Count() == 0 || geofenceModel.Coordinates.Count() > 1)
                 {
-                    throw new ApiException(new RangerApiError("Circular geofence must have exactly one coordinate in their Coordinate array"), StatusCodes.Status400BadRequest);
+                    throw new ApiException("Circular geofence must have exactly one coordinate in their Coordinate array", StatusCodes.Status400BadRequest);
                 }
             }
             else
             {
                 if (geofenceModel.Coordinates.First().Equals(geofenceModel.Coordinates.Last()))
                 {
-                    throw new ApiException(new RangerApiError("The first and last coordinates in a polygon are implicitely connected. Remove the explicit closing edge."), StatusCodes.Status400BadRequest);
+                    throw new ApiException("The first and last coordinates in a polygon are implicitely connected. Remove the explicit closing edge.", StatusCodes.Status400BadRequest);
                 }
                 geofenceModel.Radius = 0;
                 if (geofenceModel.Coordinates.Count() < 3)
                 {
-                    throw new ApiException(new RangerApiError("Polygon geofence must have three or more coordinate in their Coordinate array."), StatusCodes.Status400BadRequest);
+                    throw new ApiException("Polygon geofence must have three or more coordinate in their Coordinate array.", StatusCodes.Status400BadRequest);
                 }
             }
 
             if (geofenceModel.ExpirationDate < geofenceModel.LaunchDate)
             {
-                throw new ApiException(new RangerApiError("The geofence expiration date was before the launch date."), StatusCodes.Status400BadRequest);
+                throw new ApiException("The geofence expiration date was before the launch date.", StatusCodes.Status400BadRequest);
             }
         }
 
@@ -125,7 +125,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPut("/{projectName}/geofences/{geofenceId}")]
-        [Authorize("BelongsToProject")]
+        [Authorize(Policy = "BelongsToProject")]
         public async Task<ApiResponse> UpdateGeofence(string projectName, Guid geofenceId, GeofenceRequestModel geofenceModel)
         {
             var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
@@ -164,7 +164,7 @@ namespace Ranger.ApiGateway
         ///<param name="externalId">The friendly name of the geofence to delete</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpDelete("/{projectName}/geofences/{externalId}")]
-        [Authorize("BelongsToProject")]
+        [Authorize(Policy = "BelongsToProject")]
         public async Task<ApiResponse> DeleteGeofence(string projectName, string externalId)
         {
             var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;

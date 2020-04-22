@@ -15,7 +15,6 @@ namespace Ranger.ApiGateway
 {
     [ApiVersion("1.0")]
     [ApiController]
-    [Authorize(Policy = "TenantIdResolved")]
     public class IntegrationsController : BaseController<IntegrationsController>
     {
         private readonly IntegrationsHttpClient integrationsClient;
@@ -35,8 +34,9 @@ namespace Ranger.ApiGateway
         ///<param name="projectName">The friendly name of the project</param>
         ///<param name="integrationName">The friendly name of the integration to delete</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
-        [HttpDelete("{projectName}/integrations/{integrationName}")]
+        [HttpDelete("/{projectName}/integrations/{integrationName}")]
         [Authorize(Roles = "Admin")]
+        [Authorize(Policy = "TenantIdResolved")]
         public async Task<ApiResponse> DeleteIntegrationForProject(string projectName, string integrationName)
         {
             var project = HttpContext.Items["AutorizedProject"] as ProjectModel;
@@ -46,10 +46,10 @@ namespace Ranger.ApiGateway
         /// Deletes an existing integration within a project
         ///</summary>
         ///<param name="projectName">The friendly name of the project</param>
-        [HttpGet("{projectName}/integrations")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpGet("/{projectName}/integrations")]
         [Authorize(Roles = "User")]
-        [Authorize("BelongsToProject")]
+        [Authorize(Policy = "BelongsToProject")]
         public async Task<ApiResponse> GetAllIntegrationsForProject(string projectName)
         {
             var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;

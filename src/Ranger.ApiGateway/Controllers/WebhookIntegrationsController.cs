@@ -16,9 +16,8 @@ namespace Ranger.ApiGateway
 
     [ApiVersion("1.0")]
     [ApiController]
-    [Authorize(Roles = "User")]
-    [Authorize(Policy = "TenantIdResolved")]
-    [Route("")]
+    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "BelongsToProject")]
     public class WebhookIntegrationController : BaseController<WebhookIntegrationController>
     {
         private readonly IBusPublisher busPublisher;
@@ -38,8 +37,7 @@ namespace Ranger.ApiGateway
         ///<param name="projectName">The friendly name of the project</param>
         ///<param name="webhookIntegrationModel">The model necessary to create a new webhook integration</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
-        [HttpPost("{projectName}/integrations/webhook")]
-        [Authorize("BelongsToProject")]
+        [HttpPost("/{projectName}/integrations/webhook")]
         public async Task<ApiResponse> Post(string projectName, WebhookIntegrationPostModel webhookIntegrationModel)
         {
             var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
@@ -61,8 +59,7 @@ namespace Ranger.ApiGateway
         ///<param name="id">The integration id to update</param>
         ///<param name="webhookIntegrationModel">The model necessary to create a new webhook integration</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
-        [HttpPut("{projectName}/integrations/webhook/{id}")]
-        [Authorize("BelongsToProject")]
+        [HttpPut("/{projectName}/integrations/webhook/{id}")]
         public async Task<ApiResponse> UpdateIntegration(string projectName, Guid id, WebhookIntegrationPutModel webhookIntegrationModel)
         {
             var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;

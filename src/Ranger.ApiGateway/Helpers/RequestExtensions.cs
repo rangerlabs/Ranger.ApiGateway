@@ -14,8 +14,7 @@ namespace Ranger.ApiGateway
             user.Claims.SingleOrDefault(c => c.Type == "firstName")?.Value,
             user.Claims.SingleOrDefault(c => c.Type == "lastName")?.Value,
             user.Claims.SingleOrDefault(c => c.Type == "phoneNumber")?.Value,
-            SystemRole(user.Claims.Where(c => c.Type == "role").Select(c => c.Value)),
-            user.Claims.Where(c => c.Type == "authorizedProjects").Select(c => c.Value) ?? new string[0]
+            SystemRole(user.Claims.Where(c => c.Type == "role").Select(c => c.Value))
         );
 
         private static string SystemRole(IEnumerable<string> roles)
