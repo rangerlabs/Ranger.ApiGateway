@@ -53,8 +53,8 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> GetAllIntegrationsForProject(string projectName)
         {
             var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
-            var integrations = await integrationsClient.GetAllIntegrationsByProjectId<IEnumerable<dynamic>>(TenantId, project.ProjectId);
-            return new ApiResponse("Succesfully retrived integrations", integrations);
+            var integrationsApiResponse = await integrationsClient.GetAllIntegrationsByProjectId<IEnumerable<dynamic>>(TenantId, project.ProjectId);
+            return new ApiResponse("Succesfully retrived integrations", integrationsApiResponse.Result);
         }
     }
 }

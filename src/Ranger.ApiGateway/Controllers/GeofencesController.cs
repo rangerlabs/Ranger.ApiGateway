@@ -170,7 +170,7 @@ namespace Ranger.ApiGateway
             var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
             var deleteGeofenceSagaInitializer = new DeleteGeofenceSagaInitializer(
                  User is null ? false : true,
-                 User?.UserFromClaims().Email ?? "", //TODO: INSERT POSSIBLE TOKEN HERE
+                 UserFromClaims.Email ?? "", //TODO: INSERT POSSIBLE TOKEN HERE
                  TenantId,
                  externalId,
                  project.ProjectId

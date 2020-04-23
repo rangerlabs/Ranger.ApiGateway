@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoWrapper.Filters;
 using AutoWrapper.Wrappers;
 using IdentityServer4;
 using Microsoft.AspNetCore.Authorization;
@@ -15,9 +16,9 @@ using Ranger.RabbitMQ;
 namespace Ranger.ApiGateway
 {
     [ApiController]
-    [Authorize]
     [ApiVersion("1.0")]
     [Authorize(Policy = "TenantIdResolved")]
+    [AutoWrapIgnore]
     public class PusherController : BaseController<PusherController>
     {
         private readonly IdentityHttpClient identityClient;
