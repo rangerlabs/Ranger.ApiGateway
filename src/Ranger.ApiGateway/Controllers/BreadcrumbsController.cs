@@ -31,7 +31,7 @@ namespace Ranger.ApiGateway.Controllers
         [HttpPost("/breadcrumbs")]
         public async Task<ApiResponse> PostBreadcrumb([FromBody] BreadcrumbModel breadcrumbModel)
         {
-            logger.LogDebug("Breadcrumb received.");
+            logger.LogDebug("Breadcrumb received");
             var environment = Enum.Parse<EnvironmentEnum>(HttpContext.Items["ApiKeyEnvironment"] as string);
             var tenantId = HttpContext.Items["TenantId"] as string;
             var projectId = Guid.Parse(HttpContext.Items["ProjectId"] as string);

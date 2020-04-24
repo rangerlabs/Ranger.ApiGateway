@@ -9,7 +9,7 @@ namespace Ranger.ApiGateway
         {
             if (string.IsNullOrWhiteSpace(token))
             {
-                throw new System.ArgumentException($"{nameof(token)} was null or whitespace.");
+                throw new System.ArgumentException($"{nameof(token)} was null or whitespace");
             }
 
             this.Token = token;

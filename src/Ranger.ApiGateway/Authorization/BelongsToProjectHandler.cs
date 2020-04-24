@@ -47,7 +47,7 @@ namespace Ranger.ApiGateway.Authorization
                             var apiResponse = await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(tenantApiResponse.Result.TenantId, user.Email).ConfigureAwait(false);
                             if (apiResponse.IsError)
                             {
-                                logger.LogError($"Failed to retrieve authorized projects to validate user's project authorization. Domain: '{user.Domain}', Email: '{user.Email}'.");
+                                logger.LogError($"Failed to retrieve authorized projects to validate user's project authorization. Domain: '{user.Domain}', Email: '{user.Email}'");
                             }
                             else
                             {

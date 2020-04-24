@@ -38,7 +38,7 @@ namespace Ranger.ApiGateway
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "An exception occurred publishing a command. Ensure the service is connected to a running RabbitMQ instance.");
+                Logger.LogError(ex, "An exception occurred publishing a command. Ensure the service is connected to a running RabbitMQ instance");
                 throw new ApiException("An error occurred publishing the command", statusCode: StatusCodes.Status500InternalServerError);
             }
         }

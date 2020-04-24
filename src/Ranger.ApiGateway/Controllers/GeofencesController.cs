@@ -101,18 +101,18 @@ namespace Ranger.ApiGateway
             {
                 if (geofenceModel.Coordinates.First().Equals(geofenceModel.Coordinates.Last()))
                 {
-                    throw new ApiException("The first and last coordinates in a polygon are implicitely connected. Remove the explicit closing edge.", StatusCodes.Status400BadRequest);
+                    throw new ApiException("The first and last coordinates in a polygon are implicitely connected. Remove the explicit closing edge", StatusCodes.Status400BadRequest);
                 }
                 geofenceModel.Radius = 0;
                 if (geofenceModel.Coordinates.Count() < 3)
                 {
-                    throw new ApiException("Polygon geofence must have three or more coordinate in their Coordinate array.", StatusCodes.Status400BadRequest);
+                    throw new ApiException("Polygon geofence must have three or more coordinate in their Coordinate array", StatusCodes.Status400BadRequest);
                 }
             }
 
             if (geofenceModel.ExpirationDate < geofenceModel.LaunchDate)
             {
-                throw new ApiException("The geofence expiration date was before the launch date.", StatusCodes.Status400BadRequest);
+                throw new ApiException("The geofence expiration date was before the launch date", StatusCodes.Status400BadRequest);
             }
         }
 

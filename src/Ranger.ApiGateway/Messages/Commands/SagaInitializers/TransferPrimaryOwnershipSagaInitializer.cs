@@ -11,17 +11,17 @@ namespace Ranger.ApiGateway
         {
             if (string.IsNullOrWhiteSpace(commandingUserEmail))
             {
-                throw new System.ArgumentException($"{nameof(commandingUserEmail)} was null or whitespace.");
+                throw new System.ArgumentException($"{nameof(commandingUserEmail)} was null or whitespace");
             }
 
             if (string.IsNullOrWhiteSpace(transferUserEmail))
             {
-                throw new System.ArgumentException($"{nameof(transferUserEmail)} was null or whitespace.");
+                throw new System.ArgumentException($"{nameof(transferUserEmail)} was null or whitespace");
             }
 
             if (string.IsNullOrWhiteSpace(tenantid))
             {
-                throw new System.ArgumentException($"{nameof(tenantid)} was null or whitespace.");
+                throw new System.ArgumentException($"{nameof(tenantid)} was null or whitespace");
             }
 
             CommandingUserEmail = commandingUserEmail;

@@ -10,15 +10,15 @@ namespace Ranger.ApiGateway
         {
             if (string.IsNullOrWhiteSpace(commandingUserEmailOrTokenPrefix))
             {
-                throw new System.ArgumentException($"{nameof(commandingUserEmailOrTokenPrefix)} was null or whitespace.");
+                throw new System.ArgumentException($"{nameof(commandingUserEmailOrTokenPrefix)} was null or whitespace");
             }
             if (string.IsNullOrWhiteSpace(tenantid))
             {
-                throw new System.ArgumentException($"{nameof(tenantid)} was null or whitespace.");
+                throw new System.ArgumentException($"{nameof(tenantid)} was null or whitespace");
             }
             if (string.IsNullOrWhiteSpace(externalId))
             {
-                throw new System.ArgumentException($"{nameof(externalId)} was null or whitespace.");
+                throw new System.ArgumentException($"{nameof(externalId)} was null or whitespace");
             }
 
 
