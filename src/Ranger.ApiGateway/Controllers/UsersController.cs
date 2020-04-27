@@ -132,7 +132,7 @@ namespace Ranger.ApiGateway
         [Authorize(Policy = "TenantIdResolved")]
         public async Task<ApiResponse> GetAuthorizedProjectsForUser(string email)
         {
-            var apiResponse = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(TenantId, UserFromClaims.Email));
+            var apiResponse = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(TenantId, email));
             return new ApiResponse("Successfully retrieved authorized projects", apiResponse.Result.Select(_ => _.ProjectId));
         }
 
@@ -177,7 +177,7 @@ namespace Ranger.ApiGateway
                 LastName = apiResponse.Result.LastName,
                 Role = apiResponse.Result.Role,
             };
-            return new ApiResponse("Successfully retrieved user");
+            return new ApiResponse("Successfully retrieved user", userResponseModel);
         }
 
         ///<summary>

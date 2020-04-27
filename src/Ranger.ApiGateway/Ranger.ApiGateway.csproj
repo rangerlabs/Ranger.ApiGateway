@@ -4,6 +4,7 @@
     <AssemblyName>Ranger.ApiGateway</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>Ranger.ApiGateway</PackageId>
+    <LangVersion>Latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

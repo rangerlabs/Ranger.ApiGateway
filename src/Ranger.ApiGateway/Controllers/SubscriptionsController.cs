@@ -1,7 +1,5 @@
 using System.Threading.Tasks;
 using AutoWrapper.Wrappers;
-using ChargeBee.Api;
-using ChargeBee.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -31,9 +29,13 @@ namespace Ranger.ApiGateway.Controllers
         ///<param name="planId">The plan id to retrieve the hosted page for</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpGet("/subscriptions/{planId}/checkout-existing-hosted-page-url")]
-        public async Task<ApiResponse> GetHostedCheckoutPageUrl(string planId)
+        [HttpGet("/subscriptions/checkout-existing-hosted-page-url")]
+        public async Task<ApiResponse> GetHostedCheckoutPageUrl([FromQuery]string planId)
         {
+            if (string.IsNullOrWhiteSpace(planId))
+            {
+                throw new ApiException("The 'planId' query parameter is required", StatusCodes.Status400BadRequest);
+            }
 
             var apiResponse = await subscriptionsClient.GenerateCheckoutExistingUrl(TenantId, planId);
             return new ApiResponse("Successfully retrieved hosted checkout page url", apiResponse.Result);

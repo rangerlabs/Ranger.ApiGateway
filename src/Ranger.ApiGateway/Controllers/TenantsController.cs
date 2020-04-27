@@ -84,7 +84,7 @@ namespace Ranger.ApiGateway
         ///</summary>
         ///<param name="domain">The domain to check whether it has been confirmed</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [HttpGet("/tenants/{domain}/primary-owner-transfer")]
         [Authorize(Roles = "PrimaryOwner")]
         [Authorize(Policy = "TenantIdResolved")]
