@@ -37,7 +37,7 @@ namespace Ranger.ApiGateway.Controllers
                 throw new ApiException("The 'planId' query parameter is required", StatusCodes.Status400BadRequest);
             }
 
-            var apiResponse = await subscriptionsClient.GenerateCheckoutExistingUrl(TenantId, planId);
+            var apiResponse = await subscriptionsClient.GenerateCheckoutExistingUrl<RangerChargeBeeHostedPage>(TenantId, planId);
             return new ApiResponse("Successfully retrieved hosted checkout page url", apiResponse.Result);
         }
 
