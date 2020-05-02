@@ -36,10 +36,10 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpDelete("/{projectName}/integrations/{integrationName}")]
         [Authorize(Roles = "Admin")]
-        [Authorize(Policy = "TenantIdResolved")]
+        [Authorize(Policy = "BelongsToProject")]
         public async Task<ApiResponse> DeleteIntegrationForProject(string projectName, string integrationName)
         {
-            var project = HttpContext.Items["AutorizedProject"] as ProjectModel;
+            var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
             return await Task.Run(() => base.Send(new DeleteIntegrationSagaInitializer(UserFromClaims.Email, TenantId, integrationName, project.ProjectId)));
         }
         ///<summary>
