@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Authorization;
@@ -13,11 +14,11 @@ namespace Ranger.ApiGateway.Controllers
     [ApiController]
     [Authorize(Roles = "Owner")]
     [Authorize(Policy = "TenantIdResolved")]
-    public class SubscriptionsController : BaseController<SubscriptionsController>
+    public class SubscriptionController : BaseController<SubscriptionController>
     {
         private readonly SubscriptionsHttpClient subscriptionsClient;
-        private readonly ILogger<SubscriptionsController> logger;
-        public SubscriptionsController(IBusPublisher busPublisher, SubscriptionsHttpClient subscriptionsClient, ILogger<SubscriptionsController> logger) : base(busPublisher, logger)
+        private readonly ILogger<SubscriptionController> logger;
+        public SubscriptionController(IBusPublisher busPublisher, SubscriptionsHttpClient subscriptionsClient, ILogger<SubscriptionController> logger) : base(busPublisher, logger)
         {
             this.logger = logger;
             this.subscriptionsClient = subscriptionsClient;
@@ -30,7 +31,7 @@ namespace Ranger.ApiGateway.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("/subscriptions/checkout-existing-hosted-page-url")]
-        public async Task<ApiResponse> GetHostedCheckoutPageUrl([FromQuery]string planId)
+        public async Task<ApiResponse> GetHostedCheckoutPageUrl([FromQuery] string planId)
         {
             if (string.IsNullOrWhiteSpace(planId))
             {
@@ -58,12 +59,20 @@ namespace Ranger.ApiGateway.Controllers
         ///</summary>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpGet("/subscriptions/limit-details")]
+        [HttpGet("/subscriptions")]
         [Authorize(Roles = "User")]
-        public async Task<ApiResponse> GetLimitDetails()
+        public async Task<ApiResponse> GetSubscription()
         {
-            var apiResponse = await subscriptionsClient.GetLimitDetails<SubscriptionLimitDetails>(TenantId);
-            return new ApiResponse("Successfully retrieved tenant limit details", apiResponse.Result);
+            var apiResponse = await subscriptionsClient.GetSubscription<SubscriptionLimitDetails>(TenantId);
+            var result = new
+            {
+                PlanId = apiResponse.Result.PlanId,
+                Utilized = apiResponse.Result.Utilized,
+                Limit = apiResponse.Result.Limit,
+                Active = apiResponse.Result.Active,
+                DaysUntilCancellation = apiResponse.Result.ScheduledCancellationDate.HasValue ? (int?)apiResponse.Result.ScheduledCancellationDate.Value.Subtract(DateTime.Now).Days : null
+            };
+            return new ApiResponse("Successfully retrieved tenant subscription ", result);
         }
     }
 }

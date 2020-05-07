@@ -1,3 +1,5 @@
+using System;
+
 namespace Ranger.ApiGateway
 {
     public class SubscriptionLimitDetails
@@ -5,6 +7,8 @@ namespace Ranger.ApiGateway
         public string PlanId { get; set; }
         public LimitFields Utilized { get; set; }
         public LimitFields Limit { get; set; }
+        public bool Active { get; set; }
+        public DateTime? ScheduledCancellationDate { get; set; }
     }
     public class LimitFields
     {
