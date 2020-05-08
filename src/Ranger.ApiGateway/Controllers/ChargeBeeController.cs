@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using AutoWrapper.Wrappers;
 using ChargeBee.Models;
@@ -6,6 +7,8 @@ using ChargeBee.Models.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
 
@@ -32,28 +35,37 @@ namespace Ranger.ApiGateway.Controllers
         public async Task<ApiResponse> Webhook()
         {
             logger.LogInformation("Received ChargeBee Webhook");
-            Event chargeBeeEvent = null;
-            string subscriptionId = "";
+
+            DateTime occurredAt;
+            string subscriptionId;
+            string planId;
+            string eventType;
+
             try
             {
-                chargeBeeEvent = new Event(Request.Body);
-                subscriptionId = chargeBeeEvent.Content.Subscription.Id;
+                using var streamReader = new StreamReader(Request.Body);
+                var content = JToken.Parse(await streamReader.ReadToEndAsync());
+                occurredAt = DateTimeOffset.FromUnixTimeSeconds((long)content.SelectToken("occurred_at", true)).UtcDateTime;
+                subscriptionId = (string)content.SelectToken("content.subscription.id", true);
+                planId = (string)content.SelectToken("content.subscription.plan_id", true);
+                eventType = (string)content.SelectToken("event_type", true);
             }
             catch (Exception)
             {
-                return new ApiResponse("The event did not contain subscription content", statusCode: StatusCodes.Status200OK);
+                return new ApiResponse("The event did not contain the necessary content for a subscription", statusCode: StatusCodes.Status200OK);
             }
+
             var apiResponse = await subscriptionsHttpClient.GetTenantIdForSubscriptionId(subscriptionId);
 
-            return chargeBeeEvent.EventType switch
+            return eventType switch
             {
-                EventTypeEnum.SubscriptionChanged => base.Send(new UpdateSubscriptionSagaInitializer(apiResponse.Result, subscriptionId, chargeBeeEvent.Content.Subscription.PlanId, EventTypeEnum.SubscriptionChanged)),
-                EventTypeEnum.SubscriptionPaused => base.Send(new UpdateSubscriptionSagaInitializer(apiResponse.Result, subscriptionId, chargeBeeEvent.Content.Subscription.PlanId, EventTypeEnum.SubscriptionPaused, false)),
-                EventTypeEnum.SubscriptionResumed => base.Send(new UpdateSubscriptionSagaInitializer(apiResponse.Result, subscriptionId, chargeBeeEvent.Content.Subscription.PlanId, EventTypeEnum.SubscriptionResumed)),
-                EventTypeEnum.SubscriptionCancelled => base.Send(new UpdateSubscriptionSagaInitializer(apiResponse.Result, subscriptionId, chargeBeeEvent.Content.Subscription.PlanId, EventTypeEnum.SubscriptionCancelled, false)),
-                EventTypeEnum.SubscriptionReactivated => base.Send(new UpdateSubscriptionSagaInitializer(apiResponse.Result, subscriptionId, chargeBeeEvent.Content.Subscription.PlanId, EventTypeEnum.SubscriptionReactivated)),
-                EventTypeEnum.SubscriptionCancellationReminder => base.Send(new UpdateSubscriptionSagaInitializer(apiResponse.Result, subscriptionId, chargeBeeEvent.Content.Subscription.PlanId, EventTypeEnum.SubscriptionCancellationReminder, scheduledCancellationDate: DateTime.Now.AddDays(6))), //per chargebee api docs
-                EventTypeEnum.SubscriptionScheduledCancellationRemoved => base.Send(new UpdateSubscriptionSagaInitializer(apiResponse.Result, subscriptionId, chargeBeeEvent.Content.Subscription.PlanId, EventTypeEnum.SubscriptionScheduledCancellationRemoved)),
+                "subscription_changed" => base.Send(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt)),
+                "subscription_paused" => base.Send(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt, false)),
+                "subscription_resumed" => base.Send(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt)),
+                "subscription_cancelled" => base.Send(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt, false)),
+                "subscription_reactivated" => base.Send(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt)),
+                "subscription_cancellation_reminder" => base.Send(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt, scheduledCancellationDate: DateTime.Now.AddDays(6))), //per chargebee api docs
+                "subscription_scheduled_cancellation_removed" => base.Send(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt)),
                 _ => new ApiResponse("The webhook event was not a subscription event", statusCode: StatusCodes.Status200OK)
             };
         }

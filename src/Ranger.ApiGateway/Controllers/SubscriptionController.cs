@@ -43,6 +43,18 @@ namespace Ranger.ApiGateway.Controllers
         }
 
         ///<summary>
+        /// Get hosted portal session
+        ///</summary>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpGet("/subscriptions/portal-session")]
+        public async Task<ApiResponse> GetPortalSession()
+        {
+            var apiResponse = await subscriptionsClient.GetPortalSession<RangerChargeBeePortalSession>(TenantId);
+            return new ApiResponse("Successfully retrieved portal session", apiResponse.Result);
+        }
+
+        ///<summary>
         /// Get tenant's plan id
         ///</summary>
         [ProducesResponseType(StatusCodes.Status200OK)]
