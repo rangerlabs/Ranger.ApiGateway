@@ -12,7 +12,6 @@ namespace Ranger.ApiGateway.Controllers
 {
     [ApiVersion("1.0")]
     [ApiController]
-    [Authorize(Roles = "Owner")]
     [Authorize(Policy = "TenantIdResolved")]
     public class SubscriptionController : BaseController<SubscriptionController>
     {
@@ -30,6 +29,7 @@ namespace Ranger.ApiGateway.Controllers
         ///<param name="planId">The plan id to retrieve the hosted page for</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Roles = "Owner")]
         [HttpGet("/subscriptions/checkout-existing-hosted-page-url")]
         public async Task<ApiResponse> GetHostedCheckoutPageUrl([FromQuery] string planId)
         {
@@ -47,6 +47,7 @@ namespace Ranger.ApiGateway.Controllers
         ///</summary>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Roles = "Owner")]
         [HttpGet("/subscriptions/portal-session")]
         public async Task<ApiResponse> GetPortalSession()
         {
@@ -59,6 +60,7 @@ namespace Ranger.ApiGateway.Controllers
         ///</summary>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize(Roles = "Owner")]
         [HttpGet("/subscriptions/plan-id")]
         public async Task<ApiResponse> GetPlanId()
         {

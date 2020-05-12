@@ -14,7 +14,6 @@ namespace Ranger.ApiGateway
 {
     [ApiVersion("1.0")]
     [ApiController]
-    [Authorize(Policy = "TenantIdResolved")]
     public class AccountController : BaseController<AccountController>
     {
         private readonly IdentityHttpClient identityClient;
@@ -36,6 +35,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPut("/account/")]
+        [Authorize(Policy = "TenantIdResolved")]
         public async Task<ApiResponse> AccountUpdate(AccountUpdateModel accountUpdateModel)
         {
             var apiResponse = await identityClient.UpdateUserOrAccountAsync(TenantId, UserFromClaims.Email, JsonConvert.SerializeObject(accountUpdateModel));
@@ -50,6 +50,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpDelete("/account/")]
+        [Authorize(Policy = "TenantIdResolved")]
         public async Task<ApiResponse> DeleteAccount(AccountDeleteModel accountDeleteModel)
         {
             if (UserFromClaims.Role.ToLowerInvariant() == Enum.GetName(typeof(RolesEnum), RolesEnum.PrimaryOwner))
@@ -71,6 +72,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("/account/transfer-primary-ownership")]
+        [Authorize(Policy = "TenantIdResolved")]
         public async Task<ApiResponse> TransferPrimaryOwnership([FromBody] TransferPrimaryOwnershipModel transferPrimaryOwnerModel)
         {
             if (UserFromClaims.Role != Enum.GetName(typeof(RolesEnum), RolesEnum.PrimaryOwner))
@@ -90,6 +92,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("/account/accept-primary-ownership")]
+        [AllowAnonymous]
         public async Task<ApiResponse> AcceptPrimaryOwnership([FromBody] PrimaryOwnershipAcceptModel acceptPrimaryOwnerModel)
         {
             if (Guid.Equals(Guid.Empty, acceptPrimaryOwnerModel.CorrelationId))
@@ -107,6 +110,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("/account/refuse-primary-ownership")]
+        [AllowAnonymous]
         public async Task<ApiResponse> RejectPrimaryOwnership([FromBody] PrimaryOwnershipRefuseModel rejectPrimaryOwnerModel)
         {
             if (Guid.Equals(Guid.Empty, rejectPrimaryOwnerModel.CorrelationId))
@@ -124,6 +128,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("/account/cancel-ownership-transfer")]
+        [Authorize(Policy = "TenantIdResolved")]
         public async Task<ApiResponse> CancelPrimaryOwnershipTransfer([FromBody] CancelPrimaryOwnershipModel cancelPrimaryOwnerModel)
         {
             if (Guid.Equals(Guid.Empty, cancelPrimaryOwnerModel.CorrelationId))
