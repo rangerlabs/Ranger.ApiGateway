@@ -20,6 +20,7 @@ using Ranger.ApiGateway.Data;
 using Ranger.ApiUtilities;
 using Ranger.Common;
 using Ranger.InternalHttpClient;
+using Ranger.Monitoring.HealthChecks;
 using Ranger.RabbitMQ;
 
 namespace Ranger.ApiGateway
@@ -105,6 +106,10 @@ namespace Ranger.ApiGateway
                     options.RequireHttpsMetadata = false;
                 });
 
+            services.AddLiveHealthCheck();
+            services.AddEntityFrameworkHealthCheck<ApiGatewayDbContext>();
+            services.AddDockerImageTagHealthCheck();
+            services.AddRabbitMQHealthCheck();
         }
 
         public void ConfigureContainer(ContainerBuilder builder)
@@ -141,6 +146,11 @@ namespace Ranger.ApiGateway
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();
+                endpoints.MapHealthChecks();
+                endpoints.MapLiveTagHealthCheck();
+                endpoints.MapEfCoreTagHealthCheck();
+                endpoints.MapDockerImageTagHealthCheck();
+                endpoints.MapRabbitMQHealthCheck();
             });
         }
     }
