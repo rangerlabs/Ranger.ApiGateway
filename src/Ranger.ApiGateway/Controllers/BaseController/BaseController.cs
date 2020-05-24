@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -16,7 +17,6 @@ namespace Ranger.ApiGateway
         private static readonly string AcceptLanguageHeader = "accept-language";
         private static readonly string OperationHeader = "X-Operation";
         private static readonly string ResourceHeader = "X-Resource";
-        // private static readonly string TenantDomainHeader = "x-ranger-domain";
         private static readonly string DefaultCulture = "en-us";
         // private static readonly string PageLink = "page";
         private readonly IBusPublisher busPublisher;
@@ -28,22 +28,22 @@ namespace Ranger.ApiGateway
             this.Logger = logger;
         }
 
-        protected IActionResult Send<T>(T command, Guid? resourceId = null, string resource = "") where T : ICommand
+        protected ApiResponse Send<T>(T command, string clientMessage = "", Guid? resourceId = null, string resource = "") where T : ICommand
         {
             var context = GetContext<T>(resourceId, resource);
             try
             {
                 busPublisher.Send(command, context);
-                return Accepted(context);
+                return Accepted(context, clientMessage);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "An exception occurred publishing a command. Ensure the service is connect to a running RabbitMQ instance.");
-                return InternalServerError();
+                Logger.LogError(ex, "An exception occurred publishing a command. Ensure the service is connected to a running RabbitMQ instance");
+                throw new ApiException("Failed to publishing command", statusCode: StatusCodes.Status500InternalServerError);
             }
         }
 
-        protected IActionResult Accepted(ICorrelationContext context)
+        protected ApiResponse Accepted(ICorrelationContext context, string clientMessage = "")
         {
             Response.Headers.Add(OperationHeader, $"operations/{context.CorrelationContextId}");
             if (!string.IsNullOrWhiteSpace(context.Resource))
@@ -51,12 +51,7 @@ namespace Ranger.ApiGateway
                 Response.Headers.Add(ResourceHeader, context.Resource);
             }
 
-            return base.Accepted();
-        }
-
-        protected IActionResult InternalServerError(string errors = "")
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, new { errors = errors });
+            return new ApiResponse(clientMessage, statusCode: StatusCodes.Status202Accepted);
         }
 
         private ICorrelationContext GetContext<T>(Guid? resourceId, string resource)
@@ -66,13 +61,10 @@ namespace Ranger.ApiGateway
                 resource = $"{resource}/{resourceId}";
             }
 
-            StringValues domain;
-            bool success = HttpContext.Request.Headers.TryGetValue("x-ranger-domain", out domain);
-
             return CorrelationContext.Create<T>(
                 Guid.NewGuid(),
-                success ? domain.First() : "",
-                UserEmail,
+                UserFromClaims?.Domain ?? "",
+                UserFromClaims?.Email ?? "",
                 resourceId ?? Guid.Empty,
                 Request.Path.ToString(),
                 HttpContext.TraceIdentifier,
@@ -82,28 +74,8 @@ namespace Ranger.ApiGateway
             );
         }
 
-        protected string UserEmail
-        {
-            get
-            {
-                return User.UserFromClaims().Email;
-            }
-        }
-
-        protected string Culture
-        {
-            get
-            {
-                return Request.Headers.ContainsKey(AcceptLanguageHeader) ? Request.Headers[AcceptLanguageHeader].First().ToLowerInvariant() : DefaultCulture;
-            }
-        }
-
-        protected string Domain
-        {
-            get
-            {
-                return Request.Headers["x-ranger-domain"].First();
-            }
-        }
+        protected User UserFromClaims => User.UserFromClaims();
+        protected string Culture => Request.Headers.ContainsKey(AcceptLanguageHeader) ? Request.Headers[AcceptLanguageHeader].First().ToLowerInvariant() : DefaultCulture;
+        protected string TenantId => HttpContext.Items["TenantId"] as string;
     }
 }

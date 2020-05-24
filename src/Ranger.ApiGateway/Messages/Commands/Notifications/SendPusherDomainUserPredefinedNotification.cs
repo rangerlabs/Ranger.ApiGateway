@@ -6,13 +6,13 @@ namespace Ranger.ApiGateway
     public class SendPusherDomainUserPredefinedNotification : ICommand
     {
         public string BackendEventKey { get; }
-        public string Domain { get; }
+        public string TenantId { get; }
         public string UserEmail { get; }
 
-        public SendPusherDomainUserPredefinedNotification(string backendEventKey, string domain, string userEmail)
+        public SendPusherDomainUserPredefinedNotification(string backendEventKey, string tenantId, string userEmail)
         {
             this.BackendEventKey = backendEventKey;
-            this.Domain = domain;
+            this.TenantId = tenantId;
             this.UserEmail = userEmail;
         }
     }

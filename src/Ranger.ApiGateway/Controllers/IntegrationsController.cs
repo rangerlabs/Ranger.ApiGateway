@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Ranger.ApiUtilities;
 using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
@@ -15,70 +15,46 @@ namespace Ranger.ApiGateway
 {
     [ApiVersion("1.0")]
     [ApiController]
-    [Authorize(Roles = "User")]
-    [TenantDomainRequired]
-    [Route("{projectName}/integrations")]
     public class IntegrationsController : BaseController<IntegrationsController>
     {
-        private readonly IIntegrationsClient integrationsClient;
+        private readonly IntegrationsHttpClient integrationsClient;
         private readonly ILogger<IntegrationsController> logger;
-        private readonly IProjectsClient projectsClient;
+        private readonly ProjectsHttpClient projectsClient;
 
-        public IntegrationsController(IBusPublisher busPublisher, IIntegrationsClient integrationsClient, IProjectsClient projectsClient, ILogger<IntegrationsController> logger) : base(busPublisher, logger)
+        public IntegrationsController(IBusPublisher busPublisher, IntegrationsHttpClient integrationsClient, ProjectsHttpClient projectsClient, ILogger<IntegrationsController> logger) : base(busPublisher, logger)
         {
             this.projectsClient = projectsClient;
             this.logger = logger;
             this.integrationsClient = integrationsClient;
         }
 
-        [HttpDelete("{integrationName}")]
+        ///<summary>
+        /// Deletes an existing integration within a project
+        ///</summary>
+        ///<param name="projectName">The friendly name of the project</param>
+        ///<param name="integrationName">The friendly name of the integration to delete</param>
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        [HttpDelete("/{projectName}/integrations/{integrationName}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteIntegrationForProject(string projectName, [FromRoute] string integrationName)
+        [Authorize(Policy = "BelongsToProject")]
+        public async Task<ApiResponse> DeleteIntegrationForProject(string projectName, string integrationName)
         {
-            var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(Domain, User.UserFromClaims().Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
-            if (!(projectId is null) || !projectId.Equals(Guid.Empty))
-            {
-                return await Task.Run(() => base.Send(new DeleteIntegrationSagaInitializer(User.UserFromClaims().Email, Domain, integrationName, projectId.GetValueOrDefault())));
-            }
-            logger.LogWarning("The user was authorized for a project but the project ID was not successfully retrieved.");
-            return NotFound();
+            var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
+            return await Task.Run(() => base.Send(new DeleteIntegrationSagaInitializer(UserFromClaims.Email, TenantId, integrationName, project.ProjectId)));
         }
-
-        [HttpGet]
-        [Authorize("BelongsToProject")]
-        public async Task<IActionResult> GetAllIntegrationsForProject(string projectName)
+        ///<summary>
+        /// Deletes an existing integration within a project
+        ///</summary>
+        ///<param name="projectName">The friendly name of the project</param>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpGet("/{projectName}/integrations")]
+        [Authorize(Roles = "User")]
+        [Authorize(Policy = "BelongsToProject")]
+        public async Task<ApiResponse> GetAllIntegrationsForProject(string projectName)
         {
-            try
-            {
-                var projectId = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(Domain, User.UserFromClaims().Email)).FirstOrDefault(_ => _.Name == projectName)?.ProjectId;
-                if (!(projectId is null) || !projectId.Equals(Guid.Empty))
-                {
-                    var integrations = await integrationsClient.GetAllIntegrationsByProjectId<IEnumerable<dynamic>>(Domain, projectId.GetValueOrDefault());
-                    if (integrations.Count() > 0)
-                    {
-                        return Ok(integrations);
-                    }
-                    else
-                    {
-                        return NoContent();
-                    }
-                }
-                logger.LogWarning("The user was authorized for a project but the project ID was not successfully retrieved.");
-                return NotFound();
-            }
-            catch (HttpClientException<IEnumerable<dynamic>> ex)
-            {
-                if ((int)ex.ApiResponse.StatusCode == StatusCodes.Status404NotFound)
-                {
-                    return NotFound();
-                }
-                throw;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to retrieve integrations.");
-            }
-            return StatusCode(StatusCodes.Status500InternalServerError);
+            var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
+            var integrationsApiResponse = await integrationsClient.GetAllIntegrationsByProjectId<IEnumerable<dynamic>>(TenantId, project.ProjectId);
+            return new ApiResponse("Succesfully retrived integrations", integrationsApiResponse.Result);
         }
     }
 }

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ranger.ApiGateway.Data;
-using Ranger.Logging;
+using Ranger.Monitoring.Logging;
 
 namespace Ranger.ApiGateway
 {

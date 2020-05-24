@@ -11,7 +11,7 @@ namespace Ranger.ApiGateway
     {
         public UpdateGeofenceSagaInitializer(bool frontendRequest,
             string commandingUserEmailOrTokenPrefix,
-            string domain,
+            string tenantid,
             Guid id,
             string externalId,
             Guid projectId,
@@ -24,6 +24,7 @@ namespace Ranger.ApiGateway
             int radius = 0,
             bool enabled = true,
             bool onEnter = true,
+            bool onDwell = true,
             bool onExit = true,
             DateTime? expirationDate = null,
             DateTime? launchDate = null,
@@ -31,24 +32,24 @@ namespace Ranger.ApiGateway
         {
             if (string.IsNullOrWhiteSpace(commandingUserEmailOrTokenPrefix))
             {
-                throw new System.ArgumentException($"{nameof(commandingUserEmailOrTokenPrefix)} was null or whitespace.");
+                throw new System.ArgumentException($"{nameof(commandingUserEmailOrTokenPrefix)} was null or whitespace");
             }
-            if (string.IsNullOrWhiteSpace(domain))
+            if (string.IsNullOrWhiteSpace(tenantid))
             {
-                throw new System.ArgumentException($"{nameof(domain)} was null or whitespace.");
+                throw new System.ArgumentException($"{nameof(tenantid)} was null or whitespace");
             }
             if (string.IsNullOrWhiteSpace(externalId))
             {
-                throw new System.ArgumentException($"{nameof(externalId)} was null or whitespace.");
+                throw new System.ArgumentException($"{nameof(externalId)} was null or whitespace");
             }
 
             if (coordinates is null)
             {
-                throw new System.ArgumentException($"{nameof(coordinates)} was null.");
+                throw new System.ArgumentException($"{nameof(coordinates)} was null");
             }
             if (coordinates.Count() == 0)
             {
-                throw new ArgumentOutOfRangeException($"{nameof(coordinates)} must not be empty.");
+                throw new ArgumentOutOfRangeException($"{nameof(coordinates)} must not be empty");
             }
 
             this.FrontendRequest = frontendRequest;
@@ -58,19 +59,20 @@ namespace Ranger.ApiGateway
             this.Shape = shape;
             this.Radius = radius;
 
-            Domain = domain;
+            TenantId = tenantid;
             this.Id = id;
             this.ExternalId = externalId;
             this.ProjectId = projectId;
-            this.Labels = labels ?? new List<string>();
-            this.IntegrationIds = integrationIds ?? new List<Guid>();
-            this.Metadata = metadata ?? new List<KeyValuePair<string, string>>();
-            this.Description = string.IsNullOrWhiteSpace(description) ? "" : description;
-            this.ExpirationDate = expirationDate ?? DateTime.MaxValue;
-            this.LaunchDate = launchDate ?? DateTime.UtcNow;
+            this.Labels = labels;
+            this.IntegrationIds = integrationIds;
+            this.Metadata = metadata;
+            this.Description = description;
+            this.ExpirationDate = expirationDate;
+            this.LaunchDate = launchDate;
             this.Schedule = schedule;
             this.Enabled = enabled;
             this.OnEnter = onEnter;
+            this.OnDwell = onDwell;
             this.OnExit = onExit;
         }
         public bool FrontendRequest { get; }
@@ -80,6 +82,7 @@ namespace Ranger.ApiGateway
         public Guid ProjectId { get; }
         public IEnumerable<string> Labels { get; }
         public bool OnEnter { get; } = true;
+        public bool OnDwell { get; } = true;
         public bool OnExit { get; } = true;
         public bool Enabled { get; } = true;
         public string Description { get; }
@@ -88,8 +91,8 @@ namespace Ranger.ApiGateway
         public int Radius { get; }
         public IEnumerable<KeyValuePair<string, string>> Metadata { get; }
         public GeofenceShapeEnum Shape { get; }
-        public DateTime ExpirationDate { get; }
-        public DateTime LaunchDate { get; }
+        public DateTime? ExpirationDate { get; }
+        public DateTime? LaunchDate { get; }
         public Schedule Schedule { get; }
     }
 }

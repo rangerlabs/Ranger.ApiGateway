@@ -1,5 +1,5 @@
 using System;
-using Ranger.Common.SharedKernel;
+using Ranger.Common;
 using Ranger.RabbitMQ;
 
 namespace Ranger.ApiGateway.Messages.Commands
@@ -9,7 +9,7 @@ namespace Ranger.ApiGateway.Messages.Commands
     {
         public UpdateIntegrationSagaInitializer(
             string commandingUserEmail,
-            string domain,
+            string tenantid,
             string name,
             Guid projectId,
             string messageJsonContent,
@@ -18,30 +18,30 @@ namespace Ranger.ApiGateway.Messages.Commands
         {
             if (string.IsNullOrWhiteSpace(commandingUserEmail))
             {
-                throw new ArgumentException($"{nameof(commandingUserEmail)} was null or whitespace.");
+                throw new ArgumentException($"{nameof(commandingUserEmail)} was null or whitespace");
             }
 
-            if (string.IsNullOrEmpty(domain))
+            if (string.IsNullOrEmpty(tenantid))
             {
-                throw new ArgumentException($"{nameof(domain)} was null or whitespace.");
+                throw new ArgumentException($"{nameof(tenantid)} was null or whitespace");
             }
 
             if (string.IsNullOrEmpty(name))
             {
-                throw new ArgumentException($"{nameof(name)} was null or whitespace.");
+                throw new ArgumentException($"{nameof(name)} was null or whitespace");
             }
 
             if (string.IsNullOrEmpty(messageJsonContent))
             {
-                throw new ArgumentException($"{nameof(messageJsonContent)} was null or whitespace.");
+                throw new ArgumentException($"{nameof(messageJsonContent)} was null or whitespace");
             }
             if (version <= 0)
             {
-                throw new ArgumentOutOfRangeException("Version must be a positive integer.");
+                throw new ArgumentOutOfRangeException("Version must be a positive integer");
             }
 
             CommandingUserEmail = commandingUserEmail;
-            Domain = domain;
+            TenantId = tenantid;
             Name = name;
             ProjectId = projectId;
             MessageJsonContent = messageJsonContent;
