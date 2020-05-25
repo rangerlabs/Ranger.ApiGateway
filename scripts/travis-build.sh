@@ -7,4 +7,4 @@ case "$TRAVIS_BRANCH" in
     ;;
 esac
 
-docker build -t rangerlabs/ranger.apigateway:$DOCKER_TAG --build-arg MYGET_API_KEY=$MYGET_KEY --DOCKER_IMAGE_TAG=$DOCKER_TAG .
+docker build -t rangerlabs/ranger.apigateway:$DOCKER_TAG --build-arg MYGET_API_KEY=$MYGET_KEY --build-arg DOCKER_IMAGE_TAG=$DOCKER_TAG .
