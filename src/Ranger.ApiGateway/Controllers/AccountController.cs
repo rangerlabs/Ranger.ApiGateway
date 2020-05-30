@@ -128,7 +128,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("/account/cancel-ownership-transfer")]
-        [Authorize(Policy = "TenantIdResolved")]
+        [AllowAnonymous]
         public async Task<ApiResponse> CancelPrimaryOwnershipTransfer([FromBody] CancelPrimaryOwnershipModel cancelPrimaryOwnerModel)
         {
             if (Guid.Equals(Guid.Empty, cancelPrimaryOwnerModel.CorrelationId))
