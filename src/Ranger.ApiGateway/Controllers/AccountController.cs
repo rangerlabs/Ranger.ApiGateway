@@ -34,7 +34,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpPut("/account/")]
+        [HttpPut("/account")]
         [Authorize(Policy = "TenantIdResolved")]
         public async Task<ApiResponse> AccountUpdate(AccountUpdateModel accountUpdateModel)
         {
@@ -49,7 +49,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpDelete("/account/")]
+        [HttpDelete("/account")]
         [Authorize(Policy = "TenantIdResolved")]
         public async Task<ApiResponse> DeleteAccount(AccountDeleteModel accountDeleteModel)
         {
