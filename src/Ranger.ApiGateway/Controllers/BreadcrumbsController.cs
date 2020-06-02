@@ -35,10 +35,12 @@ namespace Ranger.ApiGateway.Controllers
             var environment = Enum.Parse<EnvironmentEnum>(HttpContext.Items["ApiKeyEnvironment"] as string);
             var tenantId = HttpContext.Items["TenantId"] as string;
             var projectId = Guid.Parse(HttpContext.Items["ProjectId"] as string);
+            var projectName = HttpContext.Items["ProjectName"] as string;
             return await Task.Run(() =>
                 base.Send(new ComputeGeofenceIntersections(
                         tenantId,
                         projectId,
+                        projectName,
                         environment,
                         new Breadcrumb(
                             breadcrumbModel.DeviceId,

@@ -12,7 +12,7 @@ namespace Ranger.ApiGateway
         public EnvironmentEnum Environment { get; }
         public Breadcrumb Breadcrumb { get; }
 
-        public ComputeGeofenceIntersections(string tenantId, Guid projectId, EnvironmentEnum environment, Breadcrumb breadcrumb)
+        public ComputeGeofenceIntersections(string tenantId, Guid projectId, string projectName, EnvironmentEnum environment, Breadcrumb breadcrumb)
         {
             if (string.IsNullOrWhiteSpace(tenantId))
             {
@@ -22,9 +22,14 @@ namespace Ranger.ApiGateway
             {
                 throw new ArgumentException($"{nameof(projectId)} was an empty Guid");
             }
+            if (string.IsNullOrWhiteSpace(projectName))
+            {
+                throw new ArgumentException($"{nameof(projectName)} was null or whitespace");
+            }
 
             this.TenantId = tenantId;
             this.ProjectId = projectId;
+            this.ProjectName = projectName;
             this.Environment = environment;
             this.Breadcrumb = breadcrumb ?? throw new ArgumentNullException(nameof(breadcrumb));
         }
