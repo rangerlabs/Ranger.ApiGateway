@@ -9,6 +9,7 @@ namespace Ranger.ApiGateway
     {
         public string TenantId { get; }
         public Guid ProjectId { get; }
+        public string ProjectName { get; }
         public EnvironmentEnum Environment { get; }
         public Breadcrumb Breadcrumb { get; }
 
