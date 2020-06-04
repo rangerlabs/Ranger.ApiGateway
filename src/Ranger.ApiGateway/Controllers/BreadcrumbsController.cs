@@ -37,7 +37,7 @@ namespace Ranger.ApiGateway.Controllers
             var projectId = Guid.Parse(HttpContext.Items["ProjectId"] as string);
             var projectName = HttpContext.Items["ProjectName"] as string;
             return await Task.Run(() =>
-                base.Send(new ComputeGeofenceIntersections(
+                base.SendAndAccept(new ComputeGeofenceIntersections(
                         tenantId,
                         projectId,
                         projectName,

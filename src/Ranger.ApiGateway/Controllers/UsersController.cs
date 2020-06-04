@@ -226,7 +226,7 @@ namespace Ranger.ApiGateway
                 UserFromClaims.Email,
                 postApplicationUserModel.AuthorizedProjects
             );
-            return await Task.Run(() => base.Send(applicationUserCommand));
+            return await Task.Run(() => base.SendAndAccept(applicationUserCommand));
         }
 
         ///<summary>
@@ -247,7 +247,7 @@ namespace Ranger.ApiGateway
                 putPermissionsModel.Role,
                 putPermissionsModel.AuthorizedProjects
             );
-            return await Task.Run(() => base.Send(updateUserPermissionsCommand));
+            return await Task.Run(() => base.SendAndAccept(updateUserPermissionsCommand));
         }
     }
 }

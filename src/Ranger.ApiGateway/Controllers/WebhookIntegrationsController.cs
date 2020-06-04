@@ -49,7 +49,7 @@ namespace Ranger.ApiGateway
                  JsonConvert.SerializeObject(webhookIntegrationModel),
                  IntegrationsEnum.WEBHOOK
              );
-            return await Task.Run(() => base.Send(createIntegrationSagaInitializer));
+            return await Task.Run(() => base.SendAndAccept(createIntegrationSagaInitializer));
         }
 
         ///<summary>
@@ -73,7 +73,7 @@ namespace Ranger.ApiGateway
                 IntegrationsEnum.WEBHOOK,
                 webhookIntegrationModel.Version
             );
-            return await Task.Run(() => base.Send(updateIntegrationSagaInitializer));
+            return await Task.Run(() => base.SendAndAccept(updateIntegrationSagaInitializer));
         }
     }
 }

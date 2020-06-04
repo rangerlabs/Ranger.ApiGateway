@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Authorization;
@@ -6,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
 
@@ -36,7 +34,7 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> DeleteTenant()
         {
             var deleteTenantMsg = new DeleteTenantSagaInitializer(UserFromClaims.Email, TenantId);
-            return await Task.Run(() => Send(deleteTenantMsg));
+            return await Task.Run(() => SendAndAccept(deleteTenantMsg));
         }
 
         ///<summary>
@@ -49,7 +47,7 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> Post(TenantModel tenantModel)
         {
             var createTenantMsg = new CreateTenant(tenantModel.DomainForm.Domain.ToLower(), tenantModel.DomainForm.OrganizationName, tenantModel.UserForm.Email, tenantModel.UserForm.FirstName, tenantModel.UserForm.LastName, tenantModel.UserForm.Password);
-            return await Task.Run(() => Send(createTenantMsg));
+            return await Task.Run(() => SendAndAccept(createTenantMsg));
         }
 
         ///<summary>

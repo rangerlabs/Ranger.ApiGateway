@@ -4,7 +4,6 @@ using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
 using Ranger.Common;
 using Ranger.RabbitMQ;
 
@@ -28,7 +27,21 @@ namespace Ranger.ApiGateway
             this.Logger = logger;
         }
 
-        protected ApiResponse Send<T>(T command, string clientMessage = "", Guid? resourceId = null, string resource = "") where T : ICommand
+        protected void Send<T>(T command, string clientMessage = "", Guid? resourceId = null, string resource = "") where T : ICommand
+        {
+            var context = GetContext<T>(resourceId, resource);
+            try
+            {
+                busPublisher.Send(command, context);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "An exception occurred publishing a command. Ensure the service is connected to a running RabbitMQ instance");
+                throw new ApiException("Failed to publishing command", statusCode: StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        protected ApiResponse SendAndAccept<T>(T command, string clientMessage = "", Guid? resourceId = null, string resource = "") where T : ICommand
         {
             var context = GetContext<T>(resourceId, resource);
             try

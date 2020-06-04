@@ -1,13 +1,10 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
 
@@ -40,7 +37,7 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> DeleteIntegrationForProject(string projectName, string integrationName)
         {
             var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
-            return await Task.Run(() => base.Send(new DeleteIntegrationSagaInitializer(UserFromClaims.Email, TenantId, integrationName, project.ProjectId)));
+            return await Task.Run(() => base.SendAndAccept(new DeleteIntegrationSagaInitializer(UserFromClaims.Email, TenantId, integrationName, project.ProjectId)));
         }
         ///<summary>
         /// Deletes an existing integration within a project

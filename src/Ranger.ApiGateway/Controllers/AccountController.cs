@@ -81,7 +81,7 @@ namespace Ranger.ApiGateway
             }
 
             return await Task.Run(() =>
-               Send(new TransferPrimaryOwnershipSagaInitializer(UserFromClaims.Email, transferPrimaryOwnerModel.Email, TenantId), "Successfully initiated owner transfer")
+               SendAndAccept(new TransferPrimaryOwnershipSagaInitializer(UserFromClaims.Email, transferPrimaryOwnerModel.Email, TenantId), "Successfully initiated owner transfer")
             );
         }
 

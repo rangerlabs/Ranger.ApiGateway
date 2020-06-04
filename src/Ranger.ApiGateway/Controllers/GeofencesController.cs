@@ -77,7 +77,7 @@ namespace Ranger.ApiGateway
                  geofenceModel.LaunchDate,
                  geofenceModel.Schedule
              );
-            return await Task.Run(() => base.Send(createGeofenceSagaInitializer));
+            return await Task.Run(() => base.SendAndAccept(createGeofenceSagaInitializer));
         }
 
         private static void ValidateGeofence(GeofenceRequestModel geofenceModel)
@@ -154,7 +154,7 @@ namespace Ranger.ApiGateway
                 geofenceModel.Schedule
             );
 
-            return await Task.Run(() => base.Send(createGeofenceSagaInitializer));
+            return await Task.Run(() => base.SendAndAccept(createGeofenceSagaInitializer));
         }
 
         ///<summary>
@@ -175,7 +175,7 @@ namespace Ranger.ApiGateway
                  externalId,
                  project.ProjectId
              );
-            return await Task.Run(() => base.Send(deleteGeofenceSagaInitializer));
+            return await Task.Run(() => base.SendAndAccept(deleteGeofenceSagaInitializer));
         }
     }
 }

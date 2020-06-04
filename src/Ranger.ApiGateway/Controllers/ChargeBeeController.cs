@@ -68,13 +68,13 @@ namespace Ranger.ApiGateway.Controllers
 
             return eventType switch
             {
-                "subscription_changed" => base.Send(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt, isActive)),
-                "subscription_paused" => base.Send(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt, isActive)),
-                "subscription_resumed" => base.Send(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt, isActive)),
-                "subscription_cancelled" => base.Send(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt, isActive)),
-                "subscription_reactivated" => base.Send(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt, isActive)),
-                "subscription_cancellation_reminder" => base.Send(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt, isActive, DateTime.Now.AddDays(6))), //per chargebee api docs
-                "subscription_scheduled_cancellation_removed" => base.Send(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt, isActive)),
+                "subscription_changed" => base.SendAndAccept(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt, isActive)),
+                "subscription_paused" => base.SendAndAccept(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt, isActive)),
+                "subscription_resumed" => base.SendAndAccept(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt, isActive)),
+                "subscription_cancelled" => base.SendAndAccept(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt, isActive)),
+                "subscription_reactivated" => base.SendAndAccept(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt, isActive)),
+                "subscription_cancellation_reminder" => base.SendAndAccept(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt, isActive, DateTime.Now.AddDays(6))), //per chargebee api docs
+                "subscription_scheduled_cancellation_removed" => base.SendAndAccept(new UpdateSubscription(apiResponse.Result, subscriptionId, planId, occurredAt, isActive)),
                 _ => new ApiResponse("The webhook event was not a subscription event", statusCode: StatusCodes.Status200OK)
             };
         }
