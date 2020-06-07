@@ -33,7 +33,7 @@ namespace Ranger.ApiGateway.Controllers
         ///</summary>
         ///<param name="testRunModel">The model necessary to compute geofence resuts</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [HttpGet("/{projectName}/test-run")]
+        [HttpGet("/{projectName}/test-runs")]
         [Authorize(Roles = "User")]
         [Authorize(Policy = "BelongsToProject")]
         public async Task<ApiResponse> PostBreadcrumb([FromBody] TestRunModel testRunModel)
@@ -60,8 +60,7 @@ namespace Ranger.ApiGateway.Controllers
                             recordedAt,
                             default,
                             accuracy)
-                        )
-                    );
+                    ));
                 }
             });
             return new ApiResponse("Test Run Accepted", statusCode: StatusCodes.Status202Accepted);
