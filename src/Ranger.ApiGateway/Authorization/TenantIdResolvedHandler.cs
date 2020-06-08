@@ -1,11 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Ranger.Common;
 using Ranger.InternalHttpClient;
 
 namespace Ranger.ApiGateway.Authorization
@@ -42,17 +39,17 @@ namespace Ranger.ApiGateway.Authorization
                     }
                     else
                     {
-                        logger.LogDebug("The tenant is not yet confirmed");
+                        logger.LogInformation("The tenant is not yet confirmed");
                     }
                 }
                 else
                 {
-                    logger.LogDebug("Received {Status} when attempting to retrieve tenant for domain {Domain}", tenantApiResponse.StatusCode, domain);
+                    logger.LogInformation("Received {Status} when attempting to retrieve tenant for domain {Domain}", tenantApiResponse.StatusCode, domain);
                 }
             }
             else
             {
-                logger.LogDebug("No domain was present on the user's claims");
+                logger.LogInformation("No domain was present on the user's claims");
             }
         }
 

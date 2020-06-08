@@ -16,6 +16,6 @@ namespace Ranger.ApiGateway
         [Required]
         public DateTime RecordedAt { get; set; }
         public string ExternalUserId { get; set; }
-        public IEnumerable<KeyValuePair<string, string>> Metadata { get; set; }
+        public IEnumerable<KeyValuePair<string, string>> Metadata { get; set; } = new List<KeyValuePair<string, string>>();
     }
 }

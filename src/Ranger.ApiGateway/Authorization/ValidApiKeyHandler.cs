@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
-using Ranger.Common;
 using Ranger.InternalHttpClient;
 
 namespace Ranger.ApiGateway.Authorization
@@ -67,41 +66,41 @@ namespace Ranger.ApiGateway.Authorization
                                     }
                                     else
                                     {
-                                        logger.LogDebug("Project {Id} is not enabled", projectApiResponse.StatusCode, projectApiResponse.Result.ProjectId);
+                                        logger.LogInformation("Project {Id} is not enabled for tenant id {TenantId}", projectApiResponse.StatusCode, projectApiResponse.Result.ProjectId, tenantApiResponse.Result.TenantId);
                                         context.Fail();
                                     }
                                 }
                                 else
                                 {
-                                    logger.LogDebug("Received {Status} when attempting to retrieve project for tenant id {TenantId} and api key {ApiKey}", projectApiResponse.StatusCode, tenantApiResponse.Result, apiResponse.Result);
+                                    logger.LogInformation("Received {Status} when attempting to retrieve project for tenant id {TenantId} and api key in environment {Environment}", projectApiResponse.StatusCode, tenantApiResponse.Result, apiKeyParts[0].ToUpperInvariant());
                                     context.Fail();
                                 }
                             }
                             else
                             {
-                                logger.LogDebug("Received {Status} when attempting to retrieve tenant for tenant id {TenantId}", tenantApiResponse.StatusCode, tenantApiResponse.Result);
+                                logger.LogInformation("Received {Status} when attempting to retrieve tenant for tenant id {TenantId}", tenantApiResponse.StatusCode, tenantApiResponse.Result);
                                 context.Fail();
                             }
                         }
                         else
                         {
-                            logger.LogDebug("Received {Status} when attempting to retrieve tenant id for api key {ApiKey}", apiResponse.StatusCode, apiKey);
+                            logger.LogInformation("Received {Status} when attempting to retrieve tenant id for api key in environment {Environment}", apiResponse.StatusCode, apiKeyParts[0].ToUpperInvariant());
                             context.Fail();
                         }
                     }
                     else
                     {
-                        logger.LogDebug($"The API key was not a valid format");
+                        logger.LogInformation($"The API key was not a valid format");
                     }
                 }
                 else
                 {
-                    logger.LogDebug("Multiple x-ranger-apikey headers were present in the request");
+                    logger.LogInformation("Multiple x-ranger-apikey headers were present in the request");
                 }
             }
             else
             {
-                logger.LogDebug("No x-ranger-apikey header was present in the request");
+                logger.LogInformation("No x-ranger-apikey header was present in the request");
             }
         }
     }

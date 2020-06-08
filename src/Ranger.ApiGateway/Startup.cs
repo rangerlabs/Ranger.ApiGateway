@@ -1,5 +1,4 @@
 using System.Security.Cryptography.X509Certificates;
-using System.Timers;
 using Autofac;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;

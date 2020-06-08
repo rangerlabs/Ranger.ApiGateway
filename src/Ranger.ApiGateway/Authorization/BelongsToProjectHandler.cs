@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Ranger.Common;
 using Ranger.InternalHttpClient;
 
 namespace Ranger.ApiGateway.Authorization
@@ -54,7 +53,7 @@ namespace Ranger.ApiGateway.Authorization
                                 var project = apiResponse.Result.Where(_ => _.Name == projectName).SingleOrDefault();
                                 if (project is null)
                                 {
-                                    logger.LogDebug("The user is not authorized to access the requested project");
+                                    logger.LogInformation("The user is not authorized to access the requested project");
                                     context.Fail();
                                 }
                                 httpContextAccessor.HttpContext.Items["AuthorizedProject"] = project;
@@ -63,12 +62,12 @@ namespace Ranger.ApiGateway.Authorization
                         }
                         else
                         {
-                            logger.LogDebug("The tenant is not yet confirmed");
+                            logger.LogInformation("The tenant is not yet confirmed");
                         }
                     }
                     else
                     {
-                        logger.LogDebug("Received {Status} when attempting to retrieve tenant for domain {Domain}", tenantApiResponse.StatusCode, user.Domain);
+                        logger.LogInformation("Received {Status} when attempting to retrieve tenant for domain {Domain}", tenantApiResponse.StatusCode, user.Domain);
                     }
                 }
             }
