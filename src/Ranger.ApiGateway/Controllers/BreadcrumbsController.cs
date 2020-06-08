@@ -49,7 +49,8 @@ namespace Ranger.ApiGateway.Controllers
                             breadcrumbModel.RecordedAt,
                             breadcrumbModel.Metadata,
                             breadcrumbModel.Accuracy)
-                        )
+                        ),
+                    clientMessage: "Breadcrumb accepted"
                 )
             );
         }

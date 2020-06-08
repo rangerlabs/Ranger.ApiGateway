@@ -49,7 +49,6 @@ namespace Ranger.ApiGateway.Authorization
                         var apiResponse = await projectsClient.GetTenantIdByApiKeyAsync(apiKey);
                         if (!apiResponse.IsError)
                         {
-
                             var tenantApiResponse = await tenantsClient.GetTenantByIdAsync<TenantResult>(apiResponse.Result);
                             if (!tenantApiResponse.IsError)
                             {
@@ -91,16 +90,19 @@ namespace Ranger.ApiGateway.Authorization
                     else
                     {
                         logger.LogInformation($"The API key was not a valid format");
+                        context.Fail();
                     }
                 }
                 else
                 {
                     logger.LogInformation("Multiple x-ranger-apikey headers were present in the request");
+                    context.Fail();
                 }
             }
             else
             {
                 logger.LogInformation("No x-ranger-apikey header was present in the request");
+                context.Fail();
             }
         }
     }
