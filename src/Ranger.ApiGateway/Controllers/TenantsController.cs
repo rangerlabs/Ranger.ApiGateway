@@ -46,8 +46,22 @@ namespace Ranger.ApiGateway
         [AllowAnonymous]
         public async Task<ApiResponse> Post(TenantModel tenantModel)
         {
-            var createTenantMsg = new CreateTenant(tenantModel.DomainForm.Domain.ToLower(), tenantModel.DomainForm.OrganizationName, tenantModel.UserForm.Email, tenantModel.UserForm.FirstName, tenantModel.UserForm.LastName, tenantModel.UserForm.Password);
+            var createTenantMsg = new CreateTenant(tenantModel.OrganizationForm.Domain.ToLower(), tenantModel.OrganizationForm.OrganizationName, tenantModel.UserForm.Email, tenantModel.UserForm.FirstName, tenantModel.UserForm.LastName, tenantModel.UserForm.Password);
             return await Task.Run(() => SendAndAccept(createTenantMsg));
+        }
+
+        ///<summary>
+        /// Gets the tenant's information
+        ///</summary>
+        ///<param name="domain">The domain to retrieve the tenant for</param>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpGet("/tenants/{domain}")]
+        [AllowAnonymous]
+        public async Task<ApiResponse> GetTenant(string domain)
+        {
+            var apiResponse = await tenantsClient.GetTenantByDomainAsync<OrganizationForm>(domain);
+            return new ApiResponse("Successfully retrieved tenant organization information", apiResponse.Result);
         }
 
         ///<summary>
