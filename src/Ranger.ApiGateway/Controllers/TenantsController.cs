@@ -57,7 +57,8 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("/tenants/{domain}")]
-        [AllowAnonymous]
+        [Authorize(Roles = "User")]
+        [Authorize(Policy = "TenantIdResolved")]
         public async Task<ApiResponse> GetTenant(string domain)
         {
             var apiResponse = await tenantsClient.GetTenantByDomainAsync<OrganizationForm>(domain);
