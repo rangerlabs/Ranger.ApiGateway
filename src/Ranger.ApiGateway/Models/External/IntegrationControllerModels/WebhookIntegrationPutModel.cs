@@ -22,6 +22,7 @@ namespace Ranger.ApiGateway
         public IEnumerable<KeyValuePair<string, string>> Headers { get; set; }
         public IEnumerable<KeyValuePair<string, string>> Metadata { get; set; }
         [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "Only positive values allowed")]
         public int Version { get; set; }
     }
 }

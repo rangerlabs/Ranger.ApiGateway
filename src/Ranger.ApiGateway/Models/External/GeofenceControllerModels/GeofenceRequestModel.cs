@@ -20,6 +20,7 @@ namespace Ranger.ApiGateway
         public bool Enabled { get; set; } = true;
         public string Description { get; set; }
         public IEnumerable<Guid> IntegrationIds { get; set; }
+        [Range(1, int.MaxValue, ErrorMessage = "Only positive values allowed")]
         public int Radius { get; set; }
         public IEnumerable<KeyValuePair<string, string>> Metadata { get; set; }
         [Required]

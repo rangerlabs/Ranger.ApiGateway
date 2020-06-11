@@ -51,6 +51,19 @@ namespace Ranger.ApiGateway
         }
 
         ///<summary>
+        /// Updates a Tenant's organization
+        ///</summary>
+        ///<param name="organizationForm">The model necessary to update a tenant's organization</param>
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        [HttpPut("/tenants/{domain}")]
+        [Authorize(Roles = "Owner")]
+        [Authorize(Policy = "TenantIdResolved")]
+        public async Task<ApiResponse> Put(OrganizationFormPutModel organizationForm)
+        {
+            return new ApiResponse("Empty");
+        }
+
+        ///<summary>
         /// Gets the tenant's information
         ///</summary>
         ///<param name="domain">The domain to retrieve the tenant for</param>
@@ -61,7 +74,7 @@ namespace Ranger.ApiGateway
         [Authorize(Policy = "TenantIdResolved")]
         public async Task<ApiResponse> GetTenant(string domain)
         {
-            var apiResponse = await tenantsClient.GetTenantByDomainAsync<OrganizationForm>(domain);
+            var apiResponse = await tenantsClient.GetTenantByDomainAsync<OrganizationFormPutModel>(domain);
             return new ApiResponse("Successfully retrieved tenant organization information", apiResponse.Result);
         }
 
