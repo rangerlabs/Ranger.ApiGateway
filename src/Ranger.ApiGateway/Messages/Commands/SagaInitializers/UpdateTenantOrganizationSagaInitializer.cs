@@ -6,16 +6,16 @@ namespace Ranger.ApiGateway.Messages.Commands.Tenants
     [MessageNamespace("operations")]
     public class UpdateTenantOrganizationSagaInitializer : SagaInitializer, ICommand
     {
-        public UpdateTenantOrganizationSagaInitializer(string commandingUserEmail, string tenantid, int version, string organizationName = "", string domain = "")
+        public UpdateTenantOrganizationSagaInitializer(string commandingUserEmail, string tenantId, int version, string organizationName = "", string domain = "")
         {
             if (string.IsNullOrWhiteSpace(commandingUserEmail))
             {
                 throw new ArgumentException($"'{nameof(commandingUserEmail)}' cannot be null or whitespace", nameof(commandingUserEmail));
             }
 
-            if (string.IsNullOrWhiteSpace(tenantid))
+            if (string.IsNullOrWhiteSpace(tenantId))
             {
-                throw new ArgumentException($"'{nameof(tenantid)}' cannot be null or whitespace", nameof(tenantid));
+                throw new ArgumentException($"'{nameof(tenantId)}' cannot be null or whitespace", nameof(tenantId));
             }
 
             if (string.IsNullOrWhiteSpace(organizationName) && string.IsNullOrWhiteSpace(domain))
@@ -29,7 +29,7 @@ namespace Ranger.ApiGateway.Messages.Commands.Tenants
             }
 
             CommandingUserEmail = commandingUserEmail;
-            TenantId = tenantid;
+            TenantId = tenantId;
             OrganizationName = organizationName;
             Domain = domain;
             Version = version;
