@@ -64,16 +64,11 @@ namespace Ranger.ApiGateway
         {
             if (String.IsNullOrWhiteSpace(organizationFormModel.Domain) && String.IsNullOrWhiteSpace(organizationFormModel.OrganizationName))
             {
-                throw new ApiException("Domain or OrganizationName must be provided", statusCode: StatusCodes.Status400BadRequest);
+                throw new ApiException("Either Domain or OrganizationName must be provided", statusCode: StatusCodes.Status400BadRequest);
             }
 
-            if (!String.IsNullOrWhiteSpace(organizationFormModel.OrganizationName))
-            {
-                var updateOrgNameMsg = new UpdateTenantOrganizationSagaInitializer(User.UserFromClaims().Email, TenantId, organizationFormModel.Version, organizationFormModel.OrganizationName, organizationFormModel.Domain);
-                return await Task.Run(() => SendAndAccept(updateOrgNameMsg));
-            }
-
-            return new ApiResponse("Empty");
+            var updateOrgNameMsg = new UpdateTenantOrganizationSagaInitializer(User.UserFromClaims().Email, TenantId, organizationFormModel.Version, organizationFormModel.OrganizationName, organizationFormModel.Domain);
+            return await Task.Run(() => SendAndAccept(updateOrgNameMsg));
         }
 
         ///<summary>
