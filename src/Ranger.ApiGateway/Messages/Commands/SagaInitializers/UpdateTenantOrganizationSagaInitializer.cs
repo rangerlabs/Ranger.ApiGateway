@@ -4,9 +4,9 @@ using Ranger.RabbitMQ;
 namespace Ranger.ApiGateway.Messages.Commands.Tenants
 {
     [MessageNamespace("operations")]
-    public class UpdateTenantOrganizationNameSagaInitializer : SagaInitializer, ICommand
+    public class UpdateTenantOrganizationSagaInitializer : SagaInitializer, ICommand
     {
-        public UpdateTenantOrganizationNameSagaInitializer(string commandingUserEmail, string tenantid, string organizationName)
+        public UpdateTenantOrganizationSagaInitializer(string commandingUserEmail, string tenantid, int version, string organizationName = "", string domain = "")
         {
             if (string.IsNullOrWhiteSpace(commandingUserEmail))
             {
@@ -18,16 +18,26 @@ namespace Ranger.ApiGateway.Messages.Commands.Tenants
                 throw new ArgumentException($"'{nameof(tenantid)}' cannot be null or whitespace", nameof(tenantid));
             }
 
-            if (string.IsNullOrWhiteSpace(organizationName))
+            if (string.IsNullOrWhiteSpace(organizationName) && string.IsNullOrWhiteSpace(domain))
             {
-                throw new ArgumentException($"'{nameof(organizationName)}' cannot be null or whitespace", nameof(organizationName));
+                throw new ArgumentException($"'{nameof(organizationName)}' or '{nameof(domain)}' must not null or whitespace", nameof(organizationName));
             }
+
+            if (version <= 1)
+            {
+                throw new ArgumentException($"'{nameof(version)}' must be greater than 1", nameof(version));
+            }
+
             CommandingUserEmail = commandingUserEmail;
             TenantId = tenantid;
             OrganizationName = organizationName;
+            Domain = domain;
+            Version = version;
         }
 
+        public string Domain { get; }
         public string OrganizationName { get; }
         public string CommandingUserEmail { get; }
+        public int Version { get; }
     }
 }

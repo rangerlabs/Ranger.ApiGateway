@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Authorization;
@@ -5,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Ranger.ApiGateway.Messages.Commands.Tenants;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
 
@@ -53,13 +55,24 @@ namespace Ranger.ApiGateway
         ///<summary>
         /// Updates a Tenant's organization
         ///</summary>
-        ///<param name="organizationForm">The model necessary to update a tenant's organization</param>
+        ///<param name="organizationFormModel">The model necessary to update a tenant's organization</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpPut("/tenants/{domain}")]
         [Authorize(Roles = "Owner")]
         [Authorize(Policy = "TenantIdResolved")]
-        public async Task<ApiResponse> Put(OrganizationFormPutModel organizationForm)
+        public async Task<ApiResponse> Put(OrganizationFormPutModel organizationFormModel)
         {
+            if (String.IsNullOrWhiteSpace(organizationFormModel.Domain) && String.IsNullOrWhiteSpace(organizationFormModel.OrganizationName))
+            {
+                throw new ApiException("Domain or OrganizationName must be provided", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            if (!String.IsNullOrWhiteSpace(organizationFormModel.OrganizationName))
+            {
+                var updateOrgNameMsg = new UpdateTenantOrganizationSagaInitializer(User.UserFromClaims().Email, TenantId, organizationFormModel.Version, organizationFormModel.OrganizationName, organizationFormModel.Domain);
+                return await Task.Run(() => SendAndAccept(updateOrgNameMsg));
+            }
+
             return new ApiResponse("Empty");
         }
 
