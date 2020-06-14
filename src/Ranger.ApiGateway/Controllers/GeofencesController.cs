@@ -82,6 +82,10 @@ namespace Ranger.ApiGateway
 
         private static void ValidateGeofence(GeofenceRequestModel geofenceModel)
         {
+            if (geofenceModel.ExternalId.ToLower() != geofenceModel.ExternalId)
+            {
+                throw new ApiException("Geofence External Ids must be lowercase");
+            }
             if (geofenceModel.Shape == GeofenceShapeEnum.Circle)
             {
                 if (geofenceModel.Radius < 50)
