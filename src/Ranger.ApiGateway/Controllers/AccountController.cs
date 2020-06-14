@@ -100,7 +100,7 @@ namespace Ranger.ApiGateway
                 throw new ApiException("The correlationId parameter cannot be an empty GUID", StatusCodes.Status400BadRequest);
             }
             await Task.Run(() => busPublisher.Send(new AcceptPrimaryOwnershipTransfer(acceptPrimaryOwnerModel.Token), CorrelationContext.FromId(acceptPrimaryOwnerModel.CorrelationId)));
-            return new ApiResponse("Successfully accepted primary owner transfer", statusCode: StatusCodes.Status202Accepted);
+            return new ApiResponse("Successfully accepted primary owner transfer response", statusCode: StatusCodes.Status202Accepted);
         }
 
         ///<summary>
@@ -118,7 +118,7 @@ namespace Ranger.ApiGateway
                 throw new ApiException("The correlationId parameter cannot be an empty GUID", StatusCodes.Status400BadRequest);
             }
             await Task.Run(() => busPublisher.Send(new RefusePrimaryOwnershipTransfer(), CorrelationContext.FromId(rejectPrimaryOwnerModel.CorrelationId)));
-            return new ApiResponse("Successfully rejected primary owner transfer", statusCode: StatusCodes.Status202Accepted);
+            return new ApiResponse("Successfully accepted primary owner transfer reject response", statusCode: StatusCodes.Status202Accepted);
         }
 
         ///<summary>
@@ -136,7 +136,7 @@ namespace Ranger.ApiGateway
                 throw new ApiException("The correlationId parameter cannot be an empty GUID", StatusCodes.Status400BadRequest);
             }
             await Task.Run(() => busPublisher.Send(new CancelPrimaryOwnershipTransfer(), CorrelationContext.FromId(cancelPrimaryOwnerModel.CorrelationId)));
-            return new ApiResponse("Successfully cancelled primary owner transfer", statusCode: StatusCodes.Status202Accepted);
+            return new ApiResponse("Successfully accepted primary owner transfer cancel response", statusCode: StatusCodes.Status202Accepted);
         }
     }
 }
