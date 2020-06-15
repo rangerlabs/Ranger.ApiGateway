@@ -49,7 +49,6 @@ namespace Ranger.ApiGateway
         ///<param name="projectId">The project's unique identifier</param>
         ///<param name="projectModel">The project model necessary to update an existing project</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status304NotModified)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [HttpPut("/projects/{projectId}")]
@@ -58,7 +57,7 @@ namespace Ranger.ApiGateway
         {
             var request = new { Name = projectModel.Name, Description = projectModel.Description, Enabled = projectModel.Enabled, Version = projectModel.Version, UserEmail = UserFromClaims.Email };
             var apiResponse = await projectsClient.PutProjectAsync<ProjectResponseModel>(TenantId, projectId, JsonConvert.SerializeObject(request));
-            return new ApiResponse("Successfully updated project", apiResponse.Result);
+            return new ApiResponse(apiResponse.Message, apiResponse.Result);
         }
 
         ///<summary>
