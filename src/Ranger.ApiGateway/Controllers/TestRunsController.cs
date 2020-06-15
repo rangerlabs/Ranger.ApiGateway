@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Authorization;
@@ -44,10 +45,9 @@ namespace Ranger.ApiGateway.Controllers
             await Task.Run(() =>
             {
                 var accuracy = new Random().Next(30);
-                var recordedAt = DateTime.UtcNow - TimeSpan.FromMinutes(5);
+                var recordedAt = DateTime.UtcNow - TimeSpan.FromMinutes(5) * testRunModel.Positions.Count();
                 foreach (var position in testRunModel.Positions)
                 {
-                    recordedAt += TimeSpan.FromMinutes(5);
                     base.Send(new ComputeGeofenceIntersections(
                         TenantId,
                         project.ProjectId,
@@ -61,6 +61,7 @@ namespace Ranger.ApiGateway.Controllers
                             default,
                             accuracy)
                     ));
+                    recordedAt += TimeSpan.FromMinutes(5);
                 }
             });
             return new ApiResponse("Test Run Accepted", statusCode: StatusCodes.Status202Accepted);

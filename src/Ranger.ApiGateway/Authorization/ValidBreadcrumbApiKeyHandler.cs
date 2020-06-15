@@ -10,13 +10,13 @@ using Ranger.InternalHttpClient;
 
 namespace Ranger.ApiGateway.Authorization
 {
-    public class ValidApiKeyHandler : AuthorizationHandler<ValidApiKeyRequirement>
+    public class ValidBreadcrumbApiKeyHandler : AuthorizationHandler<ValidBreadcrumbApiKeyRequirement>
     {
         private readonly TenantsHttpClient tenantsClient;
         private readonly ProjectsHttpClient projectsClient;
         private readonly IHttpContextAccessor httpContextAccessor;
-        private readonly ILogger<ValidApiKeyHandler> logger;
-        public ValidApiKeyHandler(TenantsHttpClient tenantsClient, ProjectsHttpClient projectsClient, IHttpContextAccessor httpContextAccessor, ILogger<ValidApiKeyHandler> logger)
+        private readonly ILogger<ValidBreadcrumbApiKeyHandler> logger;
+        public ValidBreadcrumbApiKeyHandler(TenantsHttpClient tenantsClient, ProjectsHttpClient projectsClient, IHttpContextAccessor httpContextAccessor, ILogger<ValidBreadcrumbApiKeyHandler> logger)
         {
             this.tenantsClient = tenantsClient;
             this.projectsClient = projectsClient;
@@ -35,7 +35,7 @@ namespace Ranger.ApiGateway.Authorization
             public string TenantId { get; set; }
         }
 
-        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, ValidApiKeyRequirement requirement)
+        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, ValidBreadcrumbApiKeyRequirement requirement)
         {
             StringValues apiKey;
             var apiKeySuccess = httpContextAccessor.HttpContext.Request.Headers.TryGetValue("x-ranger-apikey", out apiKey);
@@ -44,6 +44,12 @@ namespace Ranger.ApiGateway.Authorization
                 if (apiKey.Count == 1)
                 {
                     var apiKeyParts = apiKey[0].Split('.');
+                    if (apiKeyParts?.Length == 2 && apiKeyParts[0] == "proj")
+                    {
+                        logger.LogInformation($"The API provided was for the incorrect purpose");
+                        context.Fail();
+                    }
+
                     if (apiKeyParts?.Length == 2 && (apiKeyParts[0] == "live" || apiKeyParts[0] == "test") && Guid.TryParse(apiKeyParts[1], out _))
                     {
                         var apiResponse = await projectsClient.GetTenantIdByApiKeyAsync(apiKey);

@@ -57,9 +57,9 @@ namespace Ranger.ApiGateway
                 {
                     policyBuilder.RequireAuthenticatedUser().AddRequirements(new BelongsToProjectRequirement());
                 });
-                options.AddPolicy("ValidApiKey", policyBuilder =>
+                options.AddPolicy("ValidBreadcrumbApiKey", policyBuilder =>
                 {
-                    policyBuilder.AddRequirements(new ValidApiKeyRequirement());
+                    policyBuilder.AddRequirements(new ValidBreadcrumbApiKeyRequirement());
                 });
                 options.AddPolicy("TenantIdResolved", policyBuilder =>
                 {
@@ -78,7 +78,7 @@ namespace Ranger.ApiGateway
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<IAuthorizationHandler, BelongsToProjectHandler>();
-            services.AddScoped<IAuthorizationHandler, ValidApiKeyHandler>();
+            services.AddScoped<IAuthorizationHandler, ValidBreadcrumbApiKeyHandler>();
             services.AddScoped<IAuthorizationHandler, TenantIdResolvedHandler>();
 
             services.AddCors();
