@@ -94,12 +94,12 @@ namespace Ranger.ApiGateway
         /// Resets a project environment's API key
         ///</summary>
         ///<param name="projectId">The project's unique identifier</param>
-        ///<param name="purpose">The environment whose API key to reset, 'live' or 'test'</param>
+        ///<param name="purpose">The environment whose API key to reset, 'live', 'test', or 'proj'</param>
         ///<param name="apiKeyResetModel">The model necessary to reset an API key</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        [HttpPut("/projects/{projectId}/{environment}/reset")]
+        [HttpPut("/projects/{projectId}/{purpose}/reset")]
         [Authorize(Roles = "Admin")]
         public async Task<ApiResponse> ApiKeyReset(Guid projectId, ApiKeyPurposeEnum purpose, ApiKeyResetModel apiKeyResetModel)
         {
