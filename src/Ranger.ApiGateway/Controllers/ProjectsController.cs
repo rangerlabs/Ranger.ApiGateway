@@ -94,17 +94,17 @@ namespace Ranger.ApiGateway
         /// Resets a project environment's API key
         ///</summary>
         ///<param name="projectId">The project's unique identifier</param>
-        ///<param name="environment">The environment whose API key to reset, 'live' or 'test'</param>
+        ///<param name="purpose">The environment whose API key to reset, 'live' or 'test'</param>
         ///<param name="apiKeyResetModel">The model necessary to reset an API key</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [HttpPut("/projects/{projectId}/{environment}/reset")]
         [Authorize(Roles = "Admin")]
-        public async Task<ApiResponse> ApiKeyReset(Guid projectId, EnvironmentEnum environment, ApiKeyResetModel apiKeyResetModel)
+        public async Task<ApiResponse> ApiKeyReset(Guid projectId, ApiKeyPurposeEnum purpose, ApiKeyResetModel apiKeyResetModel)
         {
             var request = new { Version = apiKeyResetModel.Version, UserEmail = UserFromClaims.Email };
-            var apiResponse = await projectsClient.ApiKeyResetAsync<ProjectResponseModel>(TenantId, projectId, environment, JsonConvert.SerializeObject(request));
+            var apiResponse = await projectsClient.ApiKeyResetAsync<ProjectResponseModel>(TenantId, projectId, purpose, JsonConvert.SerializeObject(request));
             return new ApiResponse("Successfully reset API key", apiResponse.Result);
         }
     }
