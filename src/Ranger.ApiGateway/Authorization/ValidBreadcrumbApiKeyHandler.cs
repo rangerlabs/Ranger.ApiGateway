@@ -52,7 +52,7 @@ namespace Ranger.ApiGateway.Authorization
 
                     if (apiKeyParts?.Length == 2 && (apiKeyParts[0] == "live" || apiKeyParts[0] == "test") && Guid.TryParse(apiKeyParts[1], out _))
                     {
-                        var apiResponse = await projectsClient.GetTenantIdByApiKeyAsync(apiKey);
+                        var apiResponse = await projectsClient.GetTenantIdByApiKeyAsync(apiKey.Single());
                         if (!apiResponse.IsError)
                         {
                             var tenantApiResponse = await tenantsClient.GetTenantByIdAsync<TenantResult>(apiResponse.Result);

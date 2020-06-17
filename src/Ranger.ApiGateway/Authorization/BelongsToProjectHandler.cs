@@ -54,7 +54,6 @@ namespace Ranger.ApiGateway.Authorization
                                 if (project is null)
                                 {
                                     logger.LogInformation("The user is not authorized to access the requested project");
-                                    context.Fail();
                                 }
                                 httpContextAccessor.HttpContext.Items["AuthorizedProject"] = project;
                                 context.Succeed(requirement);
