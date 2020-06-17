@@ -69,6 +69,7 @@ namespace Ranger.ApiGateway.Authorization
                                             httpContextAccessor.HttpContext.Items["TenantId"] = tenantApiResponse.Result.TenantId;
                                             httpContextAccessor.HttpContext.Items["ProjectId"] = projectApiResponse.Result.ProjectId.ToString();
                                             httpContextAccessor.HttpContext.Items["ProjectName"] = projectApiResponse.Result.Name.ToString();
+                                            logger.LogInformation("Authorization succeeded for policy 'ValidBreadcrumbApiKeyHandler");
                                             context.Succeed(requirement);
                                         }
                                         else

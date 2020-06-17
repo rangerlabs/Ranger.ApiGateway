@@ -58,6 +58,7 @@ namespace Ranger.ApiGateway.Authorization
                                         logger.LogInformation("The user is not authorized to access the requested project");
                                     }
                                     httpContextAccessor.HttpContext.Items["AuthorizedProject"] = project;
+                                    logger.LogInformation("Authorization succeeded for policy 'BelongsToProjectHandler");
                                     context.Succeed(requirement);
                                 }
                             }

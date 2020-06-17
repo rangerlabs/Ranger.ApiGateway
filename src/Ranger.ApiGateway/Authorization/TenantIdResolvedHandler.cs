@@ -37,6 +37,7 @@ namespace Ranger.ApiGateway.Authorization
                         if (tenantApiResponse.Result.Confirmed)
                         {
                             httpContextAccessor.HttpContext.Items["TenantId"] = tenantApiResponse.Result.TenantId;
+                            logger.LogInformation("Authorization succeeded for policy 'TenantIdResolved");
                             context.Succeed(requirement);
                         }
                         else

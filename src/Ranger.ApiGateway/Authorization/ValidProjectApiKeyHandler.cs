@@ -67,8 +67,8 @@ namespace Ranger.ApiGateway.Authorization
                                         {
                                             httpContextAccessor.HttpContext.Items["ProjectApiKeyPrefix"] = apiKey.Single().Substring(0, 11);
                                             httpContextAccessor.HttpContext.Items["TenantId"] = tenantApiResponse.Result.TenantId;
-                                            httpContextAccessor.HttpContext.Items["ProjectId"] = projectApiResponse.Result.ProjectId.ToString();
-                                            httpContextAccessor.HttpContext.Items["ProjectName"] = projectApiResponse.Result.Name.ToString();
+                                            httpContextAccessor.HttpContext.Items["AuthorizedProject"] = projectApiResponse.Result;
+                                            logger.LogInformation("Authorization succeeded for policy 'ValidProjectApiKeyHandler");
                                             context.Succeed(requirement);
                                         }
                                         else
