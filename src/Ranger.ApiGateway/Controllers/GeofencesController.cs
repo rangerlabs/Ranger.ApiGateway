@@ -51,7 +51,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("/{projectName}/geofences")]
-        [Authorize(Policy = "BelongsToProject,ValidProjectApiKey")]
+        [Authorize(Policy = "BelongsToProject")]
         public async Task<ApiResponse> Post(string projectName, GeofenceRequestModel geofenceModel)
         {
             var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
@@ -129,7 +129,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPut("/{projectName}/geofences/{geofenceId}")]
-        [Authorize(Policy = "BelongsToProject,ValidProjectApiKey")]
+        [Authorize(Policy = "BelongsToProject")]
         public async Task<ApiResponse> UpdateGeofence(string projectName, Guid geofenceId, GeofenceRequestModel geofenceModel)
         {
             var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
@@ -168,7 +168,7 @@ namespace Ranger.ApiGateway
         ///<param name="externalId">The friendly name of the geofence to delete</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpDelete("/{projectName}/geofences/{externalId}")]
-        [Authorize(Policy = "BelongsToProject,ValidProjectApiKey")]
+        [Authorize(Policy = "BelongsToProject")]
         public async Task<ApiResponse> DeleteGeofence(string projectName, string externalId)
         {
             var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
