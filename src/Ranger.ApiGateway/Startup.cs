@@ -61,6 +61,10 @@ namespace Ranger.ApiGateway
                 {
                     policyBuilder.AddRequirements(new ValidBreadcrumbApiKeyRequirement());
                 });
+                options.AddPolicy("ValidProjectApiKey", policyBuilder =>
+                {
+                    policyBuilder.AddRequirements(new ValidProjectApiKeyRequirement());
+                });
                 options.AddPolicy("TenantIdResolved", policyBuilder =>
                 {
                     policyBuilder.AddRequirements(new TenantIdResolvedRequirement());

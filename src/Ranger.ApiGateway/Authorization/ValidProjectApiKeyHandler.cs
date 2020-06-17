@@ -10,13 +10,13 @@ using Ranger.InternalHttpClient;
 
 namespace Ranger.ApiGateway.Authorization
 {
-    public class ValidBreadcrumbApiKeyHandler : AuthorizationHandler<ValidBreadcrumbApiKeyRequirement>
+    public class ValidProjectApiKeyHandler : AuthorizationHandler<ValidProjectApiKeyRequirement>
     {
         private readonly TenantsHttpClient tenantsClient;
         private readonly ProjectsHttpClient projectsClient;
         private readonly IHttpContextAccessor httpContextAccessor;
-        private readonly ILogger<ValidBreadcrumbApiKeyHandler> logger;
-        public ValidBreadcrumbApiKeyHandler(TenantsHttpClient tenantsClient, ProjectsHttpClient projectsClient, IHttpContextAccessor httpContextAccessor, ILogger<ValidBreadcrumbApiKeyHandler> logger)
+        private readonly ILogger<ValidProjectApiKeyHandler> logger;
+        public ValidProjectApiKeyHandler(TenantsHttpClient tenantsClient, ProjectsHttpClient projectsClient, IHttpContextAccessor httpContextAccessor, ILogger<ValidProjectApiKeyHandler> logger)
         {
             this.tenantsClient = tenantsClient;
             this.projectsClient = projectsClient;
@@ -35,7 +35,7 @@ namespace Ranger.ApiGateway.Authorization
             public string TenantId { get; set; }
         }
 
-        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, ValidBreadcrumbApiKeyRequirement requirement)
+        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, ValidProjectApiKeyRequirement requirement)
         {
             StringValues apiKey;
             var apiKeySuccess = httpContextAccessor.HttpContext.Request.Headers.TryGetValue("x-ranger-apikey", out apiKey);
@@ -44,13 +44,13 @@ namespace Ranger.ApiGateway.Authorization
                 if (apiKey.Count == 1)
                 {
                     var apiKeyParts = apiKey[0].Split('.');
-                    if (apiKeyParts?.Length == 2 && apiKeyParts[0] == "proj")
+                    if (apiKeyParts?.Length == 2 && (apiKeyParts[0] == "live" || apiKeyParts[0] == "test"))
                     {
                         logger.LogInformation($"The API key provided was for the incorrect purpose");
                         context.Fail();
                     }
 
-                    if (apiKeyParts?.Length == 2 && (apiKeyParts[0] == "live" || apiKeyParts[0] == "test") && Guid.TryParse(apiKeyParts[1], out _))
+                    if (apiKeyParts?.Length == 2 && apiKeyParts[0] == "proj" && Guid.TryParse(apiKeyParts[1], out _))
                     {
                         var apiResponse = await projectsClient.GetTenantIdByApiKeyAsync(apiKey);
                         if (!apiResponse.IsError)
@@ -63,7 +63,7 @@ namespace Ranger.ApiGateway.Authorization
                                 {
                                     if (projectApiResponse.Result.Enabled)
                                     {
-                                        httpContextAccessor.HttpContext.Items["ApiKeyEnvironment"] = apiKeyParts[0].ToUpperInvariant();
+                                        httpContextAccessor.HttpContext.Items["ProjectApiKeyPrefix"] = apiKey.ToString().Substring(0, 11);
                                         httpContextAccessor.HttpContext.Items["TenantId"] = tenantApiResponse.Result.TenantId;
                                         httpContextAccessor.HttpContext.Items["ProjectId"] = projectApiResponse.Result.ProjectId.ToString();
                                         httpContextAccessor.HttpContext.Items["ProjectName"] = projectApiResponse.Result.Name.ToString();
