@@ -35,7 +35,7 @@ namespace Ranger.ApiGateway
         ///<param name="projectName">The friendly name of the project</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("/{projectName}/geofences")]
-        [Authorize(Policy = "BelongsToProject,ValidProjectApiKey")]
+        [Authorize(Policy = "BelongsToProject")]
         public async Task<ApiResponse> GetAllGeofences(string projectName)
         {
             var authorizedProject = HttpContext.Items["AuthorizedProject"] as ProjectModel;
