@@ -37,71 +37,78 @@ namespace Ranger.ApiGateway.Authorization
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, ValidProjectApiKeyRequirement requirement)
         {
-            StringValues apiKey;
-            var apiKeySuccess = httpContextAccessor.HttpContext.Request.Headers.TryGetValue("x-ranger-apikey", out apiKey);
-            if (apiKeySuccess)
+            try
             {
-                if (apiKey.Count == 1)
+                StringValues apiKey;
+                var apiKeySuccess = httpContextAccessor.HttpContext.Request.Headers.TryGetValue("x-ranger-apikey", out apiKey);
+                if (apiKeySuccess)
                 {
-                    var apiKeyParts = apiKey[0].Split('.');
-                    if (apiKeyParts?.Length == 2 && (apiKeyParts[0] == "live" || apiKeyParts[0] == "test"))
+                    if (apiKey.Count == 1)
                     {
-                        logger.LogInformation($"The API key provided was for the incorrect purpose");
-                        context.Fail();
-                    }
-
-                    if (apiKeyParts?.Length == 2 && apiKeyParts[0] == "proj" && Guid.TryParse(apiKeyParts[1], out _))
-                    {
-                        var apiResponse = await projectsClient.GetTenantIdByApiKeyAsync(apiKey.Single());
-                        if (!apiResponse.IsError)
+                        var apiKeyParts = apiKey[0].Split('.');
+                        if (apiKeyParts?.Length == 2 && (apiKeyParts[0] == "live" || apiKeyParts[0] == "test"))
                         {
-                            var tenantApiResponse = await tenantsClient.GetTenantByIdAsync<TenantResult>(apiResponse.Result);
-                            if (!tenantApiResponse.IsError)
+                            logger.LogInformation($"The API key provided was for the incorrect purpose");
+                            context.Fail();
+                        }
+
+                        if (apiKeyParts?.Length == 2 && apiKeyParts[0] == "proj" && Guid.TryParse(apiKeyParts[1], out _))
+                        {
+                            var apiResponse = await projectsClient.GetTenantIdByApiKeyAsync(apiKey.Single());
+                            if (!apiResponse.IsError)
                             {
-                                var projectApiResponse = await projectsClient.GetProjectByApiKeyAsync<ProjectAuthenticationResult>(tenantApiResponse.Result.TenantId, apiKey);
-                                if (!projectApiResponse.IsError)
+                                var tenantApiResponse = await tenantsClient.GetTenantByIdAsync<TenantResult>(apiResponse.Result);
+                                if (!tenantApiResponse.IsError)
                                 {
-                                    if (projectApiResponse.Result.Enabled)
+                                    var projectApiResponse = await projectsClient.GetProjectByApiKeyAsync<ProjectAuthenticationResult>(tenantApiResponse.Result.TenantId, apiKey);
+                                    if (!projectApiResponse.IsError)
                                     {
-                                        httpContextAccessor.HttpContext.Items["ProjectApiKeyPrefix"] = apiKey.Single().Substring(0, 11);
-                                        httpContextAccessor.HttpContext.Items["TenantId"] = tenantApiResponse.Result.TenantId;
-                                        httpContextAccessor.HttpContext.Items["ProjectId"] = projectApiResponse.Result.ProjectId.ToString();
-                                        httpContextAccessor.HttpContext.Items["ProjectName"] = projectApiResponse.Result.Name.ToString();
-                                        context.Succeed(requirement);
+                                        if (projectApiResponse.Result.Enabled)
+                                        {
+                                            httpContextAccessor.HttpContext.Items["ProjectApiKeyPrefix"] = apiKey.Single().Substring(0, 11);
+                                            httpContextAccessor.HttpContext.Items["TenantId"] = tenantApiResponse.Result.TenantId;
+                                            httpContextAccessor.HttpContext.Items["ProjectId"] = projectApiResponse.Result.ProjectId.ToString();
+                                            httpContextAccessor.HttpContext.Items["ProjectName"] = projectApiResponse.Result.Name.ToString();
+                                            context.Succeed(requirement);
+                                        }
+                                        else
+                                        {
+                                            logger.LogInformation("Project {Id} is not enabled for tenant id {TenantId}", projectApiResponse.StatusCode, projectApiResponse.Result.ProjectId, tenantApiResponse.Result.TenantId);
+                                        }
                                     }
                                     else
                                     {
-                                        logger.LogInformation("Project {Id} is not enabled for tenant id {TenantId}", projectApiResponse.StatusCode, projectApiResponse.Result.ProjectId, tenantApiResponse.Result.TenantId);
+                                        logger.LogInformation("Received {Status} when attempting to retrieve project for tenant id {TenantId} and api key in environment {Environment}", projectApiResponse.StatusCode, tenantApiResponse.Result, apiKeyParts[0].ToUpperInvariant());
                                     }
                                 }
                                 else
                                 {
-                                    logger.LogInformation("Received {Status} when attempting to retrieve project for tenant id {TenantId} and api key in environment {Environment}", projectApiResponse.StatusCode, tenantApiResponse.Result, apiKeyParts[0].ToUpperInvariant());
+                                    logger.LogInformation("Received {Status} when attempting to retrieve tenant for tenant id {TenantId}", tenantApiResponse.StatusCode, tenantApiResponse.Result);
                                 }
                             }
                             else
                             {
-                                logger.LogInformation("Received {Status} when attempting to retrieve tenant for tenant id {TenantId}", tenantApiResponse.StatusCode, tenantApiResponse.Result);
+                                logger.LogInformation("Received {Status} when attempting to retrieve tenant id for api key in environment {Environment}", apiResponse.StatusCode, apiKeyParts[0].ToUpperInvariant());
                             }
                         }
                         else
                         {
-                            logger.LogInformation("Received {Status} when attempting to retrieve tenant id for api key in environment {Environment}", apiResponse.StatusCode, apiKeyParts[0].ToUpperInvariant());
+                            logger.LogInformation($"The API key was not a valid format");
                         }
                     }
                     else
                     {
-                        logger.LogInformation($"The API key was not a valid format");
+                        logger.LogInformation("Multiple x-ranger-apikey headers were present in the request");
                     }
                 }
                 else
                 {
-                    logger.LogInformation("Multiple x-ranger-apikey headers were present in the request");
+                    logger.LogInformation("No x-ranger-apikey header was present in the request");
                 }
             }
-            else
+            catch (Exception ex)
             {
-                logger.LogInformation("No x-ranger-apikey header was present in the request");
+                logger.LogCritical(ex, "An exception occurred validating the Project Api Key");
             }
         }
     }

@@ -31,44 +31,51 @@ namespace Ranger.ApiGateway.Authorization
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, BelongsToProjectRequirement requirement)
         {
-            var projectName = httpContextAccessor.HttpContext.Request.Path.Value.Split("/")[1];
-            if (!String.IsNullOrWhiteSpace(projectName))
+            try
             {
-                var user = context.User.UserFromClaims();
-                if (!String.IsNullOrWhiteSpace(user.Domain) && !String.IsNullOrWhiteSpace(user.Email) && !String.IsNullOrWhiteSpace(user.Role))
+                var projectName = httpContextAccessor.HttpContext.Request.Path.Value.Split("/")[1];
+                if (!String.IsNullOrWhiteSpace(projectName))
                 {
-                    var tenantApiResponse = await tenantsHttpClient.GetTenantByDomainAsync<TenantResult>(user.Domain);
-                    if (!tenantApiResponse.IsError)
+                    var user = context.User.UserFromClaims();
+                    if (!String.IsNullOrWhiteSpace(user.Domain) && !String.IsNullOrWhiteSpace(user.Email) && !String.IsNullOrWhiteSpace(user.Role))
                     {
-                        if (tenantApiResponse.Result.Confirmed)
+                        var tenantApiResponse = await tenantsHttpClient.GetTenantByDomainAsync<TenantResult>(user.Domain);
+                        if (!tenantApiResponse.IsError)
                         {
-                            httpContextAccessor.HttpContext.Items["TenantId"] = tenantApiResponse.Result.TenantId;
-                            var apiResponse = await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(tenantApiResponse.Result.TenantId, user.Email).ConfigureAwait(false);
-                            if (apiResponse.IsError)
+                            if (tenantApiResponse.Result.Confirmed)
                             {
-                                logger.LogError($"Failed to retrieve authorized projects to validate user's project authorization. Domain: '{user.Domain}', Email: '{user.Email}'");
+                                httpContextAccessor.HttpContext.Items["TenantId"] = tenantApiResponse.Result.TenantId;
+                                var apiResponse = await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(tenantApiResponse.Result.TenantId, user.Email).ConfigureAwait(false);
+                                if (apiResponse.IsError)
+                                {
+                                    logger.LogError($"Failed to retrieve authorized projects to validate user's project authorization. Domain: '{user.Domain}', Email: '{user.Email}'");
+                                }
+                                else
+                                {
+                                    var project = apiResponse.Result.Where(_ => _.Name == projectName).SingleOrDefault();
+                                    if (project is null)
+                                    {
+                                        logger.LogInformation("The user is not authorized to access the requested project");
+                                    }
+                                    httpContextAccessor.HttpContext.Items["AuthorizedProject"] = project;
+                                    context.Succeed(requirement);
+                                }
                             }
                             else
                             {
-                                var project = apiResponse.Result.Where(_ => _.Name == projectName).SingleOrDefault();
-                                if (project is null)
-                                {
-                                    logger.LogInformation("The user is not authorized to access the requested project");
-                                }
-                                httpContextAccessor.HttpContext.Items["AuthorizedProject"] = project;
-                                context.Succeed(requirement);
+                                logger.LogInformation("The tenant is not yet confirmed");
                             }
                         }
                         else
                         {
-                            logger.LogInformation("The tenant is not yet confirmed");
+                            logger.LogInformation("Received {Status} when attempting to retrieve tenant for domain {Domain}", tenantApiResponse.StatusCode, user.Domain);
                         }
                     }
-                    else
-                    {
-                        logger.LogInformation("Received {Status} when attempting to retrieve tenant for domain {Domain}", tenantApiResponse.StatusCode, user.Domain);
-                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical(ex, "An exception occurred validating whether the user belongs to the project");
             }
         }
     }

@@ -26,30 +26,37 @@ namespace Ranger.ApiGateway.Authorization
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, TenantIdResolvedRequirement requirement)
         {
-            var domain = GetDomainFromUserClaims(httpContextAccessor);
-            if (!String.IsNullOrWhiteSpace(domain))
+            try
             {
-                var tenantApiResponse = await tenantsClient.GetTenantByDomainAsync<TenantResult>(domain);
-                if (!tenantApiResponse.IsError)
+                var domain = GetDomainFromUserClaims(httpContextAccessor);
+                if (!String.IsNullOrWhiteSpace(domain))
                 {
-                    if (tenantApiResponse.Result.Confirmed)
+                    var tenantApiResponse = await tenantsClient.GetTenantByDomainAsync<TenantResult>(domain);
+                    if (!tenantApiResponse.IsError)
                     {
-                        httpContextAccessor.HttpContext.Items["TenantId"] = tenantApiResponse.Result.TenantId;
-                        context.Succeed(requirement);
+                        if (tenantApiResponse.Result.Confirmed)
+                        {
+                            httpContextAccessor.HttpContext.Items["TenantId"] = tenantApiResponse.Result.TenantId;
+                            context.Succeed(requirement);
+                        }
+                        else
+                        {
+                            logger.LogInformation("The tenant is not yet confirmed");
+                        }
                     }
                     else
                     {
-                        logger.LogInformation("The tenant is not yet confirmed");
+                        logger.LogInformation("Received {Status} when attempting to retrieve tenant for domain {Domain}", tenantApiResponse.StatusCode, domain);
                     }
                 }
                 else
                 {
-                    logger.LogInformation("Received {Status} when attempting to retrieve tenant for domain {Domain}", tenantApiResponse.StatusCode, domain);
+                    logger.LogInformation("No domain was present on the user's claims");
                 }
             }
-            else
+            catch (Exception ex)
             {
-                logger.LogInformation("No domain was present on the user's claims");
+                logger.LogCritical(ex, "An exception occurred validating the tenant is confirmed");
             }
         }
 
