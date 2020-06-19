@@ -47,7 +47,7 @@ namespace Ranger.ApiGateway
                             // this will throw if the tenant was removed
                             await tenantsClient.GetTenantByIdAsync<TenantModel>(tenantIdResponse.Result);
 
-                            var projectApiResponse = await projectsClient.GetProjectByApiKeyAsync<ProjectAuthenticationResult>(tenantIdResponse.Result, apiKey);
+                            var projectApiResponse = await projectsClient.GetProjectByApiKeyAsync<ProjectModel>(tenantIdResponse.Result, apiKey);
                             if (projectApiResponse.Result.Enabled)
                             {
                                 httpContextAccessor.HttpContext.Items[HttpContextAuthItems.ProjectApiKeyPrefix] = apiKey.Single().Substring(0, 11);
