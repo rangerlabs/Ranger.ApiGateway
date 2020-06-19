@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -41,42 +42,24 @@ namespace Ranger.ApiGateway
 
                         if (apiKeyParts?.Length == 2 && apiKeyParts[0] == "proj" && Guid.TryParse(apiKeyParts[1], out _))
                         {
-                            var apiResponse = await projectsClient.GetTenantIdByApiKeyAsync(apiKey.Single());
-                            if (!apiResponse.IsError)
+                            var tenantIdResponse = await projectsClient.GetTenantIdByApiKeyAsync(apiKey.Single());
+
+                            // this will throw if the tenant was removed
+                            await tenantsClient.GetTenantByIdAsync<TenantModel>(tenantIdResponse.Result);
+
+                            var projectApiResponse = await projectsClient.GetProjectByApiKeyAsync<ProjectAuthenticationResult>(tenantIdResponse.Result, apiKey);
+                            if (projectApiResponse.Result.Enabled)
                             {
-                                var tenantId = await TenantIdResolver<ValidProjectApiKeyHandler>.ResolveTenantId(httpContextAccessor.HttpContext, tenantsClient, apiResponse.Result, logger);
-                                if (String.IsNullOrWhiteSpace(tenantId))
-                                {
-                                    context.Fail();
-                                }
-                                else
-                                {
-                                    var projectApiResponse = await projectsClient.GetProjectByApiKeyAsync<ProjectAuthenticationResult>(tenantId, apiKey);
-                                    if (!projectApiResponse.IsError)
-                                    {
-                                        if (projectApiResponse.Result.Enabled)
-                                        {
-                                            httpContextAccessor.HttpContext.Items[HttpContextAuthItems.ProjectApiKeyPrefix] = apiKey.Single().Substring(0, 11);
-                                            httpContextAccessor.HttpContext.Items[HttpContextAuthItems.TenantId] = tenantId;
-                                            httpContextAccessor.HttpContext.Items[HttpContextAuthItems.Project] = projectApiResponse.Result;
-                                            logger.LogInformation("Authorization succeeded for policy 'ValidProjectApiKeyHandler");
-                                            context.Succeed(requirement);
-                                        }
-                                        else
-                                        {
-                                            logger.LogInformation("Project {Id} is not enabled for tenant id {TenantId}", projectApiResponse.StatusCode, projectApiResponse.Result.ProjectId, tenantId);
-                                            context.Fail();
-                                        }
-                                    }
-                                    else
-                                    {
-                                        logger.LogInformation("Received {Status} when attempting to retrieve project for tenant id {TenantId} and api key in environment {Environment}", projectApiResponse.StatusCode, tenantId, apiKeyParts[0].ToUpperInvariant());
-                                    }
-                                }
+                                httpContextAccessor.HttpContext.Items[HttpContextAuthItems.ProjectApiKeyPrefix] = apiKey.Single().Substring(0, 11);
+                                httpContextAccessor.HttpContext.Items[HttpContextAuthItems.TenantId] = tenantIdResponse.Result;
+                                httpContextAccessor.HttpContext.Items[HttpContextAuthItems.Project] = projectApiResponse.Result;
+                                logger.LogInformation("Authorization succeeded for policy 'ValidProjectApiKeyHandler");
+                                context.Succeed(requirement);
                             }
                             else
                             {
-                                logger.LogInformation("Received {Status} when attempting to retrieve tenant id for api key in environment {Environment}", apiResponse.StatusCode, apiKeyParts[0].ToUpperInvariant());
+                                logger.LogInformation("Project {Id} is not enabled for tenant id {TenantId}", projectApiResponse.StatusCode, projectApiResponse.Result.ProjectId, tenantIdResponse.Result);
+                                context.Fail();
                             }
                         }
                         else
@@ -93,6 +76,10 @@ namespace Ranger.ApiGateway
                 {
                     logger.LogInformation("No x-ranger-apikey header was present in the request");
                 }
+            }
+            catch (ApiException ex)
+            {
+                logger.LogInformation(ex, "Failed to retrieve a resource necessary to validate the requirement");
             }
             catch (Exception ex)
             {

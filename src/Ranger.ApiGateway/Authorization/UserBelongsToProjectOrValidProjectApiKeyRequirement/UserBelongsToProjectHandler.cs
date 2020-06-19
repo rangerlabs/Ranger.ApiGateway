@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -43,25 +44,22 @@ namespace Ranger.ApiGateway
                         else
                         {
                             var apiResponse = await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(tenantId, user.Email).ConfigureAwait(false);
-                            if (apiResponse.IsError)
+                            var project = apiResponse.Result.Where(_ => _.Name == projectName).SingleOrDefault();
+                            if (project is null)
                             {
-                                logger.LogError($"Failed to retrieve authorized projects to validate user's project authorization. Domain: '{user.Domain}', Email: '{user.Email}'");
+                                logger.LogInformation("The user is not authorized to access the requested project");
                             }
-                            else
-                            {
-                                var project = apiResponse.Result.Where(_ => _.Name == projectName).SingleOrDefault();
-                                if (project is null)
-                                {
-                                    logger.LogInformation("The user is not authorized to access the requested project");
-                                }
-                                httpContextAccessor.HttpContext.Items[HttpContextAuthItems.TenantId] = tenantId;
-                                httpContextAccessor.HttpContext.Items[HttpContextAuthItems.Project] = project;
-                                logger.LogInformation("Authorization succeeded for policy 'BelongsToProjectHandler");
-                                context.Succeed(requirement);
-                            }
+                            httpContextAccessor.HttpContext.Items[HttpContextAuthItems.TenantId] = tenantId;
+                            httpContextAccessor.HttpContext.Items[HttpContextAuthItems.Project] = project;
+                            logger.LogInformation("Authorization succeeded for policy 'BelongsToProjectHandler");
+                            context.Succeed(requirement);
                         }
                     }
                 }
+            }
+            catch (ApiException ex)
+            {
+                logger.LogInformation(ex, "Failed to retrieve a resource necessary to validate the requirement");
             }
             catch (Exception ex)
             {
