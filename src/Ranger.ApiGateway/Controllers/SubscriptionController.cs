@@ -12,7 +12,7 @@ namespace Ranger.ApiGateway.Controllers
 {
     [ApiVersion("1.0")]
     [ApiController]
-    [Authorize(Policy = "TenantIdResolved")]
+    [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
     public class SubscriptionController : BaseController<SubscriptionController>
     {
         private readonly SubscriptionsHttpClient subscriptionsClient;

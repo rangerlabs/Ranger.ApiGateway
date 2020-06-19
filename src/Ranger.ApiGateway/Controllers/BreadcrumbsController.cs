@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+
 using Ranger.Common;
 using Ranger.RabbitMQ;
 
@@ -12,7 +13,7 @@ namespace Ranger.ApiGateway.Controllers
 {
     [ApiVersion("1.0")]
     [ApiController]
-    [Authorize(Policy = "ValidBreadcrumbApiKey")]
+    [Authorize(Policy = AuthorizationPolicyNames.ValidBreadcrumbApiKey)]
     public class BreadcrumbsController : BaseController<BreadcrumbsController>
     {
         private readonly IBusPublisher busPublisher;
@@ -32,15 +33,13 @@ namespace Ranger.ApiGateway.Controllers
         public async Task<ApiResponse> PostBreadcrumb([FromBody] BreadcrumbModel breadcrumbModel)
         {
             logger.LogDebug("Breadcrumb received");
-            var environment = Enum.Parse<EnvironmentEnum>(HttpContext.Items["ApiKeyEnvironment"] as string);
-            var tenantId = HttpContext.Items["TenantId"] as string;
-            var projectId = Guid.Parse(HttpContext.Items["ProjectId"] as string);
-            var projectName = HttpContext.Items["ProjectName"] as string;
+            var environment = Enum.Parse<EnvironmentEnum>(HttpContext.Items[HttpContextAuthItems.BreadcrumbApiKeyEnvironment] as string);
+            var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
             return await Task.Run(() =>
                 base.SendAndAccept(new ComputeGeofenceIntersections(
-                        tenantId,
-                        projectId,
-                        projectName,
+                        TenantId,
+                        project.ProjectId,
+                        project.Name,
                         environment,
                         new Breadcrumb(
                             breadcrumbModel.DeviceId,

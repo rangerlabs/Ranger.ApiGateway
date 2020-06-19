@@ -4,6 +4,7 @@ using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+
 using Ranger.Common;
 using Ranger.RabbitMQ;
 
@@ -89,6 +90,6 @@ namespace Ranger.ApiGateway
 
         protected User UserFromClaims => User.UserFromClaims();
         protected string Culture => Request.Headers.ContainsKey(AcceptLanguageHeader) ? Request.Headers[AcceptLanguageHeader].First().ToLowerInvariant() : DefaultCulture;
-        protected string TenantId => HttpContext.Items["TenantId"] as string;
+        protected string TenantId => HttpContext.Items[HttpContextAuthItems.TenantId] as string;
     }
 }

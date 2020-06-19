@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -8,15 +7,15 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Ranger.InternalHttpClient;
 
-namespace Ranger.ApiGateway.Authorization
+namespace Ranger.ApiGateway
 {
-    public class ValidProjectApiKeyHandler : AuthorizationHandler<ValidProjectApiKeyRequirement>
+    public partial class ValidBreadcrumbApiKeyHandler : AuthorizationHandler<ValidBreadcrumbApiKeyRequirement>
     {
         private readonly TenantsHttpClient tenantsClient;
         private readonly ProjectsHttpClient projectsClient;
         private readonly IHttpContextAccessor httpContextAccessor;
-        private readonly ILogger<ValidProjectApiKeyHandler> logger;
-        public ValidProjectApiKeyHandler(TenantsHttpClient tenantsClient, ProjectsHttpClient projectsClient, IHttpContextAccessor httpContextAccessor, ILogger<ValidProjectApiKeyHandler> logger)
+        private readonly ILogger<ValidBreadcrumbApiKeyHandler> logger;
+        public ValidBreadcrumbApiKeyHandler(TenantsHttpClient tenantsClient, ProjectsHttpClient projectsClient, IHttpContextAccessor httpContextAccessor, ILogger<ValidBreadcrumbApiKeyHandler> logger)
         {
             this.tenantsClient = tenantsClient;
             this.projectsClient = projectsClient;
@@ -24,18 +23,7 @@ namespace Ranger.ApiGateway.Authorization
             this.logger = logger;
         }
 
-        private class ProjectAuthenticationResult
-        {
-            public Guid ProjectId { get; set; }
-            public string Name { get; set; }
-            public bool Enabled { get; set; }
-        }
-        private class TenantResult
-        {
-            public string TenantId { get; set; }
-        }
-
-        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, ValidProjectApiKeyRequirement requirement)
+        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, ValidBreadcrumbApiKeyRequirement requirement)
         {
             try
             {
@@ -46,44 +34,44 @@ namespace Ranger.ApiGateway.Authorization
                     if (apiKey.Count == 1)
                     {
                         var apiKeyParts = apiKey[0].Split('.');
-                        if (apiKeyParts?.Length == 2 && (apiKeyParts[0] == "live" || apiKeyParts[0] == "test"))
+                        if (apiKeyParts?.Length == 2 && apiKeyParts[0] == "proj")
                         {
                             logger.LogInformation($"The API key provided was for the incorrect purpose");
-                            context.Fail();
                         }
 
-                        if (apiKeyParts?.Length == 2 && apiKeyParts[0] == "proj" && Guid.TryParse(apiKeyParts[1], out _))
+                        if (apiKeyParts?.Length == 2 && (apiKeyParts[0] == "live" || apiKeyParts[0] == "test") && Guid.TryParse(apiKeyParts[1], out _))
                         {
                             var apiResponse = await projectsClient.GetTenantIdByApiKeyAsync(apiKey.Single());
                             if (!apiResponse.IsError)
                             {
-                                var tenantApiResponse = await tenantsClient.GetTenantByIdAsync<TenantResult>(apiResponse.Result);
-                                if (!tenantApiResponse.IsError)
+                                var tenantId = await TenantIdResolver<ValidBreadcrumbApiKeyHandler>.ResolveTenantId(httpContextAccessor.HttpContext, tenantsClient, apiResponse.Result, logger);
+                                if (String.IsNullOrWhiteSpace(tenantId))
                                 {
-                                    var projectApiResponse = await projectsClient.GetProjectByApiKeyAsync<ProjectAuthenticationResult>(tenantApiResponse.Result.TenantId, apiKey);
+                                    context.Fail();
+                                }
+                                else
+                                {
+                                    var projectApiResponse = await projectsClient.GetProjectByApiKeyAsync<ProjectAuthenticationResult>(tenantId, apiKey);
                                     if (!projectApiResponse.IsError)
                                     {
                                         if (projectApiResponse.Result.Enabled)
                                         {
-                                            httpContextAccessor.HttpContext.Items["ProjectApiKeyPrefix"] = apiKey.Single().Substring(0, 11);
-                                            httpContextAccessor.HttpContext.Items["TenantId"] = tenantApiResponse.Result.TenantId;
-                                            httpContextAccessor.HttpContext.Items["AuthorizedProject"] = projectApiResponse.Result;
-                                            logger.LogInformation("Authorization succeeded for policy 'ValidProjectApiKeyHandler");
+                                            httpContextAccessor.HttpContext.Items[HttpContextAuthItems.BreadcrumbApiKeyEnvironment] = apiKeyParts[0].ToUpperInvariant();
+                                            httpContextAccessor.HttpContext.Items[HttpContextAuthItems.TenantId] = tenantId;
+                                            httpContextAccessor.HttpContext.Items[HttpContextAuthItems.Project] = projectApiResponse.Result;
+                                            logger.LogInformation("Authorization succeeded for policy 'ValidBreadcrumbApiKeyHandler");
                                             context.Succeed(requirement);
                                         }
                                         else
                                         {
-                                            logger.LogInformation("Project {Id} is not enabled for tenant id {TenantId}", projectApiResponse.StatusCode, projectApiResponse.Result.ProjectId, tenantApiResponse.Result.TenantId);
+                                            logger.LogInformation("Project {Id} is not enabled for tenant id {TenantId}", projectApiResponse.StatusCode, projectApiResponse.Result.ProjectId, tenantId);
+                                            context.Fail();
                                         }
                                     }
                                     else
                                     {
-                                        logger.LogInformation("Received {Status} when attempting to retrieve project for tenant id {TenantId} and api key in environment {Environment}", projectApiResponse.StatusCode, tenantApiResponse.Result, apiKeyParts[0].ToUpperInvariant());
+                                        logger.LogInformation("Received {Status} when attempting to retrieve project for tenant id {TenantId} and api key in environment {Environment}", projectApiResponse.StatusCode, tenantId, apiKeyParts[0].ToUpperInvariant());
                                     }
-                                }
-                                else
-                                {
-                                    logger.LogInformation("Received {Status} when attempting to retrieve tenant for tenant id {TenantId}", tenantApiResponse.StatusCode, tenantApiResponse.Result);
                                 }
                             }
                             else
@@ -108,7 +96,7 @@ namespace Ranger.ApiGateway.Authorization
             }
             catch (Exception ex)
             {
-                logger.LogCritical(ex, "An exception occurred validating the Project Api Key");
+                logger.LogCritical(ex, "An exception occurred validating the Breadcrumb Api Key");
             }
         }
     }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+
 using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
@@ -15,7 +16,6 @@ namespace Ranger.ApiGateway
 {
     [ApiVersion("1.0")]
     [ApiController]
-    [Authorize(Roles = "User")]
     public class GeofencesController : BaseController<GeofencesController>
     {
         private readonly GeofencesHttpClient geofencesClient;
@@ -35,10 +35,10 @@ namespace Ranger.ApiGateway
         ///<param name="projectName">The friendly name of the project</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("/{projectName}/geofences")]
-        [Authorize(Policy = "BelongsToProject")]
+        [Authorize(Policy = AuthorizationPolicyNames.UserBelongsToProjectOrValidProjectApiKey)]
         public async Task<ApiResponse> GetAllGeofences(string projectName)
         {
-            var authorizedProject = HttpContext.Items["AuthorizedProject"] as ProjectModel;
+            var authorizedProject = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
             var apiResponse = await geofencesClient.GetAllGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(TenantId, authorizedProject.ProjectId);
             return new ApiResponse("Successfully retrieved geofences", apiResponse.Result);
         }
@@ -51,14 +51,14 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("/{projectName}/geofences")]
-        [Authorize(Policy = "BelongsToProject")]
+        [Authorize(Policy = AuthorizationPolicyNames.UserBelongsToProjectOrValidProjectApiKey)]
         public async Task<ApiResponse> Post(string projectName, GeofenceRequestModel geofenceModel)
         {
-            var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
+            var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
             ValidateGeofence(geofenceModel);
             var createGeofenceSagaInitializer = new CreateGeofenceSagaInitializer(
                  User is null ? false : true,
-                 User?.UserFromClaims().Email ?? HttpContext.Items["ProjectApiKeyPrefix"] as string,
+                 User?.UserFromClaims().Email ?? HttpContext.Items[HttpContextAuthItems.ProjectApiKeyPrefix] as string,
                  TenantId,
                  geofenceModel.ExternalId,
                  project.ProjectId,
@@ -129,15 +129,15 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPut("/{projectName}/geofences/{geofenceId}")]
-        [Authorize(Policy = "BelongsToProject")]
+        [Authorize(Policy = AuthorizationPolicyNames.UserBelongsToProjectOrValidProjectApiKey)]
         public async Task<ApiResponse> UpdateGeofence(string projectName, Guid geofenceId, GeofenceRequestModel geofenceModel)
         {
-            var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
+            var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
 
             ValidateGeofence(geofenceModel);
             var createGeofenceSagaInitializer = new UpdateGeofenceSagaInitializer(
                 User is null ? false : true,
-                User?.UserFromClaims().Email ?? HttpContext.Items["ProjectApiKeyPrefix"] as string,
+                User?.UserFromClaims().Email ?? HttpContext.Items[HttpContextAuthItems.Project] as string,
                 TenantId,
                 geofenceId,
                 geofenceModel.ExternalId,
@@ -168,13 +168,13 @@ namespace Ranger.ApiGateway
         ///<param name="externalId">The friendly name of the geofence to delete</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpDelete("/{projectName}/geofences/{externalId}")]
-        [Authorize(Policy = "BelongsToProject")]
+        [Authorize(Policy = AuthorizationPolicyNames.UserBelongsToProjectOrValidProjectApiKey)]
         public async Task<ApiResponse> DeleteGeofence(string projectName, string externalId)
         {
-            var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
+            var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
             var deleteGeofenceSagaInitializer = new DeleteGeofenceSagaInitializer(
                  User is null ? false : true,
-                 UserFromClaims.Email ?? HttpContext.Items["ProjectApiKeyPrefix"] as string,
+                 UserFromClaims.Email ?? HttpContext.Items[HttpContextAuthItems.ProjectApiKeyPrefix] as string,
                  TenantId,
                  externalId,
                  project.ProjectId

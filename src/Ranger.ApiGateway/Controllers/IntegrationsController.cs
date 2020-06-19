@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
 
@@ -33,10 +34,10 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpDelete("/{projectName}/integrations/{integrationName}")]
         [Authorize(Roles = "Admin")]
-        [Authorize(Policy = "BelongsToProject")]
+        [Authorize(Policy = AuthorizationPolicyNames.BelongsToProject)]
         public async Task<ApiResponse> DeleteIntegrationForProject(string projectName, string integrationName)
         {
-            var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
+            var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
             return await Task.Run(() => base.SendAndAccept(new DeleteIntegrationSagaInitializer(UserFromClaims.Email, TenantId, integrationName, project.ProjectId)));
         }
         ///<summary>
@@ -46,10 +47,10 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("/{projectName}/integrations")]
         [Authorize(Roles = "User")]
-        [Authorize(Policy = "BelongsToProject")]
+        [Authorize(Policy = AuthorizationPolicyNames.BelongsToProject)]
         public async Task<ApiResponse> GetAllIntegrationsForProject(string projectName)
         {
-            var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
+            var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
             var integrationsApiResponse = await integrationsClient.GetAllIntegrationsByProjectId<IEnumerable<dynamic>>(TenantId, project.ProjectId);
             return new ApiResponse("Succesfully retrived integrations", integrationsApiResponse.Result);
         }

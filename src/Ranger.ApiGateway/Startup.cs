@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
 using NodaTime;
 using NodaTime.Serialization.JsonNet;
-using Ranger.ApiGateway.Authorization;
+
 using Ranger.ApiGateway.Data;
 using Ranger.ApiUtilities;
 using Ranger.Common;
@@ -53,19 +53,19 @@ namespace Ranger.ApiGateway
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("BelongsToProject", policyBuilder =>
+                options.AddPolicy(AuthorizationPolicyNames.BelongsToProject, policyBuilder =>
                 {
                     policyBuilder.RequireAuthenticatedUser().AddRequirements(new BelongsToProjectRequirement());
                 });
-                options.AddPolicy("ValidBreadcrumbApiKey", policyBuilder =>
+                options.AddPolicy(AuthorizationPolicyNames.ValidBreadcrumbApiKey, policyBuilder =>
                 {
                     policyBuilder.AddRequirements(new ValidBreadcrumbApiKeyRequirement());
                 });
-                options.AddPolicy("ValidProjectApiKey", policyBuilder =>
+                options.AddPolicy(AuthorizationPolicyNames.UserBelongsToProjectOrValidProjectApiKey, policyBuilder =>
                 {
-                    policyBuilder.AddRequirements(new ValidProjectApiKeyRequirement());
+                    policyBuilder.AddRequirements(new UserBelongsToProjectOrValidProjectApiKeyRequirement());
                 });
-                options.AddPolicy("TenantIdResolved", policyBuilder =>
+                options.AddPolicy(AuthorizationPolicyNames.TenantIdResolved, policyBuilder =>
                 {
                     policyBuilder.AddRequirements(new TenantIdResolvedRequirement());
                 });
@@ -84,6 +84,8 @@ namespace Ranger.ApiGateway
             services.AddScoped<IAuthorizationHandler, BelongsToProjectHandler>();
             services.AddScoped<IAuthorizationHandler, ValidBreadcrumbApiKeyHandler>();
             services.AddScoped<IAuthorizationHandler, TenantIdResolvedHandler>();
+            services.AddScoped<IAuthorizationHandler, UserBelongsToProjectHandler>();
+            services.AddScoped<IAuthorizationHandler, ValidProjectApiKeyHandler>();
 
             services.AddCors();
 

@@ -16,7 +16,7 @@ namespace Ranger.ApiGateway
 {
     [ApiVersion("1.0")]
     [ApiController]
-    [Authorize(Policy = "TenantIdResolved")]
+    [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
     public class ProjectsController : BaseController<ProjectsController>
     {
         private readonly IBusPublisher busPublisher;

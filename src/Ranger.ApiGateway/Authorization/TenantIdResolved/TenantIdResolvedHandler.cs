@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Ranger.InternalHttpClient;
 
-namespace Ranger.ApiGateway.Authorization
+namespace Ranger.ApiGateway
 {
     public class TenantIdResolvedHandler : AuthorizationHandler<TenantIdResolvedRequirement>
     {
@@ -18,41 +18,37 @@ namespace Ranger.ApiGateway.Authorization
             this.httpContextAccessor = httpContextAccessor;
             this.tenantsClient = tenantsClient;
         }
-        private class TenantResult
-        {
-            public string TenantId { get; set; }
-            public bool Confirmed { get; set; }
-        }
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, TenantIdResolvedRequirement requirement)
         {
             try
             {
-                var domain = GetDomainFromUserClaims(httpContextAccessor);
-                if (!String.IsNullOrWhiteSpace(domain))
+                if (!String.IsNullOrWhiteSpace(httpContextAccessor.HttpContext.Items[HttpContextAuthItems.Project] as string))
                 {
-                    var tenantApiResponse = await tenantsClient.GetTenantByDomainAsync<TenantResult>(domain);
-                    if (!tenantApiResponse.IsError)
+                    logger.LogInformation("The TenantId was previously set. Authorization succeeded for policy 'TenantIdResolved");
+                    context.Succeed(requirement);
+                }
+                else
+                {
+                    var user = context.User.UserFromClaims();
+                    if (!String.IsNullOrWhiteSpace(user.Domain))
                     {
-                        if (tenantApiResponse.Result.Confirmed)
+                        var tenantId = await TenantIdResolver<TenantIdResolvedHandler>.ResolveTenantId(httpContextAccessor.HttpContext, tenantsClient, user.Domain, logger);
+                        if (String.IsNullOrWhiteSpace(tenantId))
                         {
-                            httpContextAccessor.HttpContext.Items["TenantId"] = tenantApiResponse.Result.TenantId;
-                            logger.LogInformation("Authorization succeeded for policy 'TenantIdResolved");
-                            context.Succeed(requirement);
+                            context.Fail();
                         }
                         else
                         {
-                            logger.LogInformation("The tenant is not yet confirmed");
+                            httpContextAccessor.HttpContext.Items[HttpContextAuthItems.TenantId] = tenantId;
+                            logger.LogInformation("Authorization succeeded for policy 'TenantIdResolved");
+                            context.Succeed(requirement);
                         }
                     }
                     else
                     {
-                        logger.LogInformation("Received {Status} when attempting to retrieve tenant for domain {Domain}", tenantApiResponse.StatusCode, domain);
+                        logger.LogInformation("No domain was present on the user's claims");
                     }
-                }
-                else
-                {
-                    logger.LogInformation("No domain was present on the user's claims");
                 }
             }
             catch (Exception ex)
@@ -60,7 +56,5 @@ namespace Ranger.ApiGateway.Authorization
                 logger.LogCritical(ex, "An exception occurred validating the tenant is confirmed");
             }
         }
-
-        private string GetDomainFromUserClaims(IHttpContextAccessor context) => context.HttpContext.User.UserFromClaims().Domain;
     }
 }

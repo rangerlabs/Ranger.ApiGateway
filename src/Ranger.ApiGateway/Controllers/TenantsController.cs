@@ -32,7 +32,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpDelete("/tenants/{domain}")]
         [Authorize(Roles = "PrimaryOwner")]
-        [Authorize(Policy = "TenantIdResolved")]
+        [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         public async Task<ApiResponse> DeleteTenant()
         {
             var deleteTenantMsg = new DeleteTenantSagaInitializer(UserFromClaims.Email, TenantId);
@@ -59,7 +59,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpPut("/tenants/{domain}")]
         [Authorize(Roles = "Owner")]
-        [Authorize(Policy = "TenantIdResolved")]
+        [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         public async Task<ApiResponse> Put(OrganizationFormPutModel organizationFormModel)
         {
             if (String.IsNullOrWhiteSpace(organizationFormModel.Domain) && String.IsNullOrWhiteSpace(organizationFormModel.OrganizationName))
@@ -78,8 +78,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("/tenants/{domain}")]
-        [Authorize(Roles = "User")]
-        [Authorize(Policy = "TenantIdResolved")]
+        [Authorize(Policy = AuthorizationPolicyNames.UserBelongsToProjectOrValidProjectApiKey)]
         public async Task<ApiResponse> GetTenant(string domain)
         {
             var apiResponse = await tenantsClient.GetTenantByDomainAsync<OrganizationFormPutModel>(domain);
@@ -121,7 +120,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [HttpGet("/tenants/{domain}/primary-owner-transfer")]
         [Authorize(Roles = "PrimaryOwner")]
-        [Authorize(Policy = "TenantIdResolved")]
+        [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         public async Task<ApiResponse> GetPrimaryOwnerTransfer(string domain)
         {
             var apiResponse = await tenantsClient.GetPrimaryOwnerTransferByDomain<PrimaryOwnerTransferModel>(domain);

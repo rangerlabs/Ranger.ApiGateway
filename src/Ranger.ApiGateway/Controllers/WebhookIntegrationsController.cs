@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+
 using Ranger.ApiGateway.Messages.Commands;
 using Ranger.Common;
 using Ranger.InternalHttpClient;
@@ -17,7 +18,7 @@ namespace Ranger.ApiGateway
     [ApiVersion("1.0")]
     [ApiController]
     [Authorize(Roles = "Admin")]
-    [Authorize(Policy = "BelongsToProject")]
+    [Authorize(Policy = AuthorizationPolicyNames.BelongsToProject)]
     public class WebhookIntegrationController : BaseController<WebhookIntegrationController>
     {
         private readonly IBusPublisher busPublisher;
@@ -40,7 +41,7 @@ namespace Ranger.ApiGateway
         [HttpPost("/{projectName}/integrations/webhook")]
         public async Task<ApiResponse> Post(string projectName, WebhookIntegrationPostModel webhookIntegrationModel)
         {
-            var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
+            var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
             var createIntegrationSagaInitializer = new CreateIntegrationSagaInitializer(
                  UserFromClaims.Email ?? "", //INSERT TOKEN HERE
                  TenantId,
@@ -62,7 +63,7 @@ namespace Ranger.ApiGateway
         [HttpPut("/{projectName}/integrations/webhook/{id}")]
         public async Task<ApiResponse> UpdateIntegration(string projectName, Guid id, WebhookIntegrationPutModel webhookIntegrationModel)
         {
-            var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
+            var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
             webhookIntegrationModel.IntegrationId = id;
             var updateIntegrationSagaInitializer = new UpdateIntegrationSagaInitializer(
                 UserFromClaims.Email,

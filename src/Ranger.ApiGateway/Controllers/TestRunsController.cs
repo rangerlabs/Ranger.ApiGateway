@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+
 using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
@@ -15,7 +16,7 @@ namespace Ranger.ApiGateway.Controllers
 {
     [ApiVersion("1.0")]
     [ApiController]
-    [Authorize(Policy = "TenantIdResolved")]
+    [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
     public class TestRunController : BaseController<BreadcrumbsController>
     {
         private readonly IBusPublisher busPublisher;
@@ -36,11 +37,11 @@ namespace Ranger.ApiGateway.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpPost("/{projectName}/test-runs")]
         [Authorize(Roles = "User")]
-        [Authorize(Policy = "BelongsToProject")]
+        [Authorize(Policy = AuthorizationPolicyNames.BelongsToProject)]
         public async Task<ApiResponse> PostBreadcrumb([FromBody] TestRunModel testRunModel)
         {
             logger.LogDebug("Test Run received");
-            var project = HttpContext.Items["AuthorizedProject"] as ProjectModel;
+            var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
 
             await Task.Run(() =>
             {

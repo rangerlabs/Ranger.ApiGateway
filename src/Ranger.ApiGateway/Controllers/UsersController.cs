@@ -38,7 +38,7 @@ namespace Ranger.ApiGateway
         ///<param name="email">The email address of the user to delete</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpDelete("/users/{email}")]
-        [Authorize(Policy = "TenantIdResolved")]
+        [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         [Authorize(Roles = "Admin")]
         public async Task<ApiResponse> DeleteUser(string email)
         {
@@ -57,7 +57,7 @@ namespace Ranger.ApiGateway
         ///<param name="passwordResetModel">The model necessary to initiate a password reset</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpPut("/users/password-reset")]
-        [Authorize(Policy = "TenantIdResolved")]
+        [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         public async Task<ApiResponse> PasswordResetRequest(PasswordResetModel passwordResetModel)
         {
             var apiResponse = await identityClient.RequestPasswordReset(TenantId, UserFromClaims.Email, JsonConvert.SerializeObject(passwordResetModel));
@@ -70,7 +70,7 @@ namespace Ranger.ApiGateway
         ///<param name="emailChangeModel">The model necessary to initiate an email change</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpPut("/users/email-change")]
-        [Authorize(Policy = "TenantIdResolved")]
+        [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         public async Task<ApiResponse> EmailChangeRequest(EmailChangeModel emailChangeModel)
         {
             var apiResponse = await identityClient.RequestEmailChange(TenantId, UserFromClaims.Email, JsonConvert.SerializeObject(emailChangeModel));
@@ -128,7 +128,7 @@ namespace Ranger.ApiGateway
         ///<param name="email">The email of the user to get authorized projects for</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("/users/{email}/authorized-projects")]
-        [Authorize(Policy = "TenantIdResolved")]
+        [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         public async Task<ApiResponse> GetAuthorizedProjectsForUser(string email)
         {
             var apiResponse = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(TenantId, email));
@@ -165,7 +165,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("/users/{email}")]
-        [Authorize(Policy = "TenantIdResolved")]
+        [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         [Authorize(Roles = "Admin")]
         public async Task<ApiResponse> GetUser(string email)
         {
@@ -186,7 +186,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("/users")]
-        [Authorize(Policy = "TenantIdResolved")]
+        [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         [Authorize(Roles = "Admin")]
         public async Task<ApiResponse> GetAllUsers()
         {
@@ -213,7 +213,7 @@ namespace Ranger.ApiGateway
         ///</summary>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpPost("/users")]
-        [Authorize(Policy = "TenantIdResolved")]
+        [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         [Authorize(Roles = "Admin")]
         public async Task<ApiResponse> CreateUser(PostApplicationUserModel postApplicationUserModel)
         {
@@ -236,7 +236,7 @@ namespace Ranger.ApiGateway
         ///<param name="putPermissionsModel">The model necessary to update the user's permissions</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpPut("/users/{email}")]
-        [Authorize(Policy = "TenantIdResolved")]
+        [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         [Authorize(Roles = "Admin")]
         public async Task<ApiResponse> PutPermissions(string email, PutPermissionsModel putPermissionsModel)
         {

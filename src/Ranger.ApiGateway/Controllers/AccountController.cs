@@ -35,7 +35,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPut("/account")]
-        [Authorize(Policy = "TenantIdResolved")]
+        [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         public async Task<ApiResponse> AccountUpdate(AccountUpdateModel accountUpdateModel)
         {
             var apiResponse = await identityClient.UpdateUserOrAccountAsync(TenantId, UserFromClaims.Email, JsonConvert.SerializeObject(accountUpdateModel));
@@ -50,7 +50,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpDelete("/account")]
-        [Authorize(Policy = "TenantIdResolved")]
+        [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         public async Task<ApiResponse> DeleteAccount(AccountDeleteModel accountDeleteModel)
         {
             if (UserFromClaims.Role.ToLowerInvariant() == Enum.GetName(typeof(RolesEnum), RolesEnum.PrimaryOwner))
@@ -72,7 +72,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("/account/transfer-primary-ownership")]
-        [Authorize(Policy = "TenantIdResolved")]
+        [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         public async Task<ApiResponse> TransferPrimaryOwnership([FromBody] TransferPrimaryOwnershipModel transferPrimaryOwnerModel)
         {
             if (UserFromClaims.Role != Enum.GetName(typeof(RolesEnum), RolesEnum.PrimaryOwner))

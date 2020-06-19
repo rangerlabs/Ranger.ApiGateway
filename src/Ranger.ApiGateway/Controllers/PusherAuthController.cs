@@ -17,7 +17,7 @@ namespace Ranger.ApiGateway
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Authorize(Policy = "TenantIdResolved")]
+    [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
     [AutoWrapIgnore]
     public class PusherController : BaseController<PusherController>
     {
