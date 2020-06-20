@@ -11,10 +11,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using NodaTime;
 using NodaTime.Serialization.JsonNet;
-
 using Ranger.ApiGateway.Data;
 using Ranger.ApiUtilities;
 using Ranger.Common;
@@ -41,6 +41,7 @@ namespace Ranger.ApiGateway
             services.AddControllers()
                 .AddNewtonsoftJson(options =>
                 {
+                    options.SerializerSettings.Converters.Add(new StringEnumConverter());
                     options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                     options.SerializerSettings.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
@@ -139,12 +140,12 @@ namespace Ranger.ApiGateway
                 app.UseSwagger("v1", "API Gateway");
             }
             app.UseCors(builder =>
-           {
-               builder.AllowAnyHeader()
-                   .AllowAnyMethod()
-                   .AllowAnyOrigin()
-                   .WithExposedHeaders("X-Operation");
-           });
+            {
+                builder.AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowAnyOrigin()
+                    .WithExposedHeaders("X-Operation");
+            });
             app.UseAutoWrapper();
             app.UseRouting();
 
