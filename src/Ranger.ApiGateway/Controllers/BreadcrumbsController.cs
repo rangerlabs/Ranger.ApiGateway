@@ -30,13 +30,12 @@ namespace Ranger.ApiGateway.Controllers
         ///<param name="breadcrumbModel">The model necessary to compute geofence resuts</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpPost("/breadcrumbs")]
-        public async Task<ApiResponse> PostBreadcrumb([FromBody] BreadcrumbModel breadcrumbModel)
+        public ApiResponse PostBreadcrumb([FromBody] BreadcrumbModel breadcrumbModel)
         {
             logger.LogDebug("Breadcrumb received");
             var environment = Enum.Parse<EnvironmentEnum>(HttpContext.Items[HttpContextAuthItems.BreadcrumbApiKeyEnvironment] as string);
             var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
-            return await Task.Run(() =>
-                base.SendAndAccept(new ComputeGeofenceIntersections(
+            return base.SendAndAccept(new ComputeGeofenceIntersections(
                         TenantId,
                         project.ProjectId,
                         project.Name,
@@ -50,8 +49,7 @@ namespace Ranger.ApiGateway.Controllers
                             breadcrumbModel.Accuracy)
                         ),
                     clientMessage: "Breadcrumb accepted"
-                )
-            );
+                );
         }
     }
 }
