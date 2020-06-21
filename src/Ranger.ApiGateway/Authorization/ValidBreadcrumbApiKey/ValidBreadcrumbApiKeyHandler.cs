@@ -43,9 +43,11 @@ namespace Ranger.ApiGateway
                         if (apiKeyParts?.Length == 2 && (apiKeyParts[0] == "live" || apiKeyParts[0] == "test") && Guid.TryParse(apiKeyParts[1], out _))
                         {
                             var tenantIdResponse = await projectsClient.GetTenantIdByApiKeyAsync(apiKey.Single());
+                            logger.LogInformation("Resolved Tenant Id {TenantId} from API key");
 
                             // this will throw if the tenant was removed
                             await tenantsClient.GetTenantByIdAsync<TenantModel>(tenantIdResponse.Result);
+                            logger.LogInformation("Tenant Id {TenantId} was found to be active");
 
                             var projectApiResponse = await projectsClient.GetProjectByApiKeyAsync<ProjectModel>(tenantIdResponse.Result, apiKey);
                             if (projectApiResponse.Result.Enabled)
