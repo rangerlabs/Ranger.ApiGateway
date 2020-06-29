@@ -45,6 +45,7 @@ namespace Ranger.ApiGateway.Controllers
                             breadcrumbModel.ExternalUserId,
                             breadcrumbModel.Position,
                             breadcrumbModel.RecordedAt,
+                            DateTime.UtcNow,
                             breadcrumbModel.Metadata,
                             breadcrumbModel.Accuracy)
                         ),

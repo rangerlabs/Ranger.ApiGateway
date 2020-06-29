@@ -59,6 +59,7 @@ namespace Ranger.ApiGateway.Controllers
                             "Test_User_0",
                             position,
                             recordedAt,
+                            DateTime.UtcNow,
                             default,
                             accuracy)
                     ));
