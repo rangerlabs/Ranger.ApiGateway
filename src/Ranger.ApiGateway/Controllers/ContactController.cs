@@ -26,7 +26,7 @@ namespace Ranger.ApiGateway.Controllers
         ///<param name="contactFormModel">The model necessary to send a contact email</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpPost("/contact")]
-        public ApiResponse PostBreadcrumb([FromBody] ContactFormModel contactFormModel)
+        public ApiResponse PostContactForm([FromBody] ContactFormModel contactFormModel)
         {
             logger.LogDebug("Contact form received");
             return base.SendAndAccept(new SendContactFormEmail(contactFormModel.Organization, contactFormModel.Email, contactFormModel.Message),
