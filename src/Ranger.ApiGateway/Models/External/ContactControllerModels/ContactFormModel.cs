@@ -8,6 +8,9 @@ namespace Ranger.ApiGateway
         [StringLength(512)]
         public string Organization { get; set; }
         [Required]
+        [StringLength(512)]
+        public string Name { get; set; }
+        [Required]
         [EmailAddress]
         [StringLength(512)]
         public string Email { get; set; }

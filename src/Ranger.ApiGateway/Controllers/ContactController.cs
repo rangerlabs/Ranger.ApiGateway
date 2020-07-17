@@ -29,7 +29,7 @@ namespace Ranger.ApiGateway.Controllers
         public ApiResponse PostContactForm([FromBody] ContactFormModel contactFormModel)
         {
             logger.LogDebug("Contact form received");
-            return base.SendAndAccept(new SendContactFormEmail(contactFormModel.Organization, contactFormModel.Email, contactFormModel.Message),
+            return base.SendAndAccept(new SendContactFormEmail(contactFormModel.Organization, contactFormModel.Email, contactFormModel.Name, contactFormModel.Message),
                 clientMessage: "Contact Form accepted"
             );
         }
