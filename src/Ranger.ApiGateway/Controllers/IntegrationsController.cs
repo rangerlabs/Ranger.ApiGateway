@@ -52,7 +52,7 @@ namespace Ranger.ApiGateway
         {
             var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
             var integrationsApiResponse = await integrationsClient.GetAllIntegrationsByProjectId<IEnumerable<dynamic>>(TenantId, project.ProjectId);
-            return new ApiResponse("Succesfully retrived integrations", integrationsApiResponse.Result);
+            return new ApiResponse("Succesfully retrieved integrations", integrationsApiResponse.Result);
         }
     }
 }

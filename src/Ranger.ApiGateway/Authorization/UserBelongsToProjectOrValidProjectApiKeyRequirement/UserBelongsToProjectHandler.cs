@@ -48,11 +48,15 @@ namespace Ranger.ApiGateway
                             if (project is null)
                             {
                                 logger.LogInformation("The user is not authorized to access the requested project");
+                                context.Fail();
                             }
-                            httpContextAccessor.HttpContext.Items[HttpContextAuthItems.TenantId] = tenantId;
-                            httpContextAccessor.HttpContext.Items[HttpContextAuthItems.Project] = project;
-                            logger.LogInformation("Authorization succeeded for policy 'BelongsToProjectHandler");
-                            context.Succeed(requirement);
+                            else
+                            {
+                                httpContextAccessor.HttpContext.Items[HttpContextAuthItems.TenantId] = tenantId;
+                                httpContextAccessor.HttpContext.Items[HttpContextAuthItems.Project] = project;
+                                logger.LogInformation("Authorization succeeded for policy 'BelongsToProjectHandler");
+                                context.Succeed(requirement);
+                            }
                         }
                     }
                 }
