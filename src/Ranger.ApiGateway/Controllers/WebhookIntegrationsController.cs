@@ -64,6 +64,8 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> UpdateIntegration(string projectName, Guid id, WebhookIntegrationPutModel webhookIntegrationModel)
         {
             var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
+            // The IntegrationId property on the model is not required for the endpoint but is required of the serialized object for the Integrations service
+            // Overriding any IntegrationId in the body with what was passed in the path allows this endpoint to still be RESTful
             webhookIntegrationModel.IntegrationId = id;
             var updateIntegrationSagaInitializer = new UpdateIntegrationSagaInitializer(
                 UserFromClaims.Email,

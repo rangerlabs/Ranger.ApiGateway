@@ -18,6 +18,7 @@ namespace Ranger.ApiGateway
         [Required]
         [Url]
         public string URL { get; set; }
+        [StringLength(512)]
         public string Description { get; set; }
         public IEnumerable<KeyValuePair<string, string>> Headers { get; set; }
         public IEnumerable<KeyValuePair<string, string>> Metadata { get; set; }
