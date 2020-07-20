@@ -38,6 +38,8 @@ namespace Ranger.ApiGateway
         [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         public async Task<ApiResponse> AccountUpdate(AccountUpdateModel accountUpdateModel)
         {
+            accountUpdateModel.FirstName = accountUpdateModel.FirstName.Trim();
+            accountUpdateModel.LastName = accountUpdateModel.LastName.Trim();
             var apiResponse = await identityClient.UpdateUserOrAccountAsync(TenantId, UserFromClaims.Email, JsonConvert.SerializeObject(accountUpdateModel));
             return new ApiResponse("Successfully updated account");
         }

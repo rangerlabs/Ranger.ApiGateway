@@ -48,6 +48,12 @@ namespace Ranger.ApiGateway
         [AllowAnonymous]
         public async Task<ApiResponse> Post(TenantModel tenantModel)
         {
+            tenantModel.OrganizationForm.Domain = tenantModel.OrganizationForm.Domain.Trim();
+            tenantModel.OrganizationForm.OrganizationName = tenantModel.OrganizationForm.OrganizationName.Trim();
+            tenantModel.UserForm.FirstName = tenantModel.UserForm.FirstName.Trim();
+            tenantModel.UserForm.LastName = tenantModel.UserForm.LastName.Trim();
+            tenantModel.UserForm.Email = tenantModel.UserForm.Email.Trim();
+
             var createTenantMsg = new CreateTenant(tenantModel.OrganizationForm.Domain.ToLower(), tenantModel.OrganizationForm.OrganizationName, tenantModel.UserForm.Email, tenantModel.UserForm.FirstName, tenantModel.UserForm.LastName, tenantModel.UserForm.Password);
             return await Task.Run(() => SendAndAccept(createTenantMsg));
         }
@@ -62,6 +68,9 @@ namespace Ranger.ApiGateway
         [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         public async Task<ApiResponse> Put(OrganizationFormPutModel organizationFormModel)
         {
+            organizationFormModel.Domain = organizationFormModel.Domain.Trim();
+            organizationFormModel.OrganizationName = organizationFormModel.OrganizationName.Trim();
+
             if (String.IsNullOrWhiteSpace(organizationFormModel.Domain) && String.IsNullOrWhiteSpace(organizationFormModel.OrganizationName))
             {
                 throw new ApiException("Either Domain or OrganizationName must be provided", statusCode: StatusCodes.Status400BadRequest);

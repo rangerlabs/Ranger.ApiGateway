@@ -55,6 +55,7 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> Post(string projectName, GeofenceRequestModel geofenceModel)
         {
             var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
+            geofenceModel.ExternalId = geofenceModel.ExternalId.Trim();
             ValidateGeofence(geofenceModel);
             var createGeofenceSagaInitializer = new CreateGeofenceSagaInitializer(
                  User is null ? false : true,
@@ -133,7 +134,7 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> UpdateGeofence(string projectName, Guid geofenceId, GeofenceRequestModel geofenceModel)
         {
             var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
-
+            geofenceModel.ExternalId = geofenceModel.ExternalId.Trim();
             ValidateGeofence(geofenceModel);
             var createGeofenceSagaInitializer = new UpdateGeofenceSagaInitializer(
                 User is null ? false : true,

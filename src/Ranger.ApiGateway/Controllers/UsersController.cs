@@ -219,9 +219,9 @@ namespace Ranger.ApiGateway
         {
             var applicationUserCommand = new CreateUserSagaInitializer(
                 TenantId,
-                postApplicationUserModel.Email,
-                postApplicationUserModel.FirstName,
-                postApplicationUserModel.LastName,
+                postApplicationUserModel.Email.Trim(),
+                postApplicationUserModel.FirstName.Trim(),
+                postApplicationUserModel.LastName.Trim(),
                 postApplicationUserModel.Role,
                 UserFromClaims.Email,
                 postApplicationUserModel.AuthorizedProjects

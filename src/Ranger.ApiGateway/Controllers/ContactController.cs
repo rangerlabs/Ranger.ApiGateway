@@ -28,6 +28,11 @@ namespace Ranger.ApiGateway.Controllers
         [HttpPost("/contact")]
         public ApiResponse PostContactForm([FromBody] ContactFormModel contactFormModel)
         {
+            contactFormModel.Organization = contactFormModel.Organization.Trim();
+            contactFormModel.Email = contactFormModel.Email.Trim();
+            contactFormModel.Name = contactFormModel.Name.Trim();
+            contactFormModel.Message = contactFormModel.Message.Trim();
+
             logger.LogDebug("Contact form received");
             return base.SendAndAccept(new SendContactFormEmail(contactFormModel.Organization, contactFormModel.Email, contactFormModel.Name, contactFormModel.Message),
                 clientMessage: "Contact Form accepted"

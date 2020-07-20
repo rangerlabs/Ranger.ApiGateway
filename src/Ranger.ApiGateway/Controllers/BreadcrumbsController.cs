@@ -32,6 +32,8 @@ namespace Ranger.ApiGateway.Controllers
         [HttpPost("/breadcrumbs")]
         public ApiResponse PostBreadcrumb([FromBody] BreadcrumbModel breadcrumbModel)
         {
+            breadcrumbModel.ExternalUserId = breadcrumbModel.ExternalUserId.Trim();
+
             logger.LogDebug("Breadcrumb received");
             var environment = Enum.Parse<EnvironmentEnum>(HttpContext.Items[HttpContextAuthItems.BreadcrumbApiKeyEnvironment] as string);
             var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;

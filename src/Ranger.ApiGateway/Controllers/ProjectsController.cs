@@ -55,7 +55,7 @@ namespace Ranger.ApiGateway
         [Authorize(Roles = "Admin")]
         public async Task<ApiResponse> UpdateProject([FromRoute] Guid projectId, PutProjectModel projectModel)
         {
-            var request = new { Name = projectModel.Name, Description = projectModel.Description, Enabled = projectModel.Enabled, Version = projectModel.Version, UserEmail = UserFromClaims.Email };
+            var request = new { Name = projectModel.Name.Trim(), Description = projectModel.Description, Enabled = projectModel.Enabled, Version = projectModel.Version, UserEmail = UserFromClaims.Email };
             var apiResponse = await projectsClient.PutProjectAsync<ProjectResponseModel>(TenantId, projectId, JsonConvert.SerializeObject(request));
             return new ApiResponse(apiResponse.Message, apiResponse.Result);
         }
@@ -69,7 +69,7 @@ namespace Ranger.ApiGateway
         [Authorize(Roles = "Admin")]
         public async Task<ApiResponse> CreateProject(PostProjectModel projectModel)
         {
-            var request = new { Name = projectModel.Name, Description = projectModel.Description, Enabled = projectModel.Enabled, UserEmail = UserFromClaims.Email };
+            var request = new { Name = projectModel.Name.Trim(), Description = projectModel.Description, Enabled = projectModel.Enabled, UserEmail = UserFromClaims.Email };
             var apiResponse = await projectsClient.PostProjectAsync<ProjectResponseModel>(TenantId, JsonConvert.SerializeObject(request));
             return new ApiResponse($"Successfully created project '{projectModel.Name}'", apiResponse.Result);
         }
