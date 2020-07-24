@@ -65,7 +65,7 @@ namespace Ranger.ApiGateway
                  project.ProjectId,
                  geofenceModel.Shape,
                  geofenceModel.Coordinates,
-                 geofenceModel.Labels,
+                 default,
                  geofenceModel.IntegrationIds,
                  geofenceModel.Metadata,
                  geofenceModel.Description,
@@ -74,8 +74,8 @@ namespace Ranger.ApiGateway
                  geofenceModel.OnEnter,
                  geofenceModel.OnDwell,
                  geofenceModel.OnExit,
-                 geofenceModel.ExpirationDate,
-                 geofenceModel.LaunchDate,
+                 DateTime.MinValue,
+                 DateTime.MinValue,
                  geofenceModel.Schedule
              );
             return await Task.Run(() => base.SendAndAccept(createGeofenceSagaInitializer));
@@ -115,10 +115,6 @@ namespace Ranger.ApiGateway
                 }
             }
 
-            if (geofenceModel.ExpirationDate < geofenceModel.LaunchDate)
-            {
-                throw new ApiException("The geofence expiration date was before the launch date", StatusCodes.Status400BadRequest);
-            }
         }
 
         ///<summary>
@@ -145,7 +141,7 @@ namespace Ranger.ApiGateway
                 project.ProjectId,
                 geofenceModel.Shape,
                 geofenceModel.Coordinates,
-                geofenceModel.Labels,
+                default,
                 geofenceModel.IntegrationIds,
                 geofenceModel.Metadata,
                 geofenceModel.Description,
@@ -154,8 +150,8 @@ namespace Ranger.ApiGateway
                 geofenceModel.OnEnter,
                 geofenceModel.OnDwell,
                 geofenceModel.OnExit,
-                geofenceModel.ExpirationDate,
-                geofenceModel.LaunchDate,
+                DateTime.MaxValue,
+                DateTime.MinValue,
                 geofenceModel.Schedule
             );
 

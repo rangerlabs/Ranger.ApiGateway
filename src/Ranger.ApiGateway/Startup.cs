@@ -1,5 +1,6 @@
 using System.Security.Cryptography.X509Certificates;
 using Autofac;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
@@ -45,6 +46,11 @@ namespace Ranger.ApiGateway
                     options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                     options.SerializerSettings.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
+                }).AddFluentValidation(o =>
+                {
+                    // o.ImplicitlyValidateChildProperties = true;
+                    o.RunDefaultMvcValidationAfterFluentValidationExecutes = false;
+                    o.RegisterValidatorsFromAssemblyContaining<Startup>();
                 });
             services.AddAutoWrapper();
             if (Environment.IsDevelopment())

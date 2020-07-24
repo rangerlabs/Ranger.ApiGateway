@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ranger.ApiGateway", "src\Ra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ranger.ApiGateway.Data", "src\Ranger.ApiGateway.Data\Ranger.ApiGateway.Data.csproj", "{583EBC85-63AD-414B-A470-17E44F6E2D80}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{26A63D68-47F8-421B-97B6-AEE6C7FEE2BD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ranger.ApiGateway.Tests", "test\Ranger.ApiGateway.Tests\Ranger.ApiGateway.Tests.csproj", "{A2867916-66E2-4314-9976-B5F030917E1E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,9 +50,22 @@ Global
 		{583EBC85-63AD-414B-A470-17E44F6E2D80}.Release|x64.Build.0 = Release|Any CPU
 		{583EBC85-63AD-414B-A470-17E44F6E2D80}.Release|x86.ActiveCfg = Release|Any CPU
 		{583EBC85-63AD-414B-A470-17E44F6E2D80}.Release|x86.Build.0 = Release|Any CPU
+		{A2867916-66E2-4314-9976-B5F030917E1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2867916-66E2-4314-9976-B5F030917E1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2867916-66E2-4314-9976-B5F030917E1E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A2867916-66E2-4314-9976-B5F030917E1E}.Debug|x64.Build.0 = Debug|Any CPU
+		{A2867916-66E2-4314-9976-B5F030917E1E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A2867916-66E2-4314-9976-B5F030917E1E}.Debug|x86.Build.0 = Debug|Any CPU
+		{A2867916-66E2-4314-9976-B5F030917E1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2867916-66E2-4314-9976-B5F030917E1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2867916-66E2-4314-9976-B5F030917E1E}.Release|x64.ActiveCfg = Release|Any CPU
+		{A2867916-66E2-4314-9976-B5F030917E1E}.Release|x64.Build.0 = Release|Any CPU
+		{A2867916-66E2-4314-9976-B5F030917E1E}.Release|x86.ActiveCfg = Release|Any CPU
+		{A2867916-66E2-4314-9976-B5F030917E1E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D77548CD-A418-42FC-B3F9-FC47F7278FF7} = {61DD0DAF-446F-4D7D-A27F-11BB6746FFCF}
 		{583EBC85-63AD-414B-A470-17E44F6E2D80} = {61DD0DAF-446F-4D7D-A27F-11BB6746FFCF}
+		{A2867916-66E2-4314-9976-B5F030917E1E} = {26A63D68-47F8-421B-97B6-AEE6C7FEE2BD}
 	EndGlobalSection
 EndGlobal
