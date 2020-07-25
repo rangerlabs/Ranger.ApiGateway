@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using FluentValidation;
 using FluentValidation.TestHelper;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using NodaTime;
 using Ranger.Common;
 using Shouldly;

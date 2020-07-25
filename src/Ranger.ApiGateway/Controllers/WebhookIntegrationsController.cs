@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-
 using Ranger.ApiGateway.Messages.Commands;
 using Ranger.Common;
 using Ranger.InternalHttpClient;
