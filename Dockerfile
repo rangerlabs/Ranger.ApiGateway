@@ -18,6 +18,7 @@ ARG MYGET_API_KEY
 COPY *.sln ./
 COPY ./src/Ranger.ApiGateway/Ranger.ApiGateway.csproj ./src/Ranger.ApiGateway/Ranger.ApiGateway.csproj
 COPY ./src/Ranger.ApiGateway.Data/Ranger.ApiGateway.Data.csproj ./src/Ranger.ApiGateway.Data/Ranger.ApiGateway.Data.csproj
+COPY ./test/Ranger.ApiGateway.Tests/Ranger.ApiGateway.Tests.csproj ./test/Ranger.ApiGateway.Tests/Ranger.ApiGateway.Tests.csproj
 COPY ./scripts ./scripts
 
 RUN ./scripts/create-nuget-config.sh ${MYGET_API_KEY}
@@ -26,6 +27,7 @@ RUN dotnet restore
 COPY ./src ./src
 COPY ./test ./test
 
+RUN dotnet test
 RUN dotnet publish -c ${BUILD_CONFIG} -o /app/published --no-restore
 
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.1
