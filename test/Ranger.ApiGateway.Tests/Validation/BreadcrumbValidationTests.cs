@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using FluentValidation;
+using FluentValidation.AspNetCore;
 using FluentValidation.TestHelper;
 using Microsoft.Extensions.DependencyInjection;
 using Ranger.Common;
@@ -16,21 +17,22 @@ namespace Ranger.ApiGateway.Tests
         {
             var services = new ServiceCollection();
 
-            services.AddTransient<AbstractValidator<BreadcrumbModel>, BreadcrumbValidator>();
-            services.AddTransient<AbstractValidator<KeyValuePair<string, string>>, KeyValuePairValidator>();
-            services.AddTransient<AbstractValidator<LngLat>, LngLatValidator>();
-
+            services.AddControllers().AddFluentValidation(o =>
+                {
+                    o.ImplicitlyValidateChildProperties = false;
+                    o.RegisterValidatorsFromAssemblyContaining<Startup>();
+                });
             serviceProvider = services.BuildServiceProvider();
         }
     }
 
     public class BreadcrumbValidationTests : IClassFixture<BreadcrumbValidationFixture>
     {
-        private AbstractValidator<BreadcrumbModel> breadcrumbValidator;
+        private IValidator<BreadcrumbModel> breadcrumbValidator;
 
         public BreadcrumbValidationTests(BreadcrumbValidationFixture fixture)
         {
-            this.breadcrumbValidator = fixture.serviceProvider.GetRequiredServiceForTest<AbstractValidator<BreadcrumbModel>>();
+            this.breadcrumbValidator = fixture.serviceProvider.GetRequiredServiceForTest<IValidator<BreadcrumbModel>>();
         }
 
         [Fact]

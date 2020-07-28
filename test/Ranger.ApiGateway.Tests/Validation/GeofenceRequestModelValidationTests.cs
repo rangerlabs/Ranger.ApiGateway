@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using FluentValidation;
+using FluentValidation.AspNetCore;
 using FluentValidation.TestHelper;
 using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
@@ -17,22 +18,21 @@ namespace Ranger.ApiGateway.Tests
         public GeofenceValidationFixture()
         {
             var services = new ServiceCollection();
-
-            services.AddTransient<AbstractValidator<GeofenceRequestModel>, GeofenceRequestModelValidator>();
-            services.AddTransient<AbstractValidator<Schedule>, ScheduleValidator>();
-            services.AddTransient<AbstractValidator<DailySchedule>, DailyScheduleValidator>();
-            services.AddTransient<AbstractValidator<KeyValuePair<string, string>>, KeyValuePairValidator>();
-            services.AddTransient<AbstractValidator<LngLat>, LngLatValidator>();
+            services.AddControllers().AddFluentValidation(o =>
+            {
+                o.ImplicitlyValidateChildProperties = false;
+                o.RegisterValidatorsFromAssemblyContaining<Startup>();
+            });
 
             serviceProvider = services.BuildServiceProvider();
         }
     }
     public class GeofenceRequestModelValidationTests : IClassFixture<GeofenceValidationFixture>
     {
-        private readonly AbstractValidator<GeofenceRequestModel> geofenceValidator;
+        private readonly IValidator<GeofenceRequestModel> geofenceValidator;
         public GeofenceRequestModelValidationTests(GeofenceValidationFixture fixture)
         {
-            this.geofenceValidator = fixture.serviceProvider.GetRequiredServiceForTest<AbstractValidator<GeofenceRequestModel>>();
+            this.geofenceValidator = fixture.serviceProvider.GetRequiredServiceForTest<IValidator<GeofenceRequestModel>>();
         }
 
         [Fact]
@@ -362,6 +362,43 @@ namespace Ranger.ApiGateway.Tests
         {
             var model = new GeofenceRequestModel();
             model.Enabled.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void Radius_Should_Have_Error_When_Circle_Geofence_AND_Less_Than_50()
+        {
+            var model = new GeofenceRequestModel()
+            {
+                Radius = 49,
+                Shape = GeofenceShapeEnum.Circle
+            };
+            var result = this.geofenceValidator.TestValidate(model);
+            result.ShouldHaveValidationErrorFor(x => x.Radius);
+        }
+
+
+        [Fact]
+        public void Radius_Should_NOT_Have_Error_When_Circle_Geofence_AND_Greater_Than_Or_Equal_To_50()
+        {
+            var model = new GeofenceRequestModel()
+            {
+                Radius = 50,
+                Shape = GeofenceShapeEnum.Circle
+            };
+            var result = this.geofenceValidator.TestValidate(model);
+            result.ShouldNotHaveValidationErrorFor(x => x.Radius);
+        }
+
+
+        [Fact]
+        public void Radius_Should_NOT_Have_Error_When_Polygon_Geofence()
+        {
+            var model = new GeofenceRequestModel()
+            {
+                Shape = GeofenceShapeEnum.Polygon
+            };
+            var result = this.geofenceValidator.TestValidate(model);
+            result.ShouldNotHaveValidationErrorFor(x => x.Radius);
         }
     }
 }

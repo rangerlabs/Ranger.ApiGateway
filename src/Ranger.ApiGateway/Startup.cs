@@ -1,11 +1,16 @@
+using System.Linq;
+using System.Net.Mime;
 using System.Security.Cryptography.X509Certificates;
 using Autofac;
+using AutoWrapper.Extensions;
+using AutoWrapper.Wrappers;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -46,17 +51,17 @@ namespace Ranger.ApiGateway
                     options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                     options.SerializerSettings.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
-                }).AddFluentValidation(o =>
-                {
-                    // o.ImplicitlyValidateChildProperties = true;
-                    o.RunDefaultMvcValidationAfterFluentValidationExecutes = false;
-                    o.RegisterValidatorsFromAssemblyContaining<Startup>();
-                });
-            services.AddAutoWrapper();
+                })
+                .AddRangerFluentValidation<Startup>();
+
+            services.AddRangerApiVersioning();
+
             if (Environment.IsDevelopment())
             {
                 services.AddSwaggerGen("API Gateway", "v1");
             }
+
+            services.ConfigureAutoWrapperModelStateResponseFactory();
 
             services.AddAuthorization(options =>
             {
@@ -95,8 +100,6 @@ namespace Ranger.ApiGateway
             services.AddScoped<IAuthorizationHandler, ValidProjectApiKeyHandler>();
 
             services.AddCors();
-
-            services.AddApiVersioning(o => o.ApiVersionReader = new HeaderApiVersionReader("api-version"));
 
             services.AddDbContext<ApiGatewayDbContext>(options =>
             {
@@ -160,7 +163,7 @@ namespace Ranger.ApiGateway
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapDefaultControllerRoute();
+                endpoints.MapControllers();
                 endpoints.MapHealthChecks();
                 endpoints.MapLiveTagHealthCheck();
                 endpoints.MapEfCoreTagHealthCheck();

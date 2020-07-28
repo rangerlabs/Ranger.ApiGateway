@@ -7,15 +7,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-
-using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
 
 namespace Ranger.ApiGateway
 {
-    [ApiVersion("1.0")]
     [ApiController]
+    [ApiVersion("1.0")]
     public class GeofencesController : BaseController<GeofencesController>
     {
         private readonly GeofencesHttpClient geofencesClient;
@@ -56,7 +54,6 @@ namespace Ranger.ApiGateway
         {
             var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
             geofenceModel.ExternalId = geofenceModel.ExternalId.Trim();
-            ValidateGeofence(geofenceModel);
             var createGeofenceSagaInitializer = new CreateGeofenceSagaInitializer(
                  User is null ? false : true,
                  User?.UserFromClaims().Email ?? HttpContext.Items[HttpContextAuthItems.ProjectApiKeyPrefix] as string,
@@ -81,42 +78,6 @@ namespace Ranger.ApiGateway
             return await Task.Run(() => base.SendAndAccept(createGeofenceSagaInitializer));
         }
 
-        private static void ValidateGeofence(GeofenceRequestModel geofenceModel)
-        {
-            if (geofenceModel.ExternalId.ToLower() != geofenceModel.ExternalId)
-            {
-                throw new ApiException("Geofence External Ids must be lowercase");
-            }
-            if (geofenceModel.Shape == GeofenceShapeEnum.Circle)
-            {
-                if (geofenceModel.Radius < 50)
-                {
-                    throw new ApiException("Circular geofence radius must be greater than or equal to 50 meters", StatusCodes.Status400BadRequest);
-                }
-                if (geofenceModel.Radius > 10000)
-                {
-                    throw new ApiException("Circular geofence radius must be less than 10000 meters", StatusCodes.Status400BadRequest);
-                }
-                if (geofenceModel.Coordinates.Count() == 0 || geofenceModel.Coordinates.Count() > 1)
-                {
-                    throw new ApiException("Circular geofence must have exactly one coordinate in their Coordinate array", StatusCodes.Status400BadRequest);
-                }
-            }
-            else
-            {
-                if (geofenceModel.Coordinates.First().Equals(geofenceModel.Coordinates.Last()))
-                {
-                    throw new ApiException("The first and last coordinates in a polygon are implicitely connected. Remove the explicit closing edge", StatusCodes.Status400BadRequest);
-                }
-                geofenceModel.Radius = 0;
-                if (geofenceModel.Coordinates.Count() < 3)
-                {
-                    throw new ApiException("Polygon geofence must have three or more coordinate in their Coordinate array", StatusCodes.Status400BadRequest);
-                }
-            }
-
-        }
-
         ///<summary>
         /// Updates an existing geofence within a project
         ///</summary>
@@ -131,7 +92,6 @@ namespace Ranger.ApiGateway
         {
             var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
             geofenceModel.ExternalId = geofenceModel.ExternalId.Trim();
-            ValidateGeofence(geofenceModel);
             var createGeofenceSagaInitializer = new UpdateGeofenceSagaInitializer(
                 User is null ? false : true,
                 User?.UserFromClaims().Email ?? HttpContext.Items[HttpContextAuthItems.Project] as string,

@@ -8,7 +8,7 @@ namespace Ranger.ApiGateway
 {
     public class BreadcrumbValidator : AbstractValidator<BreadcrumbModel>
     {
-        public BreadcrumbValidator(AbstractValidator<LngLat> lngLatValidator, AbstractValidator<KeyValuePair<string, string>> keyValuePairValidator)
+        public BreadcrumbValidator(IValidator<LngLat> lngLatValidator, IValidator<KeyValuePair<string, string>> keyValuePairValidator)
         {
             RuleFor(x => x.DeviceId).NotEmpty().MaximumLength(64);
             RuleFor(x => x.Position).SetValidator(lngLatValidator);

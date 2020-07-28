@@ -2,20 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using FluentValidation;
-using NodaTime;
 using Ranger.Common;
 
 namespace Ranger.ApiGateway
 {
     public class GeofenceRequestModelValidator : AbstractValidator<GeofenceRequestModel>
     {
-        public GeofenceRequestModelValidator(AbstractValidator<LngLat> lngLatValidator, AbstractValidator<Schedule> scheduleValidator, AbstractValidator<KeyValuePair<string, string>> keyValuePairValidator)
+        public GeofenceRequestModelValidator(IValidator<LngLat> lngLatValidator, IValidator<Schedule> scheduleValidator, IValidator<KeyValuePair<string, string>> keyValuePairValidator)
         {
             RuleFor(g => g.ExternalId)
                 .NotEmpty()
                 .MaximumLength(128)
                 .Matches("^[a-z0-9]+[a-z0-9-]*[a-z0-9]+$")
-                .WithMessage("Valid External Id characters are lowercase alphanumeric characters and dashes ('-'). Must begin and end with alphanumeric characters.");
+                .WithMessage("Valid External Id characters are lowercase alphanumeric and dashes ('-'). Must begin and end with alphanumeric characters.");
             RuleFor(g => g.Coordinates)
                 .NotEmpty()
                 .Custom((coords, c) =>
@@ -56,9 +55,9 @@ namespace Ranger.ApiGateway
                 {
                     if ((c.InstanceToValidate as GeofenceRequestModel).Shape == GeofenceShapeEnum.Circle)
                     {
-                        if (r <= 50)
+                        if (r < 50)
                         {
-                            c.AddFailure("Radius must be greater than 50 meters for Circular geofences");
+                            c.AddFailure("Radius must be greater than or equal to 50 meters for Circular geofences");
                         }
                     }
                 });
@@ -72,62 +71,6 @@ namespace Ranger.ApiGateway
                     }
                 });
             RuleForEach(g => g.Metadata).SetValidator(keyValuePairValidator).WithMessage("Metadata {CollectionIndex} is invalid");
-        }
-    }
-
-    public class ScheduleValidator : AbstractValidator<Schedule>
-    {
-        public ScheduleValidator(AbstractValidator<DailySchedule> dailyScheduleValidator)
-        {
-            RuleFor(s => s.TimeZoneId).NotEmpty().Custom((t, c) =>
-            {
-                if (DateTimeZoneProviders.Tzdb.GetZoneOrNull(t) is null)
-                {
-                    c.AddFailure("TimezoneId was invalid");
-                }
-            });
-            RuleFor(s => s.Sunday).SetValidator(dailyScheduleValidator);
-            RuleFor(s => s.Monday).SetValidator(dailyScheduleValidator);
-            RuleFor(s => s.Tuesday).SetValidator(dailyScheduleValidator);
-            RuleFor(s => s.Wednesday).SetValidator(dailyScheduleValidator);
-            RuleFor(s => s.Thursday).SetValidator(dailyScheduleValidator);
-            RuleFor(s => s.Friday).SetValidator(dailyScheduleValidator);
-            RuleFor(s => s.Saturday).SetValidator(dailyScheduleValidator);
-        }
-    }
-
-    public class DailyScheduleValidator : AbstractValidator<DailySchedule>
-    {
-        public DailyScheduleValidator()
-        {
-            RuleFor(d => d).Custom((r, c) =>
-            {
-                var instance = (c.InstanceToValidate as DailySchedule);
-                if (instance.StartTime > instance.EndTime)
-                {
-                    c.AddFailure("StartTime must be before EndTime");
-                }
-            });
-            RuleFor(d => d.StartTime).NotNull();
-            RuleFor(d => d.EndTime).NotNull();
-        }
-    }
-
-    public class KeyValuePairValidator : AbstractValidator<KeyValuePair<string, string>>
-    {
-        public KeyValuePairValidator()
-        {
-            RuleFor(k => k.Key).NotEmpty().MaximumLength(128);
-            RuleFor(k => k.Value).NotEmpty().MaximumLength(128);
-        }
-    }
-
-    public class LngLatValidator : AbstractValidator<LngLat>
-    {
-        public LngLatValidator()
-        {
-            RuleFor(ll => ll.Lat).NotNull().InclusiveBetween(-90, 90);
-            RuleFor(ll => ll.Lng).NotNull().InclusiveBetween(-180, 180);
         }
     }
 }

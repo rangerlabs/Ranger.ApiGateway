@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Ranger.Common;
 
 namespace Ranger.ApiGateway
 {
-
     public class GeofenceRequestModel
     {
         public string ExternalId { get; set; }

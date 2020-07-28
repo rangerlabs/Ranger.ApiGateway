@@ -10,8 +10,8 @@ using Ranger.RabbitMQ;
 
 namespace Ranger.ApiGateway
 {
-    [Route("[controller]")]
     [ApiController]
+    [Route("[controller]")]
     public class BaseController<TController> : ControllerBase
     {
         private static readonly string AcceptLanguageHeader = "accept-language";
