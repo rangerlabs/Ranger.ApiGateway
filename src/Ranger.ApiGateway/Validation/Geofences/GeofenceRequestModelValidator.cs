@@ -14,7 +14,7 @@ namespace Ranger.ApiGateway
                 .NotEmpty()
                 .MaximumLength(128)
                 .Matches("^[a-z0-9]+[a-z0-9-]*[a-z0-9]+$")
-                .WithMessage("Valid External Id characters are lowercase alphanumeric and dashes ('-'). Must begin and end with alphanumeric characters.");
+                .WithMessage("Valid External Id characters are lowercase, alphanumeric, and dashes ('-'). Must begin and end with alphanumeric characters.");
             RuleFor(g => g.Coordinates)
                 .NotEmpty()
                 .Custom((coords, c) =>
