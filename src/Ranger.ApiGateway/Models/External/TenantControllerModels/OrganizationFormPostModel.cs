@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Ranger.ApiGateway
 {
-    public class OrganizationForm
+    public class OrganizationFormPostModel
     {
         [Required]
         [RegularExpression(@"^([\s\,\.\-\'a-zA-Z]){1,48}$")]

@@ -12,8 +12,9 @@ namespace Ranger.ApiGateway
         {
             RuleFor(g => g.ExternalId)
                 .NotEmpty()
+                .MinimumLength(3)
                 .MaximumLength(128)
-                .Matches("^[a-z0-9]+[a-z0-9-]*[a-z0-9]+$")
+                .Matches(RegularExpressions.GEOFENCE_INTEGRATION_NAME)
                 .WithMessage("Valid External Id characters are lowercase, alphanumeric, and dashes ('-'). Must begin and end with alphanumeric characters.");
             RuleFor(g => g.Coordinates)
                 .NotEmpty()

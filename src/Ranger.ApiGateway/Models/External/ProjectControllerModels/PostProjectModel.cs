@@ -4,12 +4,8 @@ namespace Ranger.ApiGateway
 {
     public class PostProjectModel
     {
-
-        [Required]
-        [StringLength(140)]
         public string Name { get; set; }
-        [Required]
-        public bool Enabled { get; set; }
+        public bool Enabled { get; set; } = true;
         public string Description { get; set; }
     }
 }

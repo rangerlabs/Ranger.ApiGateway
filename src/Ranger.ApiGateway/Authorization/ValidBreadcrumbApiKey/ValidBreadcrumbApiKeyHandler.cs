@@ -46,7 +46,7 @@ namespace Ranger.ApiGateway
                             logger.LogInformation("Resolved Tenant Id {TenantId} from API key");
 
                             // this will throw if the tenant was removed
-                            await tenantsClient.GetTenantByIdAsync<TenantModel>(tenantIdResponse.Result);
+                            await tenantsClient.GetTenantByIdAsync<NewTenantPostModel>(tenantIdResponse.Result);
                             logger.LogInformation("Tenant Id {TenantId} was found to be active");
 
                             var projectApiResponse = await projectsClient.GetProjectByApiKeyAsync<ProjectModel>(tenantIdResponse.Result, apiKey);

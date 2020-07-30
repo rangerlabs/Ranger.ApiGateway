@@ -1,36 +1,18 @@
 using System;
 using System.Collections.Generic;
 using FluentValidation;
-using FluentValidation.AspNetCore;
 using FluentValidation.TestHelper;
-using Microsoft.Extensions.DependencyInjection;
 using Ranger.Common;
 using Xunit;
 
 namespace Ranger.ApiGateway.Tests
 {
-    public class BreadcrumbValidationFixture
-    {
-        public IServiceProvider serviceProvider;
-
-        public BreadcrumbValidationFixture()
-        {
-            var services = new ServiceCollection();
-
-            services.AddControllers().AddFluentValidation(o =>
-                {
-                    o.ImplicitlyValidateChildProperties = false;
-                    o.RegisterValidatorsFromAssemblyContaining<Startup>();
-                });
-            serviceProvider = services.BuildServiceProvider();
-        }
-    }
-
-    public class BreadcrumbValidationTests : IClassFixture<BreadcrumbValidationFixture>
+    [Collection("Validation collection")]
+    public class BreadcrumbValidationTests
     {
         private IValidator<BreadcrumbModel> breadcrumbValidator;
 
-        public BreadcrumbValidationTests(BreadcrumbValidationFixture fixture)
+        public BreadcrumbValidationTests(ValidationFixture fixture)
         {
             this.breadcrumbValidator = fixture.serviceProvider.GetRequiredServiceForTest<IValidator<BreadcrumbModel>>();
         }
@@ -42,15 +24,16 @@ namespace Ranger.ApiGateway.Tests
         }
 
         [Fact]
-        public void DeviceId_Should_Have_Error_When_Greater_Than_64_Characters()
+        public void DeviceId_Should_Have_Error_When_Greater_Than_128_Characters()
         {
-            this.breadcrumbValidator.ShouldHaveValidationErrorFor(x => x.DeviceId, "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklm");
+            this.breadcrumbValidator.ShouldHaveValidationErrorFor(x => x.DeviceId, new string('a', 129));
         }
 
         [Fact]
-        public void DeviceId_Should_NOT_Have_Error_When_Less_Than_Equal_To_64_Characters()
+        public void DeviceId_Should_NOT_Have_Error_When_Less_Than_Equal_To_128_Characters()
         {
-            this.breadcrumbValidator.ShouldNotHaveValidationErrorFor(x => x.DeviceId, "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijkl");
+            this.breadcrumbValidator.ShouldNotHaveValidationErrorFor(x => x.DeviceId, new string('a', 127));
+            this.breadcrumbValidator.ShouldNotHaveValidationErrorFor(x => x.DeviceId, new string('a', 128));
         }
 
         [Fact]

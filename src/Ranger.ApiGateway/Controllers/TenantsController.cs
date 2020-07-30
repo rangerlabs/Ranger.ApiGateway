@@ -46,7 +46,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpPost("/tenants")]
         [AllowAnonymous]
-        public async Task<ApiResponse> Post(TenantModel tenantModel)
+        public async Task<ApiResponse> Post(NewTenantPostModel tenantModel)
         {
             tenantModel.OrganizationForm.Domain = tenantModel.OrganizationForm.Domain.Trim();
             tenantModel.OrganizationForm.OrganizationName = tenantModel.OrganizationForm.OrganizationName.Trim();

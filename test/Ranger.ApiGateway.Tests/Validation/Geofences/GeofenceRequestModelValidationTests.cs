@@ -1,9 +1,6 @@
-using System;
 using System.Collections.Generic;
 using FluentValidation;
-using FluentValidation.AspNetCore;
 using FluentValidation.TestHelper;
-using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
 using Ranger.Common;
 using Shouldly;
@@ -11,37 +8,25 @@ using Xunit;
 
 namespace Ranger.ApiGateway.Tests
 {
-    public class GeofenceValidationFixture
-    {
-        public IServiceProvider serviceProvider;
 
-        public GeofenceValidationFixture()
-        {
-            var services = new ServiceCollection();
-            services.AddControllers().AddFluentValidation(o =>
-            {
-                o.ImplicitlyValidateChildProperties = false;
-                o.RegisterValidatorsFromAssemblyContaining<Startup>();
-            });
-
-            serviceProvider = services.BuildServiceProvider();
-        }
-    }
-    public class GeofenceRequestModelValidationTests : IClassFixture<GeofenceValidationFixture>
+    [Collection("Validation collection")]
+    public class GeofenceRequestModelValidationTests
     {
         private readonly IValidator<GeofenceRequestModel> geofenceValidator;
-        public GeofenceRequestModelValidationTests(GeofenceValidationFixture fixture)
+        public GeofenceRequestModelValidationTests(ValidationFixture fixture)
         {
             this.geofenceValidator = fixture.serviceProvider.GetRequiredServiceForTest<IValidator<GeofenceRequestModel>>();
         }
 
         [Fact]
+        public void ExternalId_Should_Have_Error_When_Less_Than_2_Characters()
+        {
+            this.geofenceValidator.ShouldHaveValidationErrorFor(g => g.ExternalId, "a");
+        }
+
+        [Fact]
         public void ExternalId_Should_Have_Error_When_Empty()
         {
-            var model = new GeofenceRequestModel()
-            {
-                ExternalId = null
-            };
             this.geofenceValidator.ShouldHaveValidationErrorFor(g => g.ExternalId, "");
         }
 
@@ -49,15 +34,13 @@ namespace Ranger.ApiGateway.Tests
         public void ExternalId_Should_Have_Error_When_Greater_Than_128_Characters()
         {
 
-            this.geofenceValidator.ShouldHaveValidationErrorFor(g => g.ExternalId, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00");
+            this.geofenceValidator.ShouldHaveValidationErrorFor(g => g.ExternalId, new string('a', 129));
         }
 
-        [Theory]
-        [InlineData("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")]
-        [InlineData("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")]
-        public void ExternalId_Should_Have_No_Error_When_128_Characters_Or_Less(string externalId)
+        [Fact]
+        public void ExternalId_Should_Have_No_Error_When_128_Characters_Or_Less()
         {
-            this.geofenceValidator.ShouldNotHaveValidationErrorFor(g => g.ExternalId, externalId);
+            this.geofenceValidator.ShouldNotHaveValidationErrorFor(g => g.ExternalId, new string('a', 128));
         }
 
         [Theory]
@@ -65,6 +48,8 @@ namespace Ranger.ApiGateway.Tests
         [InlineData("-a0-")]
         [InlineData("-A0-")]
         [InlineData("-a!0-")]
+        [InlineData(" a!0-")]
+        [InlineData("a!0 ")]
         public void ExternalId_Should_Have_Error_When_Fails_Regex(string externalId)
         {
             this.geofenceValidator.ShouldHaveValidationErrorFor(g => g.ExternalId, externalId);
@@ -73,13 +58,11 @@ namespace Ranger.ApiGateway.Tests
         [Theory]
         [InlineData("a-0")]
         [InlineData("0-a")]
-        [InlineData("a0")]
-        [InlineData("0a")]
         [InlineData("aa0")]
         [InlineData("a00")]
         [InlineData("0aa")]
         [InlineData("00a")]
-        public void ExternalId_Should_Have_No_Error_When_Fails_Regex(string externalId)
+        public void ExternalId_Should_NOT_Have_Error_When_Passes_Regex(string externalId)
         {
             this.geofenceValidator.ShouldNotHaveValidationErrorFor(g => g.ExternalId, externalId);
         }
@@ -242,15 +225,13 @@ namespace Ranger.ApiGateway.Tests
         [Fact]
         public void Description_Should_Have_Error_When_Length_Greater_Than_512_Characters()
         {
-            var char513 = @"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrs";
-            this.geofenceValidator.ShouldHaveValidationErrorFor(x => x.Description, char513);
+            this.geofenceValidator.ShouldHaveValidationErrorFor(x => x.Description, new string('a', 513));
         }
 
         [Fact]
         public void Description_Should_NOT_Have_Error_When_Length_Less_Or_Equal_To_512_Characters()
         {
-            var char512 = @"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqr";
-            this.geofenceValidator.ShouldNotHaveValidationErrorFor(x => x.Description, char512);
+            this.geofenceValidator.ShouldNotHaveValidationErrorFor(x => x.Description, new string('a', 512));
         }
 
         [Fact]
@@ -294,46 +275,9 @@ namespace Ranger.ApiGateway.Tests
         }
 
         [Fact]
-        public void MetaData_Should_Have_Error_When_Key_Empty()
+        public void Metadata_AND_Headers_Should_Have_Child_Validator()
         {
-            var model = new GeofenceRequestModel()
-            {
-                Metadata = new List<KeyValuePair<string, string>>()
-                    {
-                        new KeyValuePair<string, string>("","a"),
-                    }
-            };
-            var result = this.geofenceValidator.TestValidate(model);
-            result.ShouldHaveValidationErrorFor("Metadata[0].Key");
-        }
-
-        [Fact]
-        public void MetaData_Should_Have_Error_When_Value_Empty()
-        {
-            var model = new GeofenceRequestModel()
-            {
-                Metadata = new List<KeyValuePair<string, string>>()
-                    {
-                        new KeyValuePair<string, string>("a",""),
-                    }
-            };
-            var result = this.geofenceValidator.TestValidate(model);
-            result.ShouldHaveValidationErrorFor("Metadata[0].Value");
-        }
-
-        [Fact]
-        public void MetaData_Should_NOT_Have_Error_When_Values_Populated()
-        {
-            var model = new GeofenceRequestModel()
-            {
-                Metadata = new List<KeyValuePair<string, string>>()
-                    {
-                        new KeyValuePair<string, string>("a","s"),
-                    }
-            };
-            var result = this.geofenceValidator.TestValidate(model);
-            result.ShouldNotHaveValidationErrorFor("Metadata[0].Key");
-            result.ShouldNotHaveValidationErrorFor("Metadata[0].Value");
+            this.geofenceValidator.ShouldHaveChildValidator(x => x.Metadata, typeof(IValidator<KeyValuePair<string, string>>));
         }
 
         [Fact]
