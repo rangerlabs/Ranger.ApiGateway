@@ -15,7 +15,7 @@ namespace Ranger.ApiGateway
                 .MinimumLength(3)
                 .MaximumLength(128)
                 .Matches(RegularExpressions.GEOFENCE_INTEGRATION_NAME)
-                .WithMessage("Valid External Id characters are lowercase, alphanumeric, and dashes ('-'). Must begin and end with alphanumeric characters.");
+                .WithMessage("Must begin, end, and contain alphanumeric characters. May contain hyphens (-).");
             RuleFor(g => g.Coordinates)
                 .NotEmpty()
                 .Custom((coords, c) =>

@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using Ranger.Common;
 using Ranger.RabbitMQ;
 
 namespace Ranger.ApiGateway
@@ -9,11 +11,11 @@ namespace Ranger.ApiGateway
         public string Email { get; }
         public string FirstName { get; }
         public string LastName { get; }
-        public string Role { get; }
+        public RolesEnum Role { get; }
         public string CommandingUserEmail { get; }
-        public IEnumerable<string> AuthorizedProjects { get; }
+        public IEnumerable<Guid> AuthorizedProjects { get; }
 
-        public CreateUserSagaInitializer(string tenantid, string email, string firstName, string lastName, string role, string commandingUserEmail, IEnumerable<string> authorizedProjects)
+        public CreateUserSagaInitializer(string tenantid, string email, string firstName, string lastName, RolesEnum role, string commandingUserEmail, IEnumerable<Guid> authorizedProjects)
         {
             if (string.IsNullOrEmpty(tenantid))
             {
@@ -35,11 +37,6 @@ namespace Ranger.ApiGateway
                 throw new System.ArgumentException($"{nameof(lastName)} was null or whitespace");
             }
 
-            if (string.IsNullOrEmpty(role))
-            {
-                throw new System.ArgumentException($"{nameof(role)} was null or whitespace");
-            }
-
             if (string.IsNullOrEmpty(commandingUserEmail))
             {
                 throw new System.ArgumentException($"{nameof(commandingUserEmail)} was null or whitespace");
@@ -51,7 +48,7 @@ namespace Ranger.ApiGateway
             this.LastName = lastName;
             this.Role = role;
             this.CommandingUserEmail = commandingUserEmail;
-            this.AuthorizedProjects = authorizedProjects ?? new List<string>();
+            this.AuthorizedProjects = authorizedProjects ?? new List<Guid>();
         }
     }
 }
