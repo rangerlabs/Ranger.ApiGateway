@@ -7,8 +7,8 @@ namespace Ranger.ApiGateway
     {
         public AccountUpdateModelValidator()
         {
-            RuleFor(x => x.FirstName).NotEmpty().MaximumLength(48).Matches(RegularExpressions.NAME).WithMessage("Must begin with and contain alphabetic character. May contain one of the following (-) (,) (') (.).");
-            RuleFor(x => x.LastName).NotEmpty().MaximumLength(48).Matches(RegularExpressions.NAME).WithMessage("Must begin with and contain alphabetic character. May contain one of the following (-) (,) (') (.).");
+            RuleFor(x => x.FirstName).NotEmpty().MaximumLength(48).Matches(RegularExpressions.NAME).WithMessage("Must begin with and contain alphabetic character. May contain one of ( - ) ( , ) ( ' ) ( . ).");
+            RuleFor(x => x.LastName).NotEmpty().MaximumLength(48).Matches(RegularExpressions.NAME).WithMessage("Must begin with and contain alphabetic character. May contain one of ( - ) ( , ) ( ' ) ( . ).");
         }
     }
 }

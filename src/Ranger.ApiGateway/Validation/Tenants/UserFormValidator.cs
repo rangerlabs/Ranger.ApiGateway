@@ -8,8 +8,8 @@ namespace Ranger.ApiGateway
         public UserFormValidator()
         {
             RuleFor(u => u.Email).NotEmpty().EmailAddress();
-            RuleFor(x => x.FirstName).NotEmpty().MaximumLength(48).Matches(RegularExpressions.NAME).WithMessage("Must begin with and contain alphabetic character. May contain one of the following (-) (,) (') (.).");
-            RuleFor(x => x.LastName).NotEmpty().MaximumLength(48).Matches(RegularExpressions.NAME).WithMessage("Must begin with and contain alphabetic character. May contain one of the following (-) (,) (') (.).");
+            RuleFor(x => x.FirstName).NotEmpty().MaximumLength(48).Matches(RegularExpressions.NAME).WithMessage("Must begin with and contain alphabetic character. May contain one of ( - ) ( , ) ( ' ) ( . ).");
+            RuleFor(x => x.LastName).NotEmpty().MaximumLength(48).Matches(RegularExpressions.NAME).WithMessage("Must begin with and contain alphabetic character. May contain one of ( - ) ( , ) ( ' ) ( . ).");
             RuleFor(u => u.Password)
                 .MinimumLength(8)
                 .MaximumLength(64)
