@@ -13,7 +13,7 @@ namespace Ranger.ApiGateway.Validation.Integrations.Webhooks
                 .MinimumLength(3)
                 .MaximumLength(128)
                 .Matches(RegularExpressions.GEOFENCE_INTEGRATION_NAME)
-                .WithMessage("Valid Name characters are lowercase, alphanumeric, and dashes ('-'). Must begin and end with alphanumeric characters.");
+                .WithMessage("Must begin, end, and contain lowercase alphanumeric characters. May contain ( - ).");
             RuleFor(x => x.Description)
                 .MaximumLength(512);
             RuleFor(x => x.Url).NotEmpty().Must(x =>

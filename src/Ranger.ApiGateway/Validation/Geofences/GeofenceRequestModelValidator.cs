@@ -15,7 +15,7 @@ namespace Ranger.ApiGateway
                 .MinimumLength(3)
                 .MaximumLength(128)
                 .Matches(RegularExpressions.GEOFENCE_INTEGRATION_NAME)
-                .WithMessage("Must begin, end, and contain alphanumeric characters. May contain ( - ).");
+                .WithMessage("Must begin, end, and contain lowercase alphanumeric characters. May contain ( - ).");
             RuleFor(g => g.Coordinates)
                 .NotEmpty()
                 .Custom((coords, c) =>
