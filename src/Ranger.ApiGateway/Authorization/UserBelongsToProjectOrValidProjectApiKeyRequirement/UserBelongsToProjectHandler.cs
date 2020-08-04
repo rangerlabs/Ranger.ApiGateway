@@ -30,8 +30,9 @@ namespace Ranger.ApiGateway
         {
             try
             {
-                var projectName = httpContextAccessor.HttpContext.Request.Path.Value.Split("/")[1];
-                if (!String.IsNullOrWhiteSpace(projectName))
+                var requestProjectId = httpContextAccessor.HttpContext.Request.Path.Value.Split("/")[1];
+                Guid projectId;
+                if (Guid.TryParse(requestProjectId, out projectId))
                 {
                     var user = context.User.UserFromClaims();
                     if (!String.IsNullOrWhiteSpace(user.Domain) && !String.IsNullOrWhiteSpace(user.Email) && !String.IsNullOrWhiteSpace(user.Role))
@@ -44,7 +45,7 @@ namespace Ranger.ApiGateway
                         else
                         {
                             var apiResponse = await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(tenantId, user.Email).ConfigureAwait(false);
-                            var project = apiResponse.Result.Where(_ => _.Name.ToLowerInvariant() == projectName.ToLowerInvariant()).SingleOrDefault();
+                            var project = apiResponse.Result.Where(_ => _.ProjectId == projectId).SingleOrDefault();
                             if (project is null)
                             {
                                 logger.LogInformation("The user is not authorized to access the requested project");

@@ -33,12 +33,13 @@ namespace Ranger.ApiGateway.Controllers
         ///<summary>
         /// Accepts a Test Run for geofence determination
         ///</summary>
+        ///<param name="projectId">The unique identifier of the project</param>
         ///<param name="testRunModel">The model necessary to compute geofence resuts</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [HttpPost("/{projectName}/test-runs")]
+        [HttpPost("/{projectId}/test-runs")]
         [Authorize(Roles = "User")]
         [Authorize(Policy = AuthorizationPolicyNames.BelongsToProject)]
-        public async Task<ApiResponse> PostBreadcrumb([FromBody] TestRunModel testRunModel)
+        public async Task<ApiResponse> PostBreadcrumb(Guid projectId, [FromBody] TestRunModel testRunModel)
         {
             logger.LogDebug("Test Run received");
             var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
@@ -51,7 +52,7 @@ namespace Ranger.ApiGateway.Controllers
                 {
                     base.Send(new ComputeGeofenceIntersections(
                         TenantId,
-                        project.ProjectId,
+                        projectId,
                         project.Name,
                         EnvironmentEnum.TEST,
                         new Breadcrumb(

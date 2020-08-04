@@ -30,36 +30,34 @@ namespace Ranger.ApiGateway
         ///<summary>
         /// Gets all geofences for a tenant's project
         ///</summary>
-        ///<param name="projectName">The friendly name of the project</param>
+        ///<param name="projectId">The unique identifier of the project</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("/{projectName}/geofences")]
         [Authorize(Policy = AuthorizationPolicyNames.UserBelongsToProjectOrValidProjectApiKey)]
-        public async Task<ApiResponse> GetAllGeofences(string projectName)
+        public async Task<ApiResponse> GetAllGeofences(Guid projectId)
         {
-            var authorizedProject = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
-            var apiResponse = await geofencesClient.GetAllGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(TenantId, authorizedProject.ProjectId);
+            var apiResponse = await geofencesClient.GetAllGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(TenantId, projectId);
             return new ApiResponse("Successfully retrieved geofences", apiResponse.Result);
         }
 
         ///<summary>
         /// Initiates the creation of a new geofence within a project 
         ///</summary>
-        ///<param name="projectName">The friendly name of the project</param>
+        ///<param name="projectId">The unique identifier of the project</param>
         ///<param name="geofenceModel">The model necessary to create a new geofence</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost("/{projectName}/geofences")]
         [Authorize(Policy = AuthorizationPolicyNames.UserBelongsToProjectOrValidProjectApiKey)]
-        public async Task<ApiResponse> Post(string projectName, GeofenceRequestModel geofenceModel)
+        public async Task<ApiResponse> Post(Guid projectId, GeofenceRequestModel geofenceModel)
         {
-            var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
             geofenceModel.ExternalId = geofenceModel.ExternalId.Trim();
             var createGeofenceSagaInitializer = new CreateGeofenceSagaInitializer(
                  User is null ? false : true,
                  User?.UserFromClaims().Email ?? HttpContext.Items[HttpContextAuthItems.ProjectApiKeyPrefix] as string,
                  TenantId,
                  geofenceModel.ExternalId,
-                 project.ProjectId,
+                 projectId,
                  geofenceModel.Shape,
                  geofenceModel.Coordinates,
                  default,
@@ -81,16 +79,15 @@ namespace Ranger.ApiGateway
         ///<summary>
         /// Updates an existing geofence within a project
         ///</summary>
-        ///<param name="projectName">The friendly name of the project</param>
+        ///<param name="projectId">The unique identifier of the project</param>
         ///<param name="geofenceId">The unique identifier of the geofence to update</param>
         ///<param name="geofenceModel">The model necessary to create a new geofence</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPut("/{projectName}/geofences/{geofenceId}")]
         [Authorize(Policy = AuthorizationPolicyNames.UserBelongsToProjectOrValidProjectApiKey)]
-        public async Task<ApiResponse> UpdateGeofence(string projectName, Guid geofenceId, GeofenceRequestModel geofenceModel)
+        public async Task<ApiResponse> UpdateGeofence(Guid projectId, Guid geofenceId, GeofenceRequestModel geofenceModel)
         {
-            var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
             geofenceModel.ExternalId = geofenceModel.ExternalId.Trim();
             var createGeofenceSagaInitializer = new UpdateGeofenceSagaInitializer(
                 User is null ? false : true,
@@ -98,7 +95,7 @@ namespace Ranger.ApiGateway
                 TenantId,
                 geofenceId,
                 geofenceModel.ExternalId,
-                project.ProjectId,
+                projectId,
                 geofenceModel.Shape,
                 geofenceModel.Coordinates,
                 default,
@@ -121,20 +118,19 @@ namespace Ranger.ApiGateway
         ///<summary>
         /// Deletes an existing geofence within a project
         ///</summary>
-        ///<param name="projectName">The friendly name of the project</param>
+        ///<param name="projectId">The unique identifier of the project</param>
         ///<param name="externalId">The friendly name of the geofence to delete</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpDelete("/{projectName}/geofences/{externalId}")]
         [Authorize(Policy = AuthorizationPolicyNames.UserBelongsToProjectOrValidProjectApiKey)]
-        public async Task<ApiResponse> DeleteGeofence(string projectName, string externalId)
+        public async Task<ApiResponse> DeleteGeofence(Guid projectId, string externalId)
         {
-            var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
             var deleteGeofenceSagaInitializer = new DeleteGeofenceSagaInitializer(
                  User is null ? false : true,
                  UserFromClaims.Email ?? HttpContext.Items[HttpContextAuthItems.ProjectApiKeyPrefix] as string,
                  TenantId,
                  externalId,
-                 project.ProjectId
+                 projectId
              );
             return await Task.Run(() => base.SendAndAccept(deleteGeofenceSagaInitializer));
         }

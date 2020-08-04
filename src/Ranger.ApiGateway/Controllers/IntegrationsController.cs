@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoWrapper.Wrappers;
@@ -29,29 +30,27 @@ namespace Ranger.ApiGateway
         ///<summary>
         /// Deletes an existing integration within a project
         ///</summary>
-        ///<param name="projectName">The friendly name of the project</param>
+        ///<param name="projectId">The unique identifier of the project</param>
         ///<param name="integrationName">The friendly name of the integration to delete</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpDelete("/{projectName}/integrations/{integrationName}")]
         [Authorize(Roles = "Admin")]
         [Authorize(Policy = AuthorizationPolicyNames.BelongsToProject)]
-        public async Task<ApiResponse> DeleteIntegrationForProject(string projectName, string integrationName)
+        public async Task<ApiResponse> DeleteIntegrationForProject(Guid projectId, string integrationName)
         {
-            var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
-            return await Task.Run(() => base.SendAndAccept(new DeleteIntegrationSagaInitializer(UserFromClaims.Email, TenantId, integrationName, project.ProjectId)));
+            return await Task.Run(() => base.SendAndAccept(new DeleteIntegrationSagaInitializer(UserFromClaims.Email, TenantId, integrationName, projectId)));
         }
         ///<summary>
         /// Deletes an existing integration within a project
         ///</summary>
-        ///<param name="projectName">The friendly name of the project</param>
+        ///<param name="projectId">The unique identifier of the project</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [HttpGet("/{projectName}/integrations")]
+        [HttpGet("/{projectId}/integrations")]
         [Authorize(Roles = "User")]
         [Authorize(Policy = AuthorizationPolicyNames.BelongsToProject)]
-        public async Task<ApiResponse> GetAllIntegrationsForProject(string projectName)
+        public async Task<ApiResponse> GetAllIntegrationsForProject(Guid projectId)
         {
-            var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
-            var integrationsApiResponse = await integrationsClient.GetAllIntegrationsByProjectId<IEnumerable<dynamic>>(TenantId, project.ProjectId);
+            var integrationsApiResponse = await integrationsClient.GetAllIntegrationsByProjectId<IEnumerable<dynamic>>(TenantId, projectId);
             return new ApiResponse("Succesfully retrieved integrations", integrationsApiResponse.Result);
         }
     }
