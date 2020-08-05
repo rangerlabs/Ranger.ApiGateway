@@ -60,7 +60,7 @@ namespace Ranger.ApiGateway
                  projectId,
                  geofenceModel.Shape,
                  geofenceModel.Coordinates,
-                 default,
+                 null,
                  geofenceModel.IntegrationIds,
                  geofenceModel.Metadata,
                  geofenceModel.Description,
@@ -69,8 +69,8 @@ namespace Ranger.ApiGateway
                  geofenceModel.OnEnter,
                  geofenceModel.OnDwell,
                  geofenceModel.OnExit,
-                 DateTime.MinValue,
-                 DateTime.MinValue,
+                 null,
+                 null,
                  geofenceModel.Schedule
              );
             return await Task.Run(() => base.SendAndAccept(createGeofenceSagaInitializer));
@@ -98,7 +98,7 @@ namespace Ranger.ApiGateway
                 projectId,
                 geofenceModel.Shape,
                 geofenceModel.Coordinates,
-                default,
+                null,
                 geofenceModel.IntegrationIds,
                 geofenceModel.Metadata,
                 geofenceModel.Description,
@@ -107,8 +107,8 @@ namespace Ranger.ApiGateway
                 geofenceModel.OnEnter,
                 geofenceModel.OnDwell,
                 geofenceModel.OnExit,
-                DateTime.MaxValue,
-                DateTime.MinValue,
+                null,
+                null,
                 geofenceModel.Schedule
             );
 
