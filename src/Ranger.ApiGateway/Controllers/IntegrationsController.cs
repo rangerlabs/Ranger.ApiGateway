@@ -33,7 +33,7 @@ namespace Ranger.ApiGateway
         ///<param name="projectId">The unique identifier of the project</param>
         ///<param name="integrationName">The friendly name of the integration to delete</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
-        [HttpDelete("/{projectName}/integrations/{integrationName}")]
+        [HttpDelete("/{projectId}/integrations/{integrationName}")]
         [Authorize(Roles = "Admin")]
         [Authorize(Policy = AuthorizationPolicyNames.BelongsToProject)]
         public async Task<ApiResponse> DeleteIntegrationForProject(Guid projectId, string integrationName)

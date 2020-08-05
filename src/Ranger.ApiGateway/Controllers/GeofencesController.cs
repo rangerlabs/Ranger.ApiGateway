@@ -32,7 +32,7 @@ namespace Ranger.ApiGateway
         ///</summary>
         ///<param name="projectId">The unique identifier of the project</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [HttpGet("/{projectName}/geofences")]
+        [HttpGet("/{projectId}/geofences")]
         [Authorize(Policy = AuthorizationPolicyNames.UserBelongsToProjectOrValidProjectApiKey)]
         public async Task<ApiResponse> GetAllGeofences(Guid projectId)
         {
@@ -47,7 +47,7 @@ namespace Ranger.ApiGateway
         ///<param name="geofenceModel">The model necessary to create a new geofence</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [HttpPost("/{projectName}/geofences")]
+        [HttpPost("/{projectId}/geofences")]
         [Authorize(Policy = AuthorizationPolicyNames.UserBelongsToProjectOrValidProjectApiKey)]
         public async Task<ApiResponse> Post(Guid projectId, GeofenceRequestModel geofenceModel)
         {
@@ -84,7 +84,7 @@ namespace Ranger.ApiGateway
         ///<param name="geofenceModel">The model necessary to create a new geofence</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [HttpPut("/{projectName}/geofences/{geofenceId}")]
+        [HttpPut("/{projectId}/geofences/{geofenceId}")]
         [Authorize(Policy = AuthorizationPolicyNames.UserBelongsToProjectOrValidProjectApiKey)]
         public async Task<ApiResponse> UpdateGeofence(Guid projectId, Guid geofenceId, GeofenceRequestModel geofenceModel)
         {
@@ -121,7 +121,7 @@ namespace Ranger.ApiGateway
         ///<param name="projectId">The unique identifier of the project</param>
         ///<param name="externalId">The friendly name of the geofence to delete</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
-        [HttpDelete("/{projectName}/geofences/{externalId}")]
+        [HttpDelete("/{projectId}/geofences/{externalId}")]
         [Authorize(Policy = AuthorizationPolicyNames.UserBelongsToProjectOrValidProjectApiKey)]
         public async Task<ApiResponse> DeleteGeofence(Guid projectId, string externalId)
         {

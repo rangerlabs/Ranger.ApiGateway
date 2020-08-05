@@ -34,19 +34,18 @@ namespace Ranger.ApiGateway
         ///<summary>
         /// Creates a new WebHook Integration
         ///</summary>
-        ///<param name="projectName">The friendly name of the project</param>
+        ///<param name="projectId">The friendly name of the project</param>
         ///<param name="webhookIntegrationModel">The model necessary to create a new webhook integration</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
-        [HttpPost("/{projectName}/integrations/webhook")]
-        public async Task<ApiResponse> Post(string projectName, WebhookIntegrationPostModel webhookIntegrationModel)
+        [HttpPost("/{projectId}/integrations/webhook")]
+        public async Task<ApiResponse> Post(Guid projectId, WebhookIntegrationPostModel webhookIntegrationModel)
         {
-            var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
             webhookIntegrationModel.Name = webhookIntegrationModel.Name.Trim();
             var createIntegrationSagaInitializer = new CreateIntegrationSagaInitializer(
                  UserFromClaims.Email ?? "", //INSERT TOKEN HERE
                  TenantId,
                  webhookIntegrationModel.Name,
-                 project.ProjectId,
+                 projectId,
                  JsonConvert.SerializeObject(webhookIntegrationModel),
                  IntegrationsEnum.WEBHOOK
              );
@@ -56,14 +55,13 @@ namespace Ranger.ApiGateway
         ///<summary>
         /// Creates a new WebHook Integration
         ///</summary>
-        ///<param name="projectName">The friendly name of the project</param>
+        ///<param name="projectId">The friendly name of the project</param>
         ///<param name="id">The integration id to update</param>
         ///<param name="webhookIntegrationModel">The model necessary to create a new webhook integration</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
-        [HttpPut("/{projectName}/integrations/webhook/{id}")]
-        public async Task<ApiResponse> UpdateIntegration(string projectName, Guid id, WebhookIntegrationPutModel webhookIntegrationModel)
+        [HttpPut("/{projectId}/integrations/webhook/{id}")]
+        public async Task<ApiResponse> UpdateIntegration(Guid projectId, Guid id, WebhookIntegrationPutModel webhookIntegrationModel)
         {
-            var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
             // The IntegrationId property on the model is not required for the endpoint but is required of the serialized object for the Integrations service
             // Overriding any IntegrationId in the body with what was passed in the path allows this endpoint to still be RESTful
             webhookIntegrationModel.IntegrationId = id;
@@ -72,7 +70,7 @@ namespace Ranger.ApiGateway
                 UserFromClaims.Email,
                 TenantId,
                 webhookIntegrationModel.Name,
-                project.ProjectId,
+                projectId,
                 JsonConvert.SerializeObject(webhookIntegrationModel),
                 IntegrationsEnum.WEBHOOK,
                 webhookIntegrationModel.Version
