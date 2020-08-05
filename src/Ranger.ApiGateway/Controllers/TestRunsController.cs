@@ -44,30 +44,25 @@ namespace Ranger.ApiGateway.Controllers
             logger.LogDebug("Test Run received");
             var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
 
-            await Task.Run(() =>
+            var accuracy = new Random().Next(30);
+            var recordedAt = DateTime.UtcNow - TimeSpan.FromMinutes(5) * testRunModel.Positions.Count();
+            var breadcrumbs = new List<Breadcrumb>();
+            foreach (var position in testRunModel.Positions)
             {
-                var accuracy = new Random().Next(30);
-                var recordedAt = DateTime.UtcNow - TimeSpan.FromMinutes(5) * testRunModel.Positions.Count();
-                foreach (var position in testRunModel.Positions)
-                {
-                    base.Send(new ComputeGeofenceIntersections(
-                        TenantId,
-                        projectId,
-                        project.Name,
-                        EnvironmentEnum.TEST,
-                        new Breadcrumb(
-                            "Ranger_Test_Runner",
-                            "Test_User_0",
-                            position,
-                            recordedAt,
-                            DateTime.UtcNow,
-                            default,
-                            accuracy)
-                    ));
-                    recordedAt += TimeSpan.FromMinutes(5);
-                }
-            });
-            return new ApiResponse("Test Run Accepted", statusCode: StatusCodes.Status202Accepted);
+                breadcrumbs.Add(
+                    new Breadcrumb(
+                        "Ranger_Test_Runner",
+                        "Test_User_0",
+                        position,
+                        recordedAt,
+                        DateTime.UtcNow,
+                        default,
+                        accuracy)
+                );
+                recordedAt += TimeSpan.FromMinutes(5);
+            }
+            base.Send(new ExecuteTestRun(TenantId, projectId, project.Name, breadcrumbs));
+            return new ApiResponse("The Test Run has been queued and will execute shortly", statusCode: StatusCodes.Status202Accepted);
         }
     }
 }
