@@ -39,7 +39,7 @@ namespace Ranger.ApiGateway.Controllers
         [HttpPost("/{projectId}/test-runs")]
         [Authorize(Roles = "User")]
         [Authorize(Policy = AuthorizationPolicyNames.BelongsToProject)]
-        public async Task<ApiResponse> PostBreadcrumb(Guid projectId, [FromBody] TestRunModel testRunModel)
+        public ApiResponse PostBreadcrumb(Guid projectId, [FromBody] TestRunModel testRunModel)
         {
             logger.LogDebug("Test Run received");
             var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;

@@ -11,6 +11,7 @@ namespace Ranger.ApiGateway
         public BreadcrumbValidator(IValidator<LngLat> lngLatValidator, IValidator<KeyValuePair<string, string>> keyValuePairValidator)
         {
             RuleFor(x => x.DeviceId).NotEmpty().MaximumLength(128);
+            RuleFor(x => x.ExternalUserId).MaximumLength(128);
             RuleFor(x => x.Position).SetValidator(lngLatValidator);
             RuleFor(x => x.Accuracy).NotEmpty();
             RuleFor(x => x.RecordedAt).NotEqual(default(DateTime)).NotEqual(DateTime.MinValue).NotEqual(DateTime.MaxValue);

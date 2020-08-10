@@ -37,6 +37,25 @@ namespace Ranger.ApiGateway.Tests
         }
 
         [Fact]
+        public void ExternalUserId_Should_NOT_Have_Error_When_Empty()
+        {
+            this.breadcrumbValidator.ShouldNotHaveValidationErrorFor(x => x.ExternalUserId, "");
+        }
+
+        [Fact]
+        public void ExternalUserId_Should_Have_Error_When_Greater_Than_128_Characters()
+        {
+            this.breadcrumbValidator.ShouldHaveValidationErrorFor(x => x.ExternalUserId, new string('a', 129));
+        }
+
+        [Fact]
+        public void ExternalUserId_Should_NOT_Have_Error_When_Less_Than_Equal_To_128_Characters()
+        {
+            this.breadcrumbValidator.ShouldNotHaveValidationErrorFor(x => x.ExternalUserId, new string('a', 127));
+            this.breadcrumbValidator.ShouldNotHaveValidationErrorFor(x => x.ExternalUserId, new string('a', 128));
+        }
+
+        [Fact]
         public void Position_Should_Have_Error_When_Latitude_Out_Of_Range()
         {
             this.breadcrumbValidator.ShouldHaveChildValidator(b => b.Position, typeof(AbstractValidator<LngLat>));
