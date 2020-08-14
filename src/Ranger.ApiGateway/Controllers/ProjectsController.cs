@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Authorization;
@@ -37,9 +38,9 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("/projects")]
         [Authorize(Roles = "User")]
-        public async Task<ApiResponse> GetAllProjects()
+        public async Task<ApiResponse> GetAllProjects(CancellationToken cancellationToken)
         {
-            var apiResponse = await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectResponseModel>>(TenantId, UserFromClaims.Email);
+            var apiResponse = await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectResponseModel>>(TenantId, UserFromClaims.Email, cancellationToken);
             return new ApiResponse("Successfully retrieved all projects", apiResponse.Result);
         }
 

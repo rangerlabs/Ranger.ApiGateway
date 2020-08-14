@@ -44,7 +44,10 @@ namespace Ranger.ApiGateway
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers()
+            services.AddControllers(options =>
+            {
+                options.Filters.Add<OperationCanceledExceptionFilter>();
+            })
                 .AddNewtonsoftJson(options =>
                 {
                     options.SerializerSettings.Converters.Add(new StringEnumConverter());

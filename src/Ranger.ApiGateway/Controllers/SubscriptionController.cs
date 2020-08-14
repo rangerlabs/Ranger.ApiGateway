@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Authorization;
@@ -31,14 +32,14 @@ namespace Ranger.ApiGateway.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Roles = "Owner")]
         [HttpGet("/subscriptions/checkout-existing-hosted-page-url")]
-        public async Task<ApiResponse> GetHostedCheckoutPageUrl([FromQuery] string planId)
+        public async Task<ApiResponse> GetHostedCheckoutPageUrl([FromQuery] string planId, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(planId))
             {
                 throw new ApiException("The 'planId' query parameter is required", StatusCodes.Status400BadRequest);
             }
 
-            var apiResponse = await subscriptionsClient.GenerateCheckoutExistingUrl<RangerChargeBeeHostedPage>(TenantId, planId);
+            var apiResponse = await subscriptionsClient.GenerateCheckoutExistingUrl<RangerChargeBeeHostedPage>(TenantId, planId, cancellationToken);
             return new ApiResponse("Successfully retrieved hosted checkout page url", apiResponse.Result);
         }
 
@@ -49,9 +50,9 @@ namespace Ranger.ApiGateway.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Roles = "Owner")]
         [HttpGet("/subscriptions/portal-session")]
-        public async Task<ApiResponse> GetPortalSession()
+        public async Task<ApiResponse> GetPortalSession(CancellationToken cancellationToken)
         {
-            var apiResponse = await subscriptionsClient.GetPortalSession<RangerChargeBeePortalSession>(TenantId);
+            var apiResponse = await subscriptionsClient.GetPortalSession<RangerChargeBeePortalSession>(TenantId, cancellationToken);
             return new ApiResponse("Successfully retrieved portal session", apiResponse.Result);
         }
 
@@ -62,9 +63,9 @@ namespace Ranger.ApiGateway.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Roles = "Owner")]
         [HttpGet("/subscriptions/plan-id")]
-        public async Task<ApiResponse> GetPlanId()
+        public async Task<ApiResponse> GetPlanId(CancellationToken cancellationToken)
         {
-            var apiResponse = await subscriptionsClient.GetSubscriptionPlanId(TenantId);
+            var apiResponse = await subscriptionsClient.GetSubscriptionPlanId(TenantId, cancellationToken);
             return new ApiResponse("Successfully retrieved plan id", apiResponse.Result);
         }
 

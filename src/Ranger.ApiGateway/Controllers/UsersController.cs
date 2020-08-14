@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Authorization;
@@ -129,9 +130,9 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("/users/{email}/authorized-projects")]
         [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
-        public async Task<ApiResponse> GetAuthorizedProjectsForUser(string email)
+        public async Task<ApiResponse> GetAuthorizedProjectsForUser(string email, CancellationToken cancellationToken)
         {
-            var apiResponse = (await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(TenantId, email));
+            var apiResponse = await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(TenantId, email, cancellationToken);
             return new ApiResponse("Successfully retrieved authorized projects", apiResponse.Result.Select(_ => _.ProjectId));
         }
 
@@ -167,9 +168,9 @@ namespace Ranger.ApiGateway
         [HttpGet("/users/{email}")]
         [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         [Authorize(Roles = "Admin")]
-        public async Task<ApiResponse> GetUser(string email)
+        public async Task<ApiResponse> GetUser(string email, CancellationToken cancellationToken)
         {
-            var apiResponse = await identityClient.GetUserAsync<UserApiResponseModel>(TenantId, email);
+            var apiResponse = await identityClient.GetUserAsync<UserApiResponseModel>(TenantId, email, cancellationToken);
             var userResponseModel = new UserApiResponseModel
             {
                 Email = apiResponse.Result.Email,
@@ -188,9 +189,9 @@ namespace Ranger.ApiGateway
         [HttpGet("/users")]
         [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         [Authorize(Roles = "Admin")]
-        public async Task<ApiResponse> GetAllUsers()
+        public async Task<ApiResponse> GetAllUsers(CancellationToken cancellationToken)
         {
-            var apiResponse = await identityClient.GetAllUsersAsync<IEnumerable<UserApiResponseModel>>(TenantId);
+            var apiResponse = await identityClient.GetAllUsersAsync<IEnumerable<UserApiResponseModel>>(TenantId, cancellationToken);
             var userResponseCollection = new List<UserApiResponseModel>();
             foreach (var user in apiResponse.Result)
             {

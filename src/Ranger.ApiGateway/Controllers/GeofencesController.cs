@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Authorization;
@@ -34,9 +35,9 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("/{projectId}/geofences")]
         [Authorize(Policy = AuthorizationPolicyNames.UserBelongsToProjectOrValidProjectApiKey)]
-        public async Task<ApiResponse> GetAllGeofences(Guid projectId)
+        public async Task<ApiResponse> GetAllGeofences(Guid projectId, CancellationToken cancellationToken)
         {
-            var apiResponse = await geofencesClient.GetAllGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(TenantId, projectId);
+            var apiResponse = await geofencesClient.GetAllGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(TenantId, projectId, cancellationToken);
             return new ApiResponse("Successfully retrieved geofences", apiResponse.Result);
         }
 

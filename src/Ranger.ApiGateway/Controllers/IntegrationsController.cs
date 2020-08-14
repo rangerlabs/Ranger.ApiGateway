@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Authorization;
@@ -48,9 +49,9 @@ namespace Ranger.ApiGateway
         [HttpGet("/{projectId}/integrations")]
         [Authorize(Roles = "User")]
         [Authorize(Policy = AuthorizationPolicyNames.BelongsToProject)]
-        public async Task<ApiResponse> GetAllIntegrationsForProject(Guid projectId)
+        public async Task<ApiResponse> GetAllIntegrationsForProject(Guid projectId, CancellationToken cancellationToken)
         {
-            var integrationsApiResponse = await integrationsClient.GetAllIntegrationsByProjectId<IEnumerable<dynamic>>(TenantId, projectId);
+            var integrationsApiResponse = await integrationsClient.GetAllIntegrationsByProjectId<IEnumerable<dynamic>>(TenantId, projectId, cancellationToken);
             return new ApiResponse("Succesfully retrieved integrations", integrationsApiResponse.Result);
         }
     }

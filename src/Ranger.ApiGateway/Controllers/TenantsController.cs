@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Authorization;
@@ -89,9 +90,9 @@ namespace Ranger.ApiGateway
         [HttpGet("/tenants/{domain}")]
         [Authorize(Roles = "User")]
         [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
-        public async Task<ApiResponse> GetTenant(string domain)
+        public async Task<ApiResponse> GetTenant(string domain, CancellationToken cancellationToken)
         {
-            var apiResponse = await tenantsClient.GetTenantByDomainAsync<OrganizationFormPutModel>(domain);
+            var apiResponse = await tenantsClient.GetTenantByDomainAsync<OrganizationFormPutModel>(domain, cancellationToken);
             return new ApiResponse("Successfully retrieved tenant organization information", apiResponse.Result);
         }
 
@@ -102,9 +103,9 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("/tenants/{domain}/exists")]
         [AllowAnonymous]
-        public async Task<ApiResponse> TenantExists(string domain)
+        public async Task<ApiResponse> TenantExists(string domain, CancellationToken cancellationToken)
         {
-            var apiResponse = await tenantsClient.DoesExistAsync(domain);
+            var apiResponse = await tenantsClient.DoesExistAsync(domain, cancellationToken);
             return new ApiResponse("Successfully determined tenant existence", apiResponse.Result);
         }
 
@@ -116,9 +117,9 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("/tenants/{domain}/confirmed")]
         [AllowAnonymous]
-        public async Task<ApiResponse> TenantConfirmed(string domain)
+        public async Task<ApiResponse> TenantConfirmed(string domain, CancellationToken cancellationToken)
         {
-            var apiResponse = await tenantsClient.IsConfirmedAsync(domain);
+            var apiResponse = await tenantsClient.IsConfirmedAsync(domain, cancellationToken);
             return new ApiResponse("Successfully determined tenant confirmation status", apiResponse.Result);
         }
 
@@ -131,9 +132,9 @@ namespace Ranger.ApiGateway
         [HttpGet("/tenants/{domain}/primary-owner-transfer")]
         [Authorize(Roles = "PrimaryOwner")]
         [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
-        public async Task<ApiResponse> GetPrimaryOwnerTransfer(string domain)
+        public async Task<ApiResponse> GetPrimaryOwnerTransfer(string domain, CancellationToken cancellationToken)
         {
-            var apiResponse = await tenantsClient.GetPrimaryOwnerTransferByDomain<PrimaryOwnerTransferModel>(domain);
+            var apiResponse = await tenantsClient.GetPrimaryOwnerTransferByDomain<PrimaryOwnerTransferModel>(domain, cancellationToken);
             return new ApiResponse("Successfully retrieved primary owner transfer", apiResponse.Result);
         }
 
