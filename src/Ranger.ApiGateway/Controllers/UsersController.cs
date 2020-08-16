@@ -127,6 +127,7 @@ namespace Ranger.ApiGateway
         /// Get the projects a user is authorized for
         ///</summary>
         ///<param name="email">The email of the user to get authorized projects for</param>
+        /// <param name="cancellationToken"></param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("/users/{email}/authorized-projects")]
         [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
@@ -163,6 +164,7 @@ namespace Ranger.ApiGateway
         /// Gets a user
         ///</summary>
         ///<param name="email">The email of the user</param>
+        /// <param name="cancellationToken"></param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("/users/{email}")]

@@ -28,6 +28,7 @@ namespace Ranger.ApiGateway.Controllers
         /// Get hosted checkout page url
         ///</summary>
         ///<param name="planId">The plan id to retrieve the hosted page for</param>
+        /// <param name="cancellationToken"></param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Roles = "Owner")]

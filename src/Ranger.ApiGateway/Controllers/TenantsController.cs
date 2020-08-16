@@ -85,6 +85,7 @@ namespace Ranger.ApiGateway
         /// Gets the tenant's information
         ///</summary>
         ///<param name="domain">The domain to retrieve the tenant for</param>
+        /// <param name="cancellationToken"></param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("/tenants/{domain}")]
@@ -100,6 +101,7 @@ namespace Ranger.ApiGateway
         /// Determines whether a tenant exists
         ///</summary>
         ///<param name="domain">The domain to check availability for</param>
+        /// <param name="cancellationToken"></param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("/tenants/{domain}/exists")]
         [AllowAnonymous]
@@ -113,6 +115,7 @@ namespace Ranger.ApiGateway
         /// Determines whether a tenant is confirmed
         ///</summary>
         ///<param name="domain">The domain to check whether it has been confirmed</param>
+        /// <param name="cancellationToken"></param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("/tenants/{domain}/confirmed")]
@@ -127,6 +130,7 @@ namespace Ranger.ApiGateway
         /// Determines whether a tenant is confirmed
         ///</summary>
         ///<param name="domain">The domain to check whether it has been confirmed</param>
+        /// <param name="cancellationToken"></param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [HttpGet("/tenants/{domain}/primary-owner-transfer")]

@@ -45,6 +45,7 @@ namespace Ranger.ApiGateway
         /// Deletes an existing integration within a project
         ///</summary>
         ///<param name="projectId">The unique identifier of the project</param>
+        /// <param name="cancellationToken"></param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("/{projectId}/integrations")]
         [Authorize(Roles = "User")]

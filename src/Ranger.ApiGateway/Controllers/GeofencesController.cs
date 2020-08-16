@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoWrapper.Wrappers;
@@ -32,6 +31,7 @@ namespace Ranger.ApiGateway
         /// Gets all geofences for a tenant's project
         ///</summary>
         ///<param name="projectId">The unique identifier of the project</param>
+        /// <param name="cancellationToken"></param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("/{projectId}/geofences")]
         [Authorize(Policy = AuthorizationPolicyNames.UserBelongsToProjectOrValidProjectApiKey)]
