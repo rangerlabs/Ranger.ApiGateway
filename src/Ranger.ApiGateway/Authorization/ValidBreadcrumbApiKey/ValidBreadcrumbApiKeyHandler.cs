@@ -35,12 +35,11 @@ namespace Ranger.ApiGateway
                     if (apiKey.Count == 1)
                     {
                         var apiKeyParts = apiKey[0].Split('.');
-                        if (apiKeyParts?.Length == 2 && apiKeyParts[0] == "proj")
+                        if (apiKeyParts?.Length == 2 && (apiKeyParts[0] != "live" || apiKeyParts[0] != "test"))
                         {
                             logger.LogInformation($"The API key provided was for the incorrect purpose");
                         }
-
-                        if (apiKeyParts?.Length == 2 && (apiKeyParts[0] == "live" || apiKeyParts[0] == "test") && Guid.TryParse(apiKeyParts[1], out _))
+                        else if (apiKeyParts?.Length == 2 && (apiKeyParts[0] == "live" || apiKeyParts[0] == "test") && Guid.TryParse(apiKeyParts[1], out _))
                         {
                             var tenantIdResponse = await projectsClient.GetTenantIdByApiKeyAsync(apiKey.Single());
                             logger.LogInformation("Resolved Tenant Id {TenantId} from API key");
