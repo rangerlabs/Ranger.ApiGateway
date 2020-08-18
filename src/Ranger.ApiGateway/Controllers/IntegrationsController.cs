@@ -49,7 +49,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("/{projectId}/integrations")]
         [Authorize(Roles = "User")]
-        [Authorize(Policy = AuthorizationPolicyNames.BelongsToProject)]
+        [Authorize(Policy = AuthorizationPolicyNames.UserBelongsToProjectOrValidProjectApiKey)]
         public async Task<ApiResponse> GetAllIntegrationsForProject(Guid projectId, CancellationToken cancellationToken)
         {
             var integrationsApiResponse = await integrationsClient.GetAllIntegrationsByProjectId<IEnumerable<dynamic>>(TenantId, projectId, cancellationToken);
