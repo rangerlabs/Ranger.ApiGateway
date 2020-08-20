@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-
 using Ranger.Common;
 using Ranger.RabbitMQ;
 
@@ -31,27 +30,28 @@ namespace Ranger.ApiGateway.Controllers
         [HttpPost("/breadcrumbs")]
         public ApiResponse PostBreadcrumb([FromBody] BreadcrumbModel breadcrumbModel)
         {
-            breadcrumbModel.ExternalUserId = breadcrumbModel.ExternalUserId.Trim();
+            breadcrumbModel.DeviceId = breadcrumbModel.DeviceId.Trim();
+            breadcrumbModel.ExternalUserId = breadcrumbModel.ExternalUserId?.Trim();
 
             logger.LogDebug("Breadcrumb received");
             var environment = Enum.Parse<EnvironmentEnum>(HttpContext.Items[HttpContextAuthItems.BreadcrumbApiKeyEnvironment] as string);
             var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
             return base.SendAndAccept(new ComputeGeofenceIntersections(
-                        TenantId,
-                        project.ProjectId,
-                        project.Name,
-                        environment,
-                        new Breadcrumb(
-                            breadcrumbModel.DeviceId,
-                            breadcrumbModel.ExternalUserId,
-                            breadcrumbModel.Position,
-                            breadcrumbModel.RecordedAt.ToUniversalTime(),
-                            DateTime.UtcNow,
-                            breadcrumbModel.Metadata,
-                            breadcrumbModel.Accuracy)
-                        ),
-                    clientMessage: "Breadcrumb accepted"
-                );
+                    TenantId,
+                    project.ProjectId,
+                    project.Name,
+                    environment,
+                    new Breadcrumb(
+                        breadcrumbModel.DeviceId,
+                        breadcrumbModel.ExternalUserId,
+                        breadcrumbModel.Position,
+                        breadcrumbModel.RecordedAt.ToUniversalTime(),
+                        DateTime.UtcNow,
+                        breadcrumbModel.Metadata,
+                        breadcrumbModel.Accuracy)
+                ),
+                clientMessage: "Breadcrumb accepted"
+            );
         }
     }
 }

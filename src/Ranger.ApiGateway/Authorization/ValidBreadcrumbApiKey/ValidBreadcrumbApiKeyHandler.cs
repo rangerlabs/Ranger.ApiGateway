@@ -35,7 +35,7 @@ namespace Ranger.ApiGateway
                     if (apiKey.Count == 1)
                     {
                         var apiKeyParts = apiKey[0].Split('.');
-                        if (apiKeyParts?.Length == 2 && (apiKeyParts[0] != "live" || apiKeyParts[0] != "test"))
+                        if (apiKeyParts?.Length == 2 && !(apiKeyParts[0] != "live" || apiKeyParts[0] != "test"))
                         {
                             logger.LogInformation($"The API key provided was for the incorrect purpose");
                         }

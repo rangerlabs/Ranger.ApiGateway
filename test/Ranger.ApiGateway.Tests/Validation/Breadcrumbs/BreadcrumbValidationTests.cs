@@ -62,14 +62,15 @@ namespace Ranger.ApiGateway.Tests
         }
 
         [Fact]
-        public void Accuracy_Should_Have_Error_When_Empty()
+        public void Accuracy_Should_Have_Error_When_Less_Than_0()
         {
-            this.breadcrumbValidator.ShouldHaveValidationErrorFor(b => b.Accuracy, 0);
+            this.breadcrumbValidator.ShouldHaveValidationErrorFor(b => b.Accuracy, -1);
         }
 
         [Fact]
-        public void Accuracy_Should_NOT_Have_Error_When_NOT_0()
+        public void Accuracy_Should_NOT_Have_Error_When_GreaterThanEqualTo_0()
         {
+            this.breadcrumbValidator.ShouldNotHaveValidationErrorFor(b => b.Accuracy, 0);
             this.breadcrumbValidator.ShouldNotHaveValidationErrorFor(b => b.Accuracy, 1);
         }
 

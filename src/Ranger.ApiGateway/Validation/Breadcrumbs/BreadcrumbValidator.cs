@@ -13,7 +13,7 @@ namespace Ranger.ApiGateway
             RuleFor(x => x.DeviceId).NotEmpty().MaximumLength(128);
             RuleFor(x => x.ExternalUserId).MaximumLength(128);
             RuleFor(x => x.Position).SetValidator(lngLatValidator);
-            RuleFor(x => x.Accuracy).NotEmpty();
+            RuleFor(x => x.Accuracy).GreaterThanOrEqualTo(0);
             RuleFor(x => x.RecordedAt).NotEqual(default(DateTime)).NotEqual(DateTime.MinValue).NotEqual(DateTime.MaxValue);
             RuleFor(g => g.Metadata)
                .Custom((m, c) =>
