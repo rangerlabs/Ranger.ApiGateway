@@ -26,18 +26,18 @@ namespace Ranger.ApiGateway.Validation.Integrations.Webhooks
             RuleFor(x => x.Headers)
                 .Custom((h, c) =>
                 {
-                    if (!(h is null) && h.Count() > 10)
+                    if (!(h is null) && h.Count() > 16)
                     {
-                        c.AddFailure("Up to 10 metadata allowed");
+                        c.AddFailure("Up to 16 headers allowed");
                     }
                 });
             RuleForEach(x => x.Headers).SetValidator(keyValuePairValidator).WithMessage("Metadata {CollectionIndex} is invalid");
             RuleFor(x => x.Metadata)
                 .Custom((m, c) =>
                 {
-                    if (!(m is null) && m.Count() > 10)
+                    if (!(m is null) && m.Count() > 16)
                     {
-                        c.AddFailure("Up to 10 metadata allowed");
+                        c.AddFailure("Up to 16 metadata allowed");
                     }
                 });
             RuleForEach(x => x.Metadata).SetValidator(keyValuePairValidator).WithMessage("Metadata {CollectionIndex} is invalid");

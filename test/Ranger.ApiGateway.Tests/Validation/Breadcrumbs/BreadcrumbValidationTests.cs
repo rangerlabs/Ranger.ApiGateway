@@ -99,10 +99,16 @@ namespace Ranger.ApiGateway.Tests
         }
 
         [Fact]
-        public void MetaData_Should_Have_Error_When_More_Than_10_Elements()
+        public void MetaData_Should_Have_Error_When_More_Than_16_Elements()
         {
             var metadata = new List<KeyValuePair<string, string>>()
                 {
+                    new KeyValuePair<string, string>("a","a"),
+                    new KeyValuePair<string, string>("a","a"),
+                    new KeyValuePair<string, string>("a","a"),
+                    new KeyValuePair<string, string>("a","a"),
+                    new KeyValuePair<string, string>("a","a"),
+                    new KeyValuePair<string, string>("a","a"),
                     new KeyValuePair<string, string>("a","a"),
                     new KeyValuePair<string, string>("a","a"),
                     new KeyValuePair<string, string>("a","a"),
@@ -120,10 +126,16 @@ namespace Ranger.ApiGateway.Tests
         }
 
         [Fact]
-        public void MetaData_Should_NOT_Have_Error_When_Less_Than_Equal_To_10_Elements()
+        public void MetaData_Should_NOT_Have_Error_When_Less_Than_Equal_To_16_Elements()
         {
             var metadata = new List<KeyValuePair<string, string>>()
                 {
+                    new KeyValuePair<string, string>("a","a"),
+                    new KeyValuePair<string, string>("a","a"),
+                    new KeyValuePair<string, string>("a","a"),
+                    new KeyValuePair<string, string>("a","a"),
+                    new KeyValuePair<string, string>("a","a"),
+                    new KeyValuePair<string, string>("a","a"),
                     new KeyValuePair<string, string>("a","a"),
                     new KeyValuePair<string, string>("a","a"),
                     new KeyValuePair<string, string>("a","a"),
