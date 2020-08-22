@@ -18,7 +18,7 @@ namespace Ranger.ApiGateway
     [ApiController]
     [Authorize(Roles = "Admin")]
     [Authorize(Policy = AuthorizationPolicyNames.BelongsToProject)]
-    public class WebhookIntegrationController : BaseController<WebhookIntegrationController>
+    public class WebhookIntegrationController : BaseController
     {
         private readonly IBusPublisher busPublisher;
         private readonly ProjectsHttpClient projectsClient;

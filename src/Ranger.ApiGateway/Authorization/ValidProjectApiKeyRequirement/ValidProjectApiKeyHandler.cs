@@ -10,7 +10,7 @@ using Ranger.InternalHttpClient;
 
 namespace Ranger.ApiGateway
 {
-    public class ValidProjectApiKeyHandler : AuthorizationHandler<UserBelongsToProjectOrValidProjectApiKeyRequirement>
+    public class ValidProjectApiKeyHandler : AuthorizationHandler<ValidProjectApiKeyRequirement>
     {
         private readonly TenantsHttpClient tenantsClient;
         private readonly ProjectsHttpClient projectsClient;
@@ -24,7 +24,7 @@ namespace Ranger.ApiGateway
             this.logger = logger;
         }
 
-        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, UserBelongsToProjectOrValidProjectApiKeyRequirement requirement)
+        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, ValidProjectApiKeyRequirement requirement)
         {
             try
             {

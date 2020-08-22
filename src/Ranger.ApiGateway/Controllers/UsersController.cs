@@ -16,7 +16,7 @@ namespace Ranger.ApiGateway
 {
     [ApiVersion("1.0")]
     [ApiController]
-    public class UserController : BaseController<UserController>
+    public class UserController : BaseController
     {
         private readonly IdentityHttpClient identityClient;
         private readonly ILogger<UserController> logger;

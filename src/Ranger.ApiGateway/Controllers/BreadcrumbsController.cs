@@ -12,7 +12,7 @@ namespace Ranger.ApiGateway.Controllers
     [ApiVersion("1.0")]
     [ApiController]
     [Authorize(Policy = AuthorizationPolicyNames.ValidBreadcrumbApiKey)]
-    public class BreadcrumbsController : BaseController<BreadcrumbsController>
+    public class BreadcrumbsController : BaseController
     {
         private readonly IBusPublisher busPublisher;
         private readonly ILogger<BreadcrumbsController> logger;

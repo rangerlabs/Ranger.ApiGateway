@@ -19,7 +19,7 @@ namespace Ranger.ApiGateway
     [ApiVersion("1.0")]
     [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
     [AutoWrapIgnore]
-    public class PusherController : BaseController<PusherController>
+    public class PusherController : BaseController
     {
         private readonly IdentityHttpClient identityClient;
         private readonly ILogger<PusherController> logger;

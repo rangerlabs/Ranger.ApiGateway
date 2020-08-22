@@ -17,7 +17,7 @@ namespace Ranger.ApiGateway.Controllers
 
     [ApiController]
     [ApiVersionNeutral]
-    public class ChargeBeeController : BaseController<ChargeBeeController>
+    public class ChargeBeeController : BaseController
     {
         private readonly IBusPublisher busPublisher;
         private readonly SubscriptionsHttpClient subscriptionsHttpClient;

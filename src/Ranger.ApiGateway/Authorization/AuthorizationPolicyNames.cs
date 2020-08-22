@@ -5,6 +5,6 @@ namespace Ranger.ApiGateway
         public const string BelongsToProject = "BelongsToProject";
         public const string ValidBreadcrumbApiKey = "ValidBreadcrumbApiKey";
         public const string TenantIdResolved = "TenantIdResolved";
-        public const string UserBelongsToProjectOrValidProjectApiKey = "UserBelongsToProjectOrValidProjectApiKey";
+        public const string ValidProjectApiKey = "UserBelongsToProjectOrValidProjectApiKey";
     }
 }

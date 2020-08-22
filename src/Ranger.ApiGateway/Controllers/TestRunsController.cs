@@ -17,7 +17,7 @@ namespace Ranger.ApiGateway.Controllers
     [ApiVersion("1.0")]
     [ApiController]
     [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
-    public class TestRunController : BaseController<BreadcrumbsController>
+    public class TestRunController : BaseController
     {
         private readonly IBusPublisher busPublisher;
         private readonly ProjectsHttpClient projectsClient;

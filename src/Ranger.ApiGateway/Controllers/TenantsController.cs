@@ -15,7 +15,7 @@ namespace Ranger.ApiGateway
 {
     [ApiController]
     [ApiVersion("1.0")]
-    public class TenantsController : BaseController<TenantsController>
+    public class TenantsController : BaseController
     {
         private readonly TenantsHttpClient tenantsClient;
         private readonly IBusPublisher busPublisher;

@@ -12,7 +12,7 @@ namespace Ranger.ApiGateway
 {
     [ApiController]
     [Route("[controller]")]
-    public class BaseController<TController> : ControllerBase
+    public class BaseController : ControllerBase
     {
         private static readonly string AcceptLanguageHeader = "accept-language";
         private static readonly string OperationHeader = "X-Operation";
@@ -20,9 +20,9 @@ namespace Ranger.ApiGateway
         private static readonly string DefaultCulture = "en-us";
         // private static readonly string PageLink = "page";
         private readonly IBusPublisher busPublisher;
-        protected readonly ILogger<TController> Logger;
+        protected readonly ILogger Logger;
 
-        public BaseController(IBusPublisher busPublisher, ILogger<TController> logger)
+        public BaseController(IBusPublisher busPublisher, ILogger logger)
         {
             this.busPublisher = busPublisher;
             this.Logger = logger;

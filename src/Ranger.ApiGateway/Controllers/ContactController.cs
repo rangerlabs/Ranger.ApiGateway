@@ -10,7 +10,7 @@ namespace Ranger.ApiGateway.Controllers
     [ApiVersion("1.0")]
     [ApiController]
     [AllowAnonymous]
-    public class ContactController : BaseController<ContactController>
+    public class ContactController : BaseController
     {
         private readonly IBusPublisher busPublisher;
         private readonly ILogger<ContactController> logger;
