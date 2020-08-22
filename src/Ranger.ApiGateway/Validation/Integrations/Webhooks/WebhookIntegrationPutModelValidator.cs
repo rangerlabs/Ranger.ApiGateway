@@ -9,7 +9,6 @@ namespace Ranger.ApiGateway.Validation.Integrations.Webhooks
     {
         public WebhookIntegrationPutModelValidator(IValidator<KeyValuePair<string, string>> keyValuePairValidator)
         {
-            RuleFor(x => x.IntegrationId).NotEmpty();
             RuleFor(x => x.Name)
                 .MinimumLength(3)
                 .MaximumLength(128)

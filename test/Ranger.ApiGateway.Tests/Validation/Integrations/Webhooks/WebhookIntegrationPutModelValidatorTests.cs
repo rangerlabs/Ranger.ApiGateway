@@ -17,15 +17,9 @@ namespace Ranger.ApiGateway.Tests.Validation.Integrations.Webhooks
         }
 
         [Fact]
-        public void IntegrationId_Should_Have_Error_When_Empty()
+        public void IntegrationId_Should_NOT_Have_Error_When_Empty()
         {
-            this.webhookIntegrationPutModelValidatorTests.ShouldHaveValidationErrorFor(x => x.IntegrationId, default(Guid));
-        }
-
-        [Fact]
-        public void IntegrationId_Should_Not_Have_Error_When_Not_Empty()
-        {
-            this.webhookIntegrationPutModelValidatorTests.ShouldNotHaveValidationErrorFor(x => x.IntegrationId, Guid.NewGuid());
+            this.webhookIntegrationPutModelValidatorTests.ShouldNotHaveValidationErrorFor(x => x.Id, default(Guid));
         }
 
         [Fact]
