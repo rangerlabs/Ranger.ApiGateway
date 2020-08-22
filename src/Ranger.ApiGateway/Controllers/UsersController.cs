@@ -134,7 +134,7 @@ namespace Ranger.ApiGateway
         public async Task<ApiResponse> GetAuthorizedProjectsForUser(string email, CancellationToken cancellationToken)
         {
             var apiResponse = await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(TenantId, email, cancellationToken);
-            return new ApiResponse("Successfully retrieved authorized projects", apiResponse.Result.Select(_ => _.ProjectId));
+            return new ApiResponse("Successfully retrieved authorized projects", apiResponse.Result.Select(_ => _.Id));
         }
 
         ///<summary>

@@ -59,7 +59,7 @@ namespace Ranger.ApiGateway
                             }
                             else
                             {
-                                logger.LogInformation("Project {Id} is not enabled for tenant id {TenantId}", projectApiResponse.StatusCode, projectApiResponse.Result.ProjectId, tenantIdResponse.Result);
+                                logger.LogInformation("Project {Id} is not enabled for tenant id {TenantId}", projectApiResponse.StatusCode, projectApiResponse.Result.Id, tenantIdResponse.Result);
                                 context.Fail();
                             }
                         }

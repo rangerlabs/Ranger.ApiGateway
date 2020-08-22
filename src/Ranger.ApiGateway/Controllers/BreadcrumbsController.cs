@@ -38,7 +38,7 @@ namespace Ranger.ApiGateway.Controllers
             var project = HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel;
             return base.SendAndAccept(new ComputeGeofenceIntersections(
                     TenantId,
-                    project.ProjectId,
+                    project.Id,
                     project.Name,
                     environment,
                     new Breadcrumb(

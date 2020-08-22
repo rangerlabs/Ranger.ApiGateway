@@ -45,7 +45,7 @@ namespace Ranger.ApiGateway
                         else
                         {
                             var apiResponse = await projectsClient.GetAllProjectsForUserAsync<IEnumerable<ProjectModel>>(tenantId, user.Email).ConfigureAwait(false);
-                            var project = apiResponse.Result.Where(_ => _.ProjectId == projectId).SingleOrDefault();
+                            var project = apiResponse.Result.Where(_ => _.Id == projectId).SingleOrDefault();
                             if (project is null)
                             {
                                 logger.LogInformation("The user is not authorized to access the requested project");

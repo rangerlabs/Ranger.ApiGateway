@@ -32,6 +32,6 @@ namespace Ranger.ApiGateway
             return await base.GetAllIntegrationsForProject(ProjectId, cancellationToken);
         }
 
-        private Guid ProjectId => (HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel).ProjectId;
+        private Guid ProjectId => (HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel).Id;
     }
 }

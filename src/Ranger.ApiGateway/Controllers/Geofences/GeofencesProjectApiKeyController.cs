@@ -71,7 +71,7 @@ namespace Ranger.ApiGateway
             return await base.DeleteGeofence(ProjectId, false, ApiKeyPrefix, externalId);
         }
 
-        private Guid ProjectId => (HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel).ProjectId;
+        private Guid ProjectId => (HttpContext.Items[HttpContextAuthItems.Project] as ProjectModel).Id;
         private string ApiKeyPrefix => HttpContext.Items[HttpContextAuthItems.ProjectApiKeyPrefix] as string;
     }
 }

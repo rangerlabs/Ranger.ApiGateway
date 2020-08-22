@@ -4,7 +4,7 @@ namespace Ranger.ApiGateway
 {
     class ProjectModel
     {
-        public Guid ProjectId { get; set; }
+        public Guid Id { get; set; }
         public string Name { get; set; }
         public bool Enabled { get; set; }
     }
