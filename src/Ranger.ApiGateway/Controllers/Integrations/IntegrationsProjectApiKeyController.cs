@@ -26,7 +26,6 @@ namespace Ranger.ApiGateway
         /// <param name="cancellationToken"></param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("/integrations")]
-        [Authorize(Roles = "User")]
         [Authorize(Policy = AuthorizationPolicyNames.ValidProjectApiKey)]
         public async Task<ApiResponse> GetAllIntegrationsForProject(CancellationToken cancellationToken)
         {
