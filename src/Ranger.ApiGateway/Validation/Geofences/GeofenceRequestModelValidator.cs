@@ -62,6 +62,13 @@ namespace Ranger.ApiGateway
                         }
                     }
                 });
+            RuleFor(g => g.IntegrationIds).Custom((m, c) =>
+            {
+                if (!(m is null) && m.Distinct().Count() < m.Count())
+                {
+                    c.AddFailure("IntegrationIds must not contain duplicate identifiers");
+                }
+            });
             RuleFor(g => g.Schedule).SetValidator(scheduleValidator);
             RuleFor(g => g.Metadata)
                 .Custom((m, c) =>

@@ -8,6 +8,7 @@ namespace Ranger.ApiGateway
     {
         public bool Enabled { get; set; } = true;
         public EnvironmentEnum Environment { get; set; }
+        public bool IsDefault { get; set; } = false;
         public string Name { get; set; }
         public string Url { get; set; }
         public string Description { get; set; }

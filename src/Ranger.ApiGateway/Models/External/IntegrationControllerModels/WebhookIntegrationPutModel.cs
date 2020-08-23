@@ -10,6 +10,7 @@ namespace Ranger.ApiGateway
         public Guid Id { get; set; }
         public bool Enabled { get; set; }
         public string Name { get; set; }
+        public bool IsDefault { get; set; } = false;
         public EnvironmentEnum Environment { get; set; }
         public string Url { get; set; }
         public string Description { get; set; }

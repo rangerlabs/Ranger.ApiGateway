@@ -133,6 +133,13 @@ namespace Ranger.ApiGateway.Tests.Validation.Integrations.Webhooks
         }
 
         [Fact]
+        public void IsDefault_Should_Default_To_False()
+        {
+            var model = new WebhookIntegrationPostModel();
+            model.IsDefault.ShouldBeFalse();
+        }
+
+        [Fact]
         public void Url_Should_Have_Error_When_Empty()
         {
             this.webhookIntegrationPostModelValidatorTests.ShouldHaveValidationErrorFor(x => x.Url, "");

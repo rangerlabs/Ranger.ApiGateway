@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using FluentValidation;
 using FluentValidation.TestHelper;
@@ -144,6 +145,37 @@ namespace Ranger.ApiGateway.Tests
             };
             var result = this.geofenceValidator.TestValidate(model);
             result.ShouldHaveValidationErrorFor(x => x.Coordinates);
+        }
+
+        [Fact]
+        public void IntegrationIds_Should_Have_Error_When_Contains_Duplicate_Id()
+        {
+            var guid = Guid.NewGuid();
+            var model = new GeofenceRequestModel()
+            {
+                IntegrationIds = new List<Guid>()
+                    {
+                        guid,
+                        guid
+                    }
+            };
+            var result = this.geofenceValidator.TestValidate(model);
+            result.ShouldHaveValidationErrorFor(x => x.IntegrationIds);
+        }
+
+        [Fact]
+        public void IntegrationIds_Should_NOT_Have_Error_When_Contains_Unique_Ids()
+        {
+            var model = new GeofenceRequestModel()
+            {
+                IntegrationIds = new List<Guid>()
+                    {
+                        Guid.NewGuid(),
+                        Guid.NewGuid()
+                    }
+            };
+            var result = this.geofenceValidator.TestValidate(model);
+            result.ShouldNotHaveValidationErrorFor(x => x.IntegrationIds);
         }
 
         [Fact]
