@@ -41,15 +41,9 @@ namespace Ranger.ApiGateway
         [HttpDelete("/users/{email}")]
         [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         [Authorize(Roles = "Admin")]
-        public async Task<ApiResponse> DeleteUser(string email)
+        public ApiResponse DeleteUser(string email)
         {
-            var deleteUserContent = new DeleteUserModel()
-            {
-                CommandingUserEmail = UserFromClaims.Email
-            };
-            var apiResponse = await identityClient.DeleteUserAsync(TenantId, email, JsonConvert.SerializeObject(deleteUserContent));
-            busPublisher.Send(new SendPusherDomainUserPredefinedNotification("ForceSignoutNotification", TenantId, email), CorrelationContext.Empty);
-            return new ApiResponse($"Successfully deleted user {email}");
+            return base.SendAndAccept(new DeleteUserSagaInitializer(TenantId, email, User.UserFromClaims().Email));
         }
 
         ///<summary>
@@ -218,7 +212,7 @@ namespace Ranger.ApiGateway
         [HttpPost("/users")]
         [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         [Authorize(Roles = "Admin")]
-        public async Task<ApiResponse> CreateUser(PostApplicationUserModel postApplicationUserModel)
+        public ApiResponse CreateUser(PostApplicationUserModel postApplicationUserModel)
         {
             var applicationUserCommand = new CreateUserSagaInitializer(
                 TenantId,
@@ -229,7 +223,7 @@ namespace Ranger.ApiGateway
                 UserFromClaims.Email,
                 postApplicationUserModel.AuthorizedProjects
             );
-            return await Task.Run(() => base.SendAndAccept(applicationUserCommand));
+            return base.SendAndAccept(applicationUserCommand);
         }
 
         ///<summary>
@@ -241,7 +235,7 @@ namespace Ranger.ApiGateway
         [HttpPut("/users/{email}")]
         [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         [Authorize(Roles = "Admin")]
-        public async Task<ApiResponse> PutPermissions(string email, PutPermissionsModel putPermissionsModel)
+        public ApiResponse PutPermissions(string email, PutPermissionsModel putPermissionsModel)
         {
             var updateUserPermissionsCommand = new UpdateUserPermissionsSagaInitializer(
                 TenantId,
@@ -250,7 +244,7 @@ namespace Ranger.ApiGateway
                 putPermissionsModel.Role,
                 putPermissionsModel.AuthorizedProjects
             );
-            return await Task.Run(() => base.SendAndAccept(updateUserPermissionsCommand));
+            return base.SendAndAccept(updateUserPermissionsCommand);
         }
     }
 }

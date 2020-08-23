@@ -54,18 +54,14 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpDelete("/account")]
         [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
-        public async Task<ApiResponse> DeleteAccount(AccountDeleteModel accountDeleteModel)
+        public ApiResponse DeleteAccount(AccountDeleteModel accountDeleteModel)
         {
             if (UserFromClaims.Role.ToLowerInvariant() == Enum.GetName(typeof(RolesEnum), RolesEnum.PrimaryOwner))
             {
                 throw new ApiException("Primary Owners must transfer ownership of the domain before deleting their account", StatusCodes.Status403Forbidden);
             }
 
-            var apiResponse = await identityClient.DeleteAccountAsync(TenantId, UserFromClaims.Email, JsonConvert.SerializeObject(accountDeleteModel));
-
-
-            busPublisher.Send(new SendPusherDomainUserPredefinedNotification("ForceSignoutNotification", TenantId, UserFromClaims.Email), CorrelationContext.Empty);
-            return new ApiResponse("Successfully deleted account");
+            return base.SendAndAccept(new DeleteAccountSagaInitializer(TenantId, User.UserFromClaims().Email, accountDeleteModel.Password));
         }
 
         ///<summary>
