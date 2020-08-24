@@ -151,6 +151,8 @@ namespace Ranger.ApiGateway
             {
                 app.UseSwagger("v1", "API Gateway");
             }
+
+            app.UseExceptionHandler("/error");
             app.UseCors(builder =>
             {
                 builder.AllowAnyHeader()
