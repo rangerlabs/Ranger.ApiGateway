@@ -69,8 +69,8 @@ namespace Ranger.ApiGateway
         [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
         public async Task<ApiResponse> Put(OrganizationFormPutModel organizationFormModel)
         {
-            organizationFormModel.Domain = organizationFormModel.Domain.Trim();
-            organizationFormModel.OrganizationName = organizationFormModel.OrganizationName.Trim();
+            organizationFormModel.Domain = organizationFormModel.Domain?.Trim();
+            organizationFormModel.OrganizationName = organizationFormModel.OrganizationName?.Trim();
 
             if (String.IsNullOrWhiteSpace(organizationFormModel.Domain) && String.IsNullOrWhiteSpace(organizationFormModel.OrganizationName))
             {

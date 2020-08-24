@@ -1,10 +1,12 @@
 using System;
+using System.Threading.Tasks;
 using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Ranger.Common;
+using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
 
 namespace Ranger.ApiGateway.Controllers
@@ -15,11 +17,14 @@ namespace Ranger.ApiGateway.Controllers
     public class BreadcrumbsController : BaseController
     {
         private readonly IBusPublisher busPublisher;
+        private readonly SubscriptionsHttpClient subscriptionsHttpClient;
         private readonly ILogger<BreadcrumbsController> logger;
-        public BreadcrumbsController(IBusPublisher busPublisher, ILogger<BreadcrumbsController> logger) : base(busPublisher, logger)
+
+        public BreadcrumbsController(IBusPublisher busPublisher, SubscriptionsHttpClient subscriptionsHttpClient, ILogger<BreadcrumbsController> logger) : base(busPublisher, logger)
         {
-            this.logger = logger;
             this.busPublisher = busPublisher;
+            this.subscriptionsHttpClient = subscriptionsHttpClient;
+            this.logger = logger;
         }
 
         ///<summary>
@@ -28,8 +33,13 @@ namespace Ranger.ApiGateway.Controllers
         ///<param name="breadcrumbModel">The model necessary to compute geofence resuts</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpPost("/breadcrumbs")]
-        public ApiResponse PostBreadcrumb([FromBody] BreadcrumbModel breadcrumbModel)
+        public async Task<ApiResponse> PostBreadcrumb([FromBody] BreadcrumbModel breadcrumbModel)
         {
+            if (!(await isSubscriptionActive()))
+            {
+                throw new ApiException("The subscription is not active", statusCode: StatusCodes.Status402PaymentRequired);
+            }
+
             breadcrumbModel.DeviceId = breadcrumbModel.DeviceId.Trim();
             breadcrumbModel.ExternalUserId = breadcrumbModel.ExternalUserId?.Trim();
 
@@ -52,6 +62,13 @@ namespace Ranger.ApiGateway.Controllers
                 ),
                 clientMessage: "Breadcrumb accepted"
             );
+        }
+
+        [NonAction]
+        private async Task<bool> isSubscriptionActive()
+        {
+            var isActiveResponse = await this.subscriptionsHttpClient.IsSubscriptionActive(TenantId);
+            return isActiveResponse.Result;
         }
     }
 }
