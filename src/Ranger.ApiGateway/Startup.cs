@@ -139,9 +139,8 @@ namespace Ranger.ApiGateway
             builder.RegisterInstance<RangerPusherOptions>(configuration.GetOptions<RangerPusherOptions>("pusher"));
         }
 
-        public void Configure(IApplicationBuilder app, IHostApplicationLifetime applicationLifetime, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostApplicationLifetime applicationLifetime)
         {
-            this.loggerFactory = loggerFactory;
 
             if (Environment.IsProduction())
             {
@@ -152,7 +151,6 @@ namespace Ranger.ApiGateway
                 app.UseSwagger("v1", "API Gateway");
             }
 
-            app.UseExceptionHandler("/error");
             app.UseCors(builder =>
             {
                 builder.AllowAnyHeader()
@@ -160,7 +158,9 @@ namespace Ranger.ApiGateway
                     .AllowAnyOrigin()
                     .WithExposedHeaders("X-Operation");
             });
+
             app.UseAutoWrapper();
+            app.UseUnhandedExceptionLogger();
             app.UseRouting();
 
             app.UseAuthentication();
