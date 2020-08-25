@@ -1,23 +1,15 @@
-using System.Linq;
-using System.Net.Mime;
 using System.Security.Cryptography.X509Certificates;
 using Autofac;
-using AutoWrapper.Extensions;
-using AutoWrapper.Wrappers;
-using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using NodaTime;
@@ -141,7 +133,6 @@ namespace Ranger.ApiGateway
 
         public void Configure(IApplicationBuilder app, IHostApplicationLifetime applicationLifetime)
         {
-
             if (Environment.IsProduction())
             {
                 app.UsePathBase("/api");
@@ -150,7 +141,6 @@ namespace Ranger.ApiGateway
             {
                 app.UseSwagger("v1", "API Gateway");
             }
-
             app.UseCors(builder =>
             {
                 builder.AllowAnyHeader()
@@ -158,14 +148,11 @@ namespace Ranger.ApiGateway
                     .AllowAnyOrigin()
                     .WithExposedHeaders("X-Operation");
             });
-
             app.UseAutoWrapper();
             app.UseUnhandedExceptionLogger();
             app.UseRouting();
-
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
