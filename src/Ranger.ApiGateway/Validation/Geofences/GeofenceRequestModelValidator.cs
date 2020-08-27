@@ -33,9 +33,11 @@ namespace Ranger.ApiGateway
                         {
                             if (coords.Count() < 3)
                             {
-                                {
-                                    c.AddFailure("Coordinates array must contain atleast 3 LngLat objects for Polygon geofences.");
-                                }
+                                c.AddFailure("Coordinates array must contain atleast 3 LngLat objects for Polygon geofences.");
+                            }
+                            else if (coords.Count() > 512)
+                            {
+                                c.AddFailure("Coordinates array must contain less than 512 LngLat objects for Polygon geofences.");
                             }
                             else if (coords.First().Equals(coords.Last()))
                             {

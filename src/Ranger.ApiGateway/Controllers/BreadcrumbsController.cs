@@ -37,7 +37,7 @@ namespace Ranger.ApiGateway.Controllers
         {
             if (!(await isSubscriptionActive()))
             {
-                throw new ApiException("The subscription is not active", statusCode: StatusCodes.Status402PaymentRequired);
+                throw new ApiException("The subscription is inactive.", statusCode: StatusCodes.Status402PaymentRequired);
             }
 
             breadcrumbModel.DeviceId = breadcrumbModel.DeviceId.Trim();

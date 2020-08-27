@@ -136,6 +136,24 @@ namespace Ranger.ApiGateway.Tests
         }
 
         [Fact]
+        public void Coordinates_Should_Have_Error_When_Shape_Is_Polygon_And_Coordinates_Has_Greater_Than_512_Elements()
+        {
+            var coordinates = new List<LngLat>();
+            for (int i = 0; i < 513; i++)
+            {
+                coordinates.Add(new LngLat(0, 0));
+            }
+
+            var model = new GeofenceRequestModel()
+            {
+                Coordinates = coordinates,
+                Shape = GeofenceShapeEnum.Polygon
+            };
+            var result = this.geofenceValidator.TestValidate(model);
+            result.ShouldHaveValidationErrorFor(x => x.Coordinates);
+        }
+
+        [Fact]
         public void Coordinates_Should_Have_Error_When_Shape_Is_Polygon_AND_Coordinates_Has_Greater_Than_OR_Equal_3_Elements_AND_First_Last_Coordinates_Are_Equal()
         {
             var model = new GeofenceRequestModel()
