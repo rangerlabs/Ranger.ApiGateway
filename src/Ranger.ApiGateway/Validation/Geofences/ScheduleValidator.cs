@@ -15,13 +15,13 @@ namespace Ranger.ApiGateway
                     c.AddFailure("TimezoneId was invalid");
                 }
             });
-            RuleFor(s => s.Sunday).SetValidator(dailyScheduleValidator);
-            RuleFor(s => s.Monday).SetValidator(dailyScheduleValidator);
-            RuleFor(s => s.Tuesday).SetValidator(dailyScheduleValidator);
-            RuleFor(s => s.Wednesday).SetValidator(dailyScheduleValidator);
-            RuleFor(s => s.Thursday).SetValidator(dailyScheduleValidator);
-            RuleFor(s => s.Friday).SetValidator(dailyScheduleValidator);
-            RuleFor(s => s.Saturday).SetValidator(dailyScheduleValidator);
+            RuleFor(s => s.Sunday).NotEmpty().SetValidator(dailyScheduleValidator);
+            RuleFor(s => s.Monday).NotEmpty().SetValidator(dailyScheduleValidator);
+            RuleFor(s => s.Tuesday).NotEmpty().SetValidator(dailyScheduleValidator);
+            RuleFor(s => s.Wednesday).NotEmpty().SetValidator(dailyScheduleValidator);
+            RuleFor(s => s.Thursday).NotEmpty().SetValidator(dailyScheduleValidator);
+            RuleFor(s => s.Friday).NotEmpty().SetValidator(dailyScheduleValidator);
+            RuleFor(s => s.Saturday).NotEmpty().SetValidator(dailyScheduleValidator);
         }
     }
 }
