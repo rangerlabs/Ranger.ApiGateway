@@ -273,6 +273,62 @@ namespace Ranger.ApiGateway.Tests
         }
 
         [Fact]
+        public void Radius_Should_Have_Error_When_Shape_Is_Circle_And_Radius_Negative()
+        {
+            var model = new GeofenceRequestModel()
+            {
+                Shape = GeofenceShapeEnum.Circle,
+                Radius = -1
+            };
+            var result = this.geofenceValidator.TestValidate(model);
+            result.ShouldHaveValidationErrorFor(x => x.Radius);
+        }
+
+        [Fact]
+        public void Radius_Should_Have_Error_When_Shape_Is_Circle_And_Less_Than_50()
+        {
+            var model = new GeofenceRequestModel()
+            {
+                Shape = GeofenceShapeEnum.Circle,
+                Radius = 49
+            };
+            var result = this.geofenceValidator.TestValidate(model);
+            result.ShouldHaveValidationErrorFor(x => x.Radius);
+        }
+
+
+        [Fact]
+        public void Radius_Should_NOT_Have_Error_When_Shape_Is_Circle_And_Equal_To_0()
+        {
+            var model = new GeofenceRequestModel()
+            {
+                Shape = GeofenceShapeEnum.Circle,
+                Radius = 0
+            };
+            var result = this.geofenceValidator.TestValidate(model);
+            result.ShouldNotHaveValidationErrorFor(x => x.Radius);
+        }
+
+        [Fact]
+        public void Radius_Should_NOT_Have_Error_When_Shape_Is_Circle_And_Equal_To_50()
+        {
+            var model50 = new GeofenceRequestModel()
+            {
+                Shape = GeofenceShapeEnum.Circle,
+                Radius = 50
+            };
+            var model51 = new GeofenceRequestModel()
+            {
+                Shape = GeofenceShapeEnum.Circle,
+                Radius = 51
+            };
+            var result50 = this.geofenceValidator.TestValidate(model50);
+            var result51 = this.geofenceValidator.TestValidate(model51);
+            result50.ShouldNotHaveValidationErrorFor(x => x.Radius);
+            result51.ShouldNotHaveValidationErrorFor(x => x.Radius);
+        }
+
+        [Fact]
         public void Description_Should_Have_Error_When_Length_Greater_Than_512_Characters()
         {
             this.geofenceValidator.ShouldHaveValidationErrorFor(x => x.Description, new string('a', 513));

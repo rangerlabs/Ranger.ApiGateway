@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
 
@@ -31,6 +32,7 @@ namespace Ranger.ApiGateway
 
         protected async Task<ApiResponse> Post(Guid projectId, bool isFrontendRequest, string commandingUser, GeofenceRequestModel geofenceModel)
         {
+            var radius = getRadiusOrDefaultRadius(geofenceModel);
             geofenceModel.ExternalId = geofenceModel.ExternalId.Trim();
             var createGeofenceSagaInitializer = new CreateGeofenceSagaInitializer(
                 isFrontendRequest,
@@ -44,7 +46,7 @@ namespace Ranger.ApiGateway
                 geofenceModel.IntegrationIds,
                 geofenceModel.Metadata,
                 geofenceModel.Description,
-                geofenceModel.Radius,
+                radius,
                 geofenceModel.Enabled,
                 geofenceModel.OnEnter,
                 geofenceModel.OnDwell,
@@ -58,6 +60,7 @@ namespace Ranger.ApiGateway
 
         protected async Task<ApiResponse> UpdateGeofence(Guid projectId, bool isFrontendRequest, string commandingUser, Guid geofenceId, GeofenceRequestModel geofenceModel)
         {
+            var radius = getRadiusOrDefaultRadius(geofenceModel);
             geofenceModel.ExternalId = geofenceModel.ExternalId.Trim();
             var createGeofenceSagaInitializer = new UpdateGeofenceSagaInitializer(
                 isFrontendRequest,
@@ -72,7 +75,7 @@ namespace Ranger.ApiGateway
                 geofenceModel.IntegrationIds,
                 geofenceModel.Metadata,
                 geofenceModel.Description,
-                geofenceModel.Radius,
+                radius,
                 geofenceModel.Enabled,
                 geofenceModel.OnEnter,
                 geofenceModel.OnDwell,
@@ -95,6 +98,25 @@ namespace Ranger.ApiGateway
                 projectId
              );
             return await Task.Run(() => base.SendAndAccept(deleteGeofenceSagaInitializer));
+        }
+
+        private int getRadiusOrDefaultRadius(GeofenceRequestModel geofenceRequestModel)
+        {
+            if (geofenceRequestModel.Shape is GeofenceShapeEnum.Circle)
+            {
+                if (geofenceRequestModel.Radius == 0)
+                {
+                    return 100;
+                }
+                else
+                {
+                    return geofenceRequestModel.Radius;
+                }
+            }
+            else
+            {
+                return 0;
+            }
         }
     }
 }
