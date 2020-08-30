@@ -27,7 +27,6 @@ namespace Ranger.ApiGateway
     {
         private readonly IWebHostEnvironment Environment;
         private readonly IConfiguration configuration;
-        private ILoggerFactory loggerFactory;
 
         public Startup(IWebHostEnvironment environment, IConfiguration configuration)
         {
