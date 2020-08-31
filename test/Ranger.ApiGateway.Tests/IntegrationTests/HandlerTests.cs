@@ -19,9 +19,7 @@ namespace Ranger.ApiGateway
         }
 
         [Fact]
-        public Task ApiGatway_Starts()
-        {
-            return Task.CompletedTask;
-        }
+        public void ApiGateway_Starts()
+        { }
     }
 }
