@@ -19,11 +19,11 @@ namespace Ranger.ApiGateway
             var config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables()
-                .Build(); ;
+                .Build();
 
-            var host = BuildHost(config["serverBindingUrl"], args);
+            var host = BuildHost(args).UseUrls(config["serverBindingUrl"]).Build();
 
             using (var scope = host.Services.CreateScope())
             {
@@ -36,12 +36,10 @@ namespace Ranger.ApiGateway
             host.Run();
         }
 
-        public static IWebHost BuildHost(string serverBindingUrl, string[] args) =>
+        public static IWebHostBuilder BuildHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-            .UseUrls(serverBindingUrl)
             .UseStartup<Startup>()
             .UseLogging()
-            .ConfigureServices(services => services.AddAutofac())
-            .Build();
+            .ConfigureServices(services => services.AddAutofac());
     }
 }
