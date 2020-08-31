@@ -103,11 +103,21 @@ namespace Ranger.ApiGateway
             );
             services.AddTransient<IApiGatewayDbContextInitializer, ApiGatewayDbContextInitializer>();
 
-            services.AddDataProtection()
-                .SetApplicationName("ApiGateway")
-                .ProtectKeysWithCertificate(new X509Certificate2(configuration["DataProtectionCertPath:Path"]))
-                .UnprotectKeysWithAnyCertificate(new X509Certificate2(configuration["DataProtectionCertPath:Path"]))
-                .PersistKeysToDbContext<ApiGatewayDbContext>();
+            // Workaround for MAC validation issues on MacOS
+            if (configuration.IsIntegrationTesting())
+            {
+                services.AddDataProtection()
+                   .SetApplicationName("ApiGateway")
+                   .PersistKeysToDbContext<ApiGatewayDbContext>();
+            }
+            else
+            {
+                services.AddDataProtection()
+                    .SetApplicationName("ApiGateway")
+                    .ProtectKeysWithCertificate(new X509Certificate2(configuration["DataProtectionCertPath:Path"]))
+                    .UnprotectKeysWithAnyCertificate(new X509Certificate2(configuration["DataProtectionCertPath:Path"]))
+                    .PersistKeysToDbContext<ApiGatewayDbContext>();
+            }
 
             services.AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication(options =>
