@@ -23,13 +23,12 @@ namespace Ranger.ApiGateway
                 .AddEnvironmentVariables()
                 .Build();
 
-            var host = CreateWebHostBuilder(new string[] { config["serverBindingUrl"] }).Build();
+            var host = CreateWebHostBuilder(args).UseUrls(config["serverBindingUrl"]).Build();
 
             using (var scope = host.Services.CreateScope())
             {
                 var dbInitializer = scope.ServiceProvider.GetRequiredService<IApiGatewayDbContextInitializer>();
                 var env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
-
                 dbInitializer.Migrate();
             }
 
@@ -37,9 +36,8 @@ namespace Ranger.ApiGateway
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder()
+            WebHost.CreateDefaultBuilder(args)
             .UseStartup<Startup>()
-            .UseUrls(args[0])
             .UseLogging()
             .ConfigureServices(services => services.AddAutofac());
     }
