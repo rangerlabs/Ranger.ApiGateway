@@ -22,7 +22,7 @@ branches:
         - master
 before_script:
     - chmod -R a+x scripts
-    - psql -c 'create database tenants;'
+    - psql -c 'create database apigateway;'
     - psql -c "alter user postgres password 'postgres';"
 script:
     - './scripts/create-nuget-config.sh $MYGET_KEY'
