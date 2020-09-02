@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 
 using Ranger.Common;
 using Ranger.RabbitMQ;
+using Ranger.RabbitMQ.BusPublisher;
 
 namespace Ranger.ApiGateway
 {

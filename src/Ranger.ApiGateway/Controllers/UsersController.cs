@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
+using Ranger.RabbitMQ.BusPublisher;
 
 namespace Ranger.ApiGateway
 {
