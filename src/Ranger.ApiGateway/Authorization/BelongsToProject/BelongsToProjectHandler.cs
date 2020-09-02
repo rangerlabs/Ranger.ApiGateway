@@ -13,12 +13,12 @@ namespace Ranger.ApiGateway
 
     public partial class BelongsToProjectHandler : AuthorizationHandler<BelongsToProjectRequirement>
     {
-        private readonly ProjectsHttpClient projectsClient;
+        private readonly IProjectsHttpClient projectsClient;
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly ILogger<BelongsToProjectHandler> logger;
-        private readonly TenantsHttpClient tenantsHttpClient;
+        private readonly ITenantsHttpClient tenantsHttpClient;
 
-        public BelongsToProjectHandler(ProjectsHttpClient projectsClient, TenantsHttpClient tenantsHttpClient, IHttpContextAccessor httpContextAccessor, ILogger<BelongsToProjectHandler> logger)
+        public BelongsToProjectHandler(IProjectsHttpClient projectsClient, ITenantsHttpClient tenantsHttpClient, IHttpContextAccessor httpContextAccessor, ILogger<BelongsToProjectHandler> logger)
         {
             this.tenantsHttpClient = tenantsHttpClient;
             this.logger = logger;

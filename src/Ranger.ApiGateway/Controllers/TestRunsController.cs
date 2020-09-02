@@ -21,10 +21,10 @@ namespace Ranger.ApiGateway.Controllers
     public class TestRunController : BaseController
     {
         private readonly IBusPublisher busPublisher;
-        private readonly ProjectsHttpClient projectsClient;
+        private readonly IProjectsHttpClient projectsClient;
         private readonly ILogger<BreadcrumbsController> logger;
 
-        public TestRunController(IBusPublisher busPublisher, ProjectsHttpClient projectsClient, ILogger<BreadcrumbsController> logger) : base(busPublisher, logger)
+        public TestRunController(IBusPublisher busPublisher, IProjectsHttpClient projectsClient, ILogger<BreadcrumbsController> logger) : base(busPublisher, logger)
         {
             this.logger = logger;
             this.busPublisher = busPublisher;

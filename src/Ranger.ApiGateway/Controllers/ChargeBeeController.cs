@@ -21,10 +21,10 @@ namespace Ranger.ApiGateway.Controllers
     public class ChargeBeeController : BaseController
     {
         private readonly IBusPublisher busPublisher;
-        private readonly SubscriptionsHttpClient subscriptionsHttpClient;
+        private readonly ISubscriptionsHttpClient subscriptionsHttpClient;
         private readonly ILogger<ChargeBeeController> logger;
 
-        public ChargeBeeController(IBusPublisher busPublisher, SubscriptionsHttpClient subscriptionsHttpClient, ILogger<ChargeBeeController> logger)
+        public ChargeBeeController(IBusPublisher busPublisher, ISubscriptionsHttpClient subscriptionsHttpClient, ILogger<ChargeBeeController> logger)
             : base(busPublisher, logger)
         {
             this.busPublisher = busPublisher;

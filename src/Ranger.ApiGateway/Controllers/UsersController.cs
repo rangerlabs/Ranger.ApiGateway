@@ -19,13 +19,13 @@ namespace Ranger.ApiGateway
     [ApiController]
     public class UserController : BaseController
     {
-        private readonly IdentityHttpClient identityClient;
+        private readonly IIdentityHttpClient identityClient;
         private readonly ILogger<UserController> logger;
-        private readonly ProjectsHttpClient projectsClient;
-        private readonly TenantsHttpClient tenantsClient;
+        private readonly IProjectsHttpClient projectsClient;
+        private readonly ITenantsHttpClient tenantsClient;
         private readonly IBusPublisher busPublisher;
 
-        public UserController(IBusPublisher busPublisher, IdentityHttpClient identityClient, ProjectsHttpClient projectsClient, TenantsHttpClient tenantsClient, ILogger<UserController> logger) : base(busPublisher, logger)
+        public UserController(IBusPublisher busPublisher, IIdentityHttpClient identityClient, IProjectsHttpClient projectsClient, ITenantsHttpClient tenantsClient, ILogger<UserController> logger) : base(busPublisher, logger)
         {
             this.busPublisher = busPublisher;
             this.projectsClient = projectsClient;

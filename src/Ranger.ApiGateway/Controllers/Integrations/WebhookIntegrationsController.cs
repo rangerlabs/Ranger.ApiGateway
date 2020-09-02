@@ -22,10 +22,10 @@ namespace Ranger.ApiGateway
     public class WebhookIntegrationController : BaseController
     {
         private readonly IBusPublisher busPublisher;
-        private readonly ProjectsHttpClient projectsClient;
+        private readonly IProjectsHttpClient projectsClient;
         private readonly ILogger<WebhookIntegrationController> logger;
 
-        public WebhookIntegrationController(IBusPublisher busPublisher, ProjectsHttpClient projectsClient, ILogger<WebhookIntegrationController> logger) : base(busPublisher, logger)
+        public WebhookIntegrationController(IBusPublisher busPublisher, IProjectsHttpClient projectsClient, ILogger<WebhookIntegrationController> logger) : base(busPublisher, logger)
         {
             this.busPublisher = busPublisher;
             this.projectsClient = projectsClient;

@@ -14,11 +14,11 @@ namespace Ranger.ApiGateway
 {
     public class GeofencesBaseController : BaseController
     {
-        private readonly GeofencesHttpClient geofencesClient;
+        private readonly IGeofencesHttpClient geofencesClient;
         private readonly ILogger logger;
-        private readonly ProjectsHttpClient projectsClient;
+        private readonly IProjectsHttpClient projectsClient;
 
-        protected GeofencesBaseController(IBusPublisher busPublisher, GeofencesHttpClient geofencesClient, ProjectsHttpClient projectsClient, ILogger logger) : base(busPublisher, logger)
+        protected GeofencesBaseController(IBusPublisher busPublisher, IGeofencesHttpClient geofencesClient, IProjectsHttpClient projectsClient, ILogger logger) : base(busPublisher, logger)
         {
             this.projectsClient = projectsClient;
             this.logger = logger;

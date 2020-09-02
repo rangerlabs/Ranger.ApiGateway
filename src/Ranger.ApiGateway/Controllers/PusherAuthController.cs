@@ -22,12 +22,12 @@ namespace Ranger.ApiGateway
     [AutoWrapIgnore]
     public class PusherController : BaseController
     {
-        private readonly IdentityHttpClient identityClient;
+        private readonly IIdentityHttpClient identityClient;
         private readonly ILogger<PusherController> logger;
         private readonly RangerPusherOptions pusherOptions;
         private readonly IBusPublisher busPublisher;
 
-        public PusherController(IBusPublisher busPublisher, IdentityHttpClient identityClient, RangerPusherOptions pusherOptions, ILogger<PusherController> logger) : base(busPublisher, logger)
+        public PusherController(IBusPublisher busPublisher, IIdentityHttpClient identityClient, RangerPusherOptions pusherOptions, ILogger<PusherController> logger) : base(busPublisher, logger)
         {
             this.busPublisher = busPublisher;
             this.pusherOptions = pusherOptions;

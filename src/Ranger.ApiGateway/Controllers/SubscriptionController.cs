@@ -17,9 +17,9 @@ namespace Ranger.ApiGateway.Controllers
     [Authorize(Policy = AuthorizationPolicyNames.TenantIdResolved)]
     public class SubscriptionController : BaseController
     {
-        private readonly SubscriptionsHttpClient subscriptionsClient;
+        private readonly ISubscriptionsHttpClient subscriptionsClient;
         private readonly ILogger<SubscriptionController> logger;
-        public SubscriptionController(IBusPublisher busPublisher, SubscriptionsHttpClient subscriptionsClient, ILogger<SubscriptionController> logger) : base(busPublisher, logger)
+        public SubscriptionController(IBusPublisher busPublisher, ISubscriptionsHttpClient subscriptionsClient, ILogger<SubscriptionController> logger) : base(busPublisher, logger)
         {
             this.logger = logger;
             this.subscriptionsClient = subscriptionsClient;

@@ -22,10 +22,10 @@ namespace Ranger.ApiGateway
     public class ProjectsController : BaseController
     {
         private readonly IBusPublisher busPublisher;
-        private readonly ProjectsHttpClient projectsClient;
+        private readonly IProjectsHttpClient projectsClient;
         private readonly ILogger<ProjectsController> logger;
 
-        public ProjectsController(IBusPublisher busPublisher, ProjectsHttpClient projectsClient, ILogger<ProjectsController> logger) : base(busPublisher, logger)
+        public ProjectsController(IBusPublisher busPublisher, IProjectsHttpClient projectsClient, ILogger<ProjectsController> logger) : base(busPublisher, logger)
         {
             this.logger = logger;
             this.busPublisher = busPublisher;

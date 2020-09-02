@@ -18,11 +18,11 @@ namespace Ranger.ApiGateway
     [ApiController]
     public class AccountController : BaseController
     {
-        private readonly IdentityHttpClient identityClient;
+        private readonly IIdentityHttpClient identityClient;
         private readonly ILogger<AccountController> logger;
         private readonly IBusPublisher busPublisher;
 
-        public AccountController(IBusPublisher busPublisher, IdentityHttpClient identityClient, ILogger<AccountController> logger) : base(busPublisher, logger)
+        public AccountController(IBusPublisher busPublisher, IIdentityHttpClient identityClient, ILogger<AccountController> logger) : base(busPublisher, logger)
         {
             this.busPublisher = busPublisher;
             this.identityClient = identityClient;

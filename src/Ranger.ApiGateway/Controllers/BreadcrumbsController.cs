@@ -18,10 +18,10 @@ namespace Ranger.ApiGateway.Controllers
     public class BreadcrumbsController : BaseController
     {
         private readonly IBusPublisher busPublisher;
-        private readonly SubscriptionsHttpClient subscriptionsHttpClient;
+        private readonly ISubscriptionsHttpClient subscriptionsHttpClient;
         private readonly ILogger<BreadcrumbsController> logger;
 
-        public BreadcrumbsController(IBusPublisher busPublisher, SubscriptionsHttpClient subscriptionsHttpClient, ILogger<BreadcrumbsController> logger) : base(busPublisher, logger)
+        public BreadcrumbsController(IBusPublisher busPublisher, ISubscriptionsHttpClient subscriptionsHttpClient, ILogger<BreadcrumbsController> logger) : base(busPublisher, logger)
         {
             this.busPublisher = busPublisher;
             this.subscriptionsHttpClient = subscriptionsHttpClient;

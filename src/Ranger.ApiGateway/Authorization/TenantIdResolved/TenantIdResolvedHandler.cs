@@ -9,10 +9,10 @@ namespace Ranger.ApiGateway
 {
     public class TenantIdResolvedHandler : AuthorizationHandler<TenantIdResolvedRequirement>
     {
-        private readonly TenantsHttpClient tenantsClient;
+        private readonly ITenantsHttpClient tenantsClient;
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly ILogger<TenantIdResolvedHandler> logger;
-        public TenantIdResolvedHandler(TenantsHttpClient tenantsClient, IHttpContextAccessor httpContextAccessor, ILogger<TenantIdResolvedHandler> logger)
+        public TenantIdResolvedHandler(ITenantsHttpClient tenantsClient, IHttpContextAccessor httpContextAccessor, ILogger<TenantIdResolvedHandler> logger)
         {
             this.logger = logger;
             this.httpContextAccessor = httpContextAccessor;

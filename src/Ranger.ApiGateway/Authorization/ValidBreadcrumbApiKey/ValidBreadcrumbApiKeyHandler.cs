@@ -12,11 +12,11 @@ namespace Ranger.ApiGateway
 {
     public partial class ValidBreadcrumbApiKeyHandler : AuthorizationHandler<ValidBreadcrumbApiKeyRequirement>
     {
-        private readonly TenantsHttpClient tenantsClient;
-        private readonly ProjectsHttpClient projectsClient;
+        private readonly ITenantsHttpClient tenantsClient;
+        private readonly IProjectsHttpClient projectsClient;
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly ILogger<ValidBreadcrumbApiKeyHandler> logger;
-        public ValidBreadcrumbApiKeyHandler(TenantsHttpClient tenantsClient, ProjectsHttpClient projectsClient, IHttpContextAccessor httpContextAccessor, ILogger<ValidBreadcrumbApiKeyHandler> logger)
+        public ValidBreadcrumbApiKeyHandler(ITenantsHttpClient tenantsClient, IProjectsHttpClient projectsClient, IHttpContextAccessor httpContextAccessor, ILogger<ValidBreadcrumbApiKeyHandler> logger)
         {
             this.tenantsClient = tenantsClient;
             this.projectsClient = projectsClient;

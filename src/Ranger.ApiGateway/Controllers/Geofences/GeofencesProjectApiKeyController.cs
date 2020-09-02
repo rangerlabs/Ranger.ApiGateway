@@ -17,7 +17,7 @@ namespace Ranger.ApiGateway
     [ApiVersion("1.0")]
     public class GeofencesProjectApiKeyController : GeofencesBaseController
     {
-        public GeofencesProjectApiKeyController(IBusPublisher busPublisher, GeofencesHttpClient geofencesClient, ProjectsHttpClient projectsClient, ILogger<GeofencesProjectApiKeyController> logger)
+        public GeofencesProjectApiKeyController(IBusPublisher busPublisher, IGeofencesHttpClient geofencesClient, IProjectsHttpClient projectsClient, ILogger<GeofencesProjectApiKeyController> logger)
         : base(busPublisher, geofencesClient, projectsClient, logger)
         { }
 

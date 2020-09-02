@@ -17,7 +17,7 @@ namespace Ranger.ApiGateway
     [ApiController]
     public class IntegrationsUserController : IntegrationsBaseController
     {
-        public IntegrationsUserController(IBusPublisher busPublisher, IntegrationsHttpClient integrationsClient, ProjectsHttpClient projectsClient, ILogger<IntegrationsUserController> logger)
+        public IntegrationsUserController(IBusPublisher busPublisher, IIntegrationsHttpClient integrationsClient, IProjectsHttpClient projectsClient, ILogger<IntegrationsUserController> logger)
         : base(busPublisher, integrationsClient, projectsClient, logger)
         { }
 

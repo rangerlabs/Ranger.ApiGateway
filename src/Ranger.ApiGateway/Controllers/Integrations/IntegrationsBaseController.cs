@@ -12,11 +12,11 @@ namespace Ranger.ApiGateway
 {
     public class IntegrationsBaseController : BaseController
     {
-        private readonly IntegrationsHttpClient integrationsClient;
+        private readonly IIntegrationsHttpClient integrationsClient;
         private readonly ILogger logger;
-        private readonly ProjectsHttpClient projectsClient;
+        private readonly IProjectsHttpClient projectsClient;
 
-        protected IntegrationsBaseController(IBusPublisher busPublisher, IntegrationsHttpClient integrationsClient, ProjectsHttpClient projectsClient, ILogger logger) : base(busPublisher, logger)
+        protected IntegrationsBaseController(IBusPublisher busPublisher, IIntegrationsHttpClient integrationsClient, IProjectsHttpClient projectsClient, ILogger logger) : base(busPublisher, logger)
         {
             this.projectsClient = projectsClient;
             this.logger = logger;

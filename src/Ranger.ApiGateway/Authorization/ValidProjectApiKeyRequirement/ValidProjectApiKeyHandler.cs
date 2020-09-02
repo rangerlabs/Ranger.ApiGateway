@@ -12,11 +12,11 @@ namespace Ranger.ApiGateway
 {
     public class ValidProjectApiKeyHandler : AuthorizationHandler<ValidProjectApiKeyRequirement>
     {
-        private readonly TenantsHttpClient tenantsClient;
-        private readonly ProjectsHttpClient projectsClient;
+        private readonly ITenantsHttpClient tenantsClient;
+        private readonly IProjectsHttpClient projectsClient;
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly ILogger<ValidProjectApiKeyHandler> logger;
-        public ValidProjectApiKeyHandler(TenantsHttpClient tenantsClient, ProjectsHttpClient projectsClient, IHttpContextAccessor httpContextAccessor, ILogger<ValidProjectApiKeyHandler> logger)
+        public ValidProjectApiKeyHandler(ITenantsHttpClient tenantsClient, IProjectsHttpClient projectsClient, IHttpContextAccessor httpContextAccessor, ILogger<ValidProjectApiKeyHandler> logger)
         {
             this.tenantsClient = tenantsClient;
             this.projectsClient = projectsClient;

@@ -9,7 +9,7 @@ namespace Ranger.ApiGateway
 {
     public static class TenantIdResolver<TAuthorizationHandler> where TAuthorizationHandler : IAuthorizationHandler
     {
-        public static async Task<string> ResolveTenantId(HttpContext httpContext, TenantsHttpClient tenantsHttpClient, string domain, ILogger<TAuthorizationHandler> logger)
+        public static async Task<string> ResolveTenantId(HttpContext httpContext, ITenantsHttpClient tenantsHttpClient, string domain, ILogger<TAuthorizationHandler> logger)
         {
             var tenantId = httpContext.Items[HttpContextAuthItems.TenantId] as string;
             if (!String.IsNullOrWhiteSpace(tenantId))
