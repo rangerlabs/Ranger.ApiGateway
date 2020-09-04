@@ -20,6 +20,7 @@ using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.Monitoring.HealthChecks;
 using Ranger.RabbitMQ;
+using Ranger.Redis;
 
 namespace Ranger.ApiGateway
 {
@@ -102,6 +103,8 @@ namespace Ranger.ApiGateway
                 ServiceLifetime.Transient
             );
             services.AddTransient<IApiGatewayDbContextInitializer, ApiGatewayDbContextInitializer>();
+
+            services.AddRedis(configuration["redis:ConnectionString"]);
 
             // Workaround for MAC validation issues on MacOS
             if (configuration.IsIntegrationTesting())
