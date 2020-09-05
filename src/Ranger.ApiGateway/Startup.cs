@@ -104,7 +104,7 @@ namespace Ranger.ApiGateway
             );
             services.AddTransient<IApiGatewayDbContextInitializer, ApiGatewayDbContextInitializer>();
 
-            services.AddRedis(configuration["redis:ConnectionString"]);
+            services.AddRedis(configuration["redis:ConnectionString"], out _);
 
             // Workaround for MAC validation issues on MacOS
             if (configuration.IsIntegrationTesting())
