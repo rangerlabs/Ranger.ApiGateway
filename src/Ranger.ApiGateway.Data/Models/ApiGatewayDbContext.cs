@@ -4,10 +4,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Ranger.Common;
+using Ranger.RabbitMQ;
 
 namespace Ranger.ApiGateway.Data
 {
-    public class ApiGatewayDbContext : DbContext, IDataProtectionKeyContext
+    public class ApiGatewayDbContext : DbContext, IDataProtectionKeyContext, IOutboxStore
     {
 
         private readonly IDataProtectionProvider dataProtectionProvider;
@@ -17,6 +18,7 @@ namespace Ranger.ApiGateway.Data
         }
 
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
+        public DbSet<OutboxMessage> Outbox { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

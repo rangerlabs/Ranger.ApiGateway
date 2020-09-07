@@ -139,7 +139,7 @@ namespace Ranger.ApiGateway
 
         public void ConfigureContainer(ContainerBuilder builder)
         {
-            builder.AddRabbitMq<Startup>();
+            builder.AddRabbitMq<Startup, ApiGatewayDbContext>();
             builder.RegisterInstance<RangerPusherOptions>(configuration.GetOptions<RangerPusherOptions>("pusher"));
         }
 
