@@ -1,9 +1,11 @@
 using System;
 using Ranger.Common;
 using Ranger.RabbitMQ;
+using Ranger.RabbitMQ.BusPublisher;
 
 namespace Ranger.ApiGateway
 {
+    [NonAcked]
     [MessageNamespace("geofences")]
     public class ComputeGeofenceIntersections : ICommand
     {
