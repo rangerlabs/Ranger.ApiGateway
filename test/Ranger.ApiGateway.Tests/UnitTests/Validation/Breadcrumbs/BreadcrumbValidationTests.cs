@@ -24,16 +24,16 @@ namespace Ranger.ApiGateway.Tests
         }
 
         [Fact]
-        public void DeviceId_Should_Have_Error_When_Greater_Than_128_Characters()
+        public void DeviceId_Should_Have_Error_When_Greater_Than_64_Characters()
         {
-            this.breadcrumbValidator.ShouldHaveValidationErrorFor(x => x.DeviceId, new string('a', 129));
+            this.breadcrumbValidator.ShouldHaveValidationErrorFor(x => x.DeviceId, new string('a', 65));
         }
 
         [Fact]
-        public void DeviceId_Should_NOT_Have_Error_When_Less_Than_Equal_To_128_Characters()
+        public void DeviceId_Should_NOT_Have_Error_When_Less_Than_Equal_To_64_Characters()
         {
-            this.breadcrumbValidator.ShouldNotHaveValidationErrorFor(x => x.DeviceId, new string('a', 127));
-            this.breadcrumbValidator.ShouldNotHaveValidationErrorFor(x => x.DeviceId, new string('a', 128));
+            this.breadcrumbValidator.ShouldNotHaveValidationErrorFor(x => x.DeviceId, new string('a', 63));
+            this.breadcrumbValidator.ShouldNotHaveValidationErrorFor(x => x.DeviceId, new string('a', 64));
         }
 
         [Fact]
@@ -43,16 +43,16 @@ namespace Ranger.ApiGateway.Tests
         }
 
         [Fact]
-        public void ExternalUserId_Should_Have_Error_When_Greater_Than_128_Characters()
+        public void ExternalUserId_Should_Have_Error_When_Greater_Than_64_Characters()
         {
-            this.breadcrumbValidator.ShouldHaveValidationErrorFor(x => x.ExternalUserId, new string('a', 129));
+            this.breadcrumbValidator.ShouldHaveValidationErrorFor(x => x.ExternalUserId, new string('a', 65));
         }
 
         [Fact]
-        public void ExternalUserId_Should_NOT_Have_Error_When_Less_Than_Equal_To_128_Characters()
+        public void ExternalUserId_Should_NOT_Have_Error_When_Less_Than_Equal_To_64_Characters()
         {
-            this.breadcrumbValidator.ShouldNotHaveValidationErrorFor(x => x.ExternalUserId, new string('a', 127));
-            this.breadcrumbValidator.ShouldNotHaveValidationErrorFor(x => x.ExternalUserId, new string('a', 128));
+            this.breadcrumbValidator.ShouldNotHaveValidationErrorFor(x => x.ExternalUserId, new string('a', 63));
+            this.breadcrumbValidator.ShouldNotHaveValidationErrorFor(x => x.ExternalUserId, new string('a', 64));
         }
 
         [Fact]

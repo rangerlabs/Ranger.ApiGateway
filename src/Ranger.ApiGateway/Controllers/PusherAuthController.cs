@@ -40,7 +40,6 @@ namespace Ranger.ApiGateway
         ///<param name="pusherAuthModel">The model necessary to validate pusher channel auth</param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
         [HttpPost("/pusher/auth")]
         public async Task<IActionResult> Index([FromForm] PusherAuthModel pusherAuthModel)
         {
