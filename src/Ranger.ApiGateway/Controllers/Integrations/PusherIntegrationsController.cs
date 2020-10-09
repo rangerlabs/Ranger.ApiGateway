@@ -19,13 +19,13 @@ namespace Ranger.ApiGateway
     [ApiController]
     [Authorize(Roles = "Admin")]
     [Authorize(Policy = AuthorizationPolicyNames.BelongsToProject)]
-    public class WebhookIntegrationsController : BaseController
+    public class PusherIntegrationsController : BaseController
     {
         private readonly IBusPublisher busPublisher;
         private readonly IProjectsHttpClient projectsClient;
-        private readonly ILogger<WebhookIntegrationsController> logger;
+        private readonly ILogger<PusherIntegrationsController> logger;
 
-        public WebhookIntegrationsController(IBusPublisher busPublisher, IProjectsHttpClient projectsClient, ILogger<WebhookIntegrationsController> logger) : base(busPublisher, logger)
+        public PusherIntegrationsController(IBusPublisher busPublisher, IProjectsHttpClient projectsClient, ILogger<PusherIntegrationsController> logger) : base(busPublisher, logger)
         {
             this.busPublisher = busPublisher;
             this.projectsClient = projectsClient;
@@ -33,48 +33,48 @@ namespace Ranger.ApiGateway
         }
 
         ///<summary>
-        /// Creates a new WebHook Integration
+        /// Creates a new Pusher Integration
         ///</summary>
         ///<param name="projectId">The friendly name of the project</param>
-        ///<param name="webhookIntegrationModel">The model necessary to create a new webhook integration</param>
+        ///<param name="pusherIntegrationModel">The model necessary to create a new pusher integration</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
-        [HttpPost("/{projectId}/integrations/webhook")]
-        public async Task<ApiResponse> Post(Guid projectId, WebhookIntegrationPostModel webhookIntegrationModel)
+        [HttpPost("/{projectId}/integrations/pusher")]
+        public async Task<ApiResponse> Post(Guid projectId, PusherIntegrationPostModel pusherIntegrationModel)
         {
-            webhookIntegrationModel.Name = webhookIntegrationModel.Name.Trim();
+            pusherIntegrationModel.Name = pusherIntegrationModel.Name.Trim();
             var createIntegrationSagaInitializer = new CreateIntegrationSagaInitializer(
                  UserFromClaims.Email ?? "", //INSERT TOKEN HERE
                  TenantId,
-                 webhookIntegrationModel.Name,
+                 pusherIntegrationModel.Name,
                  projectId,
-                 JsonConvert.SerializeObject(webhookIntegrationModel),
-                 IntegrationsEnum.WEBHOOK
+                 JsonConvert.SerializeObject(pusherIntegrationModel),
+                 IntegrationsEnum.PUSHER
              );
             return await Task.Run(() => base.SendAndAccept(createIntegrationSagaInitializer));
         }
 
         ///<summary>
-        /// Creates a new WebHook Integration
+        /// Creates a new Pusher Integration
         ///</summary>
         ///<param name="projectId">The friendly name of the project</param>
         ///<param name="id">The integration id to update</param>
-        ///<param name="webhookIntegrationModel">The model necessary to create a new webhook integration</param>
+        ///<param name="pusherIntegrationModel">The model necessary to create a new pusher integration</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
-        [HttpPut("/{projectId}/integrations/webhook/{id}")]
-        public async Task<ApiResponse> UpdateIntegration(Guid projectId, Guid id, WebhookIntegrationPutModel webhookIntegrationModel)
+        [HttpPut("/{projectId}/integrations/pusher/{id}")]
+        public async Task<ApiResponse> UpdateIntegration(Guid projectId, Guid id, PusherIntegrationPutModel pusherIntegrationModel)
         {
             // The IntegrationId property on the model is not required for the endpoint but is required of the serialized object for the Integrations service
             // Overriding any IntegrationId in the body with what was passed in the path allows this endpoint to still be RESTful
-            webhookIntegrationModel.Id = id;
-            webhookIntegrationModel.Name = webhookIntegrationModel.Name.Trim();
+            pusherIntegrationModel.Id = id;
+            pusherIntegrationModel.Name = pusherIntegrationModel.Name.Trim();
             var updateIntegrationSagaInitializer = new UpdateIntegrationSagaInitializer(
                 UserFromClaims.Email,
                 TenantId,
-                webhookIntegrationModel.Name,
+                pusherIntegrationModel.Name,
                 projectId,
-                JsonConvert.SerializeObject(webhookIntegrationModel),
-                IntegrationsEnum.WEBHOOK,
-                webhookIntegrationModel.Version
+                JsonConvert.SerializeObject(pusherIntegrationModel),
+                IntegrationsEnum.PUSHER,
+                pusherIntegrationModel.Version
             );
             return await Task.Run(() => base.SendAndAccept(updateIntegrationSagaInitializer));
         }
