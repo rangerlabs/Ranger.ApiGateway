@@ -1,11 +1,24 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
-using Ranger.RabbitMQ;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using Newtonsoft.Json;
+using Ranger.ApiGateway.Tests.IntegrationTests;
+using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ.BusPublisher;
 using Ranger.RabbitMQ.BusSubscriber;
 using Shouldly;
 using Xunit;
 
-namespace Ranger.ApiGateway
+namespace Ranger.ApiGateway.Tests
 {
     public class HandlerTests : IClassFixture<CustomWebApplicationFactory>
     {
@@ -21,7 +34,40 @@ namespace Ranger.ApiGateway
         }
 
         [Fact]
-        public void ApiGateway_Starts()
-        { }
+        public async Task GetAllGeofences_Returns200_WhenNoQueryParams()
+        {
+            var mockClient = new Mock<IGeofencesHttpClient>();
+            mockClient
+                .Setup(x => x.GetAllGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RangerApiResponse<IEnumerable<GeofenceResponseModel>>());
+            var client = _factory.WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureTestServices(services =>
+                {
+                    services.AddAuthorization(options =>
+                    {
+                        options.AddPolicy(AuthorizationPolicyNames.BelongsToProject, policyBuilder =>
+                        {
+                            policyBuilder.RequireAuthenticatedUser().AddRequirements(new BelongsToProjectRequirementStub());
+                        });
+                    });
+                    services.AddScoped<IAuthorizationHandler, BelongsToProjectHandlerStub>();
+                    services.AddTransient<IGeofencesHttpClient>((_) => mockClient.Object);
+                    services.AddAuthentication("Test")
+                        .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
+                            "Test", options => {});
+                });
+            }).CreateClient();
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+            client.DefaultRequestHeaders.Add("api-version", "1.0");
+
+            var response = await client.GetAsync($"/{Guid.NewGuid()}/geofences");
+            var content = await response.Content.ReadAsStringAsync();
+
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+            var result = JsonConvert.DeserializeObject<RangerApiResponse<IEnumerable<GeofenceResponseModel>>>(content);
+       }
     }
 }

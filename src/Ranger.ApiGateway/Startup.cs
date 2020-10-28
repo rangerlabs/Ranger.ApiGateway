@@ -52,10 +52,7 @@ namespace Ranger.ApiGateway
 
             services.AddRangerApiVersioning();
 
-            if (Environment.IsDevelopment())
-            {
-                services.AddSwaggerGen("API Gateway", "v1");
-            }
+           
 
             services.ConfigureAutoWrapperModelStateResponseFactory();
 
@@ -115,6 +112,10 @@ namespace Ranger.ApiGateway
             }
             else
             {
+                if (Environment.IsDevelopment())
+                {
+                    services.AddSwaggerGen("API Gateway", "v1");
+                }
                 services.AddDataProtection()
                     .SetApplicationName("ApiGateway")
                     .ProtectKeysWithCertificate(new X509Certificate2(configuration["DataProtectionCertPath:Path"]))
