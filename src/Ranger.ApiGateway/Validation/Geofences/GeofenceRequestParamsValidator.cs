@@ -15,37 +15,37 @@ namespace Ranger.ApiGateway
             RuleSet("Get", () => {
                 RuleFor(x => x.GeofenceSortOrder)
                     .NotEmpty()
-                    .Must((x) => 
-                        GetOrderByOptions()
-                        .Contains(x, StringComparer.InvariantCultureIgnoreCase))
-                    .WithMessage($"OrderBy must be one of {String.Join(',', GetOrderByOptions())}");
-                RuleFor(x => x.GeofenceSortOrder)
+                    .Must((x) => GetGeofenceSortOrder().Contains(x, StringComparer.InvariantCultureIgnoreCase))
+                    .WithMessage($"OrderBy must be one of {String.Join(',', GetGeofenceSortOrder())}");
+                RuleFor(x => x.OrderByOption)
                     .NotEmpty()
-                     .Must((x) => 
-                        GetOrderByOptions()
-                        .Contains(x, StringComparer.InvariantCultureIgnoreCase))
-                    .WithMessage($"SortOrder must be one of {String.Join(',', GetGeofenceSortOrder())}");
+                     .Must((x) => GetOrderByOptions().Contains(x, StringComparer.InvariantCultureIgnoreCase))
+                    .WithMessage($"SortOrder must be one of {String.Join(',', GetOrderByOptions())}");
                 RuleFor(x => x.Page)
                     .NotEmpty()
                     .GreaterThan(0);
                 RuleFor(x => x.PageCount)
                     .NotEmpty()
-                    .GreaterThan(0);
+                    .GreaterThan(0)
+                    .LessThanOrEqualTo(1000);
             });
         }
 
         private IEnumerable<string> GetOrderByOptions() {
-            var properties = typeof(OrderByOptions).GetProperties();
-            foreach (var property in properties) {
-                yield return property.GetValue(null) as string;
-            }
+            return new List<string>{
+                OrderByOptions.CreatedDateLowerInvariant,
+                OrderByOptions.EnabledLowerInvariant,
+                OrderByOptions.ExternalIdLowerInvariant,
+                OrderByOptions.ShapeLowerInvariant,
+                OrderByOptions.UpdatedDateLowerInvariant
+            };
         }
 
         private IEnumerable<string> GetGeofenceSortOrder() {
-            var properties = typeof(GeofenceSortOrders).GetProperties();
-            foreach (var property in properties) {
-                yield return property.GetValue(null) as string;
-            }
+            return new List<string> {
+                GeofenceSortOrders.AscendingLowerInvariant,
+                GeofenceSortOrders.DescendingLowerInvariant
+            };
         }
     }
 

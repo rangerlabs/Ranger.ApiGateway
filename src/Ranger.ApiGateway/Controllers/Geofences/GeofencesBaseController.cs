@@ -25,9 +25,9 @@ namespace Ranger.ApiGateway
             this.geofencesClient = geofencesClient;
         }
 
-        protected async Task<ApiResponse> GetAllGeofences(Guid projectId, CancellationToken cancellationToken)
+        protected async Task<ApiResponse> GetGeofences(Guid projectId, string orderBy, string sortOrder, int page, int pageCount, CancellationToken cancellationToken)
         {
-            var apiResponse = await geofencesClient.GetAllGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(TenantId, projectId, cancellationToken);
+            var apiResponse = await geofencesClient.GetGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(TenantId, projectId, orderBy, sortOrder, page, pageCount, cancellationToken);
             return new ApiResponse("Successfully retrieved geofences", apiResponse.Result);
         }
 

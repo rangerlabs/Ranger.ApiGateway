@@ -38,7 +38,7 @@ namespace Ranger.ApiGateway.Tests
         {
             var mockClient = new Mock<IGeofencesHttpClient>();
             mockClient
-                .Setup(x => x.GetAllGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new RangerApiResponse<IEnumerable<GeofenceResponseModel>>());
             var client = _factory.WithWebHostBuilder(builder =>
             {
@@ -66,6 +66,43 @@ namespace Ranger.ApiGateway.Tests
             var content = await response.Content.ReadAsStringAsync();
 
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+            var result = JsonConvert.DeserializeObject<RangerApiResponse<IEnumerable<GeofenceResponseModel>>>(content);
+       }
+        
+        [Fact]
+        public async Task GetGeofences_Returns400_WhenInvalidQueryParam()
+        {
+            var mockClient = new Mock<IGeofencesHttpClient>();
+            mockClient
+                .Setup(x => x.GetGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new RangerApiResponse<IEnumerable<GeofenceResponseModel>>());
+            var client = _factory.WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureTestServices(services =>
+                {
+                    services.AddAuthorization(options =>
+                    {
+                        options.AddPolicy(AuthorizationPolicyNames.BelongsToProject, policyBuilder =>
+                        {
+                            policyBuilder.RequireAuthenticatedUser().AddRequirements(new BelongsToProjectRequirementStub());
+                        });
+                    });
+                    services.AddScoped<IAuthorizationHandler, BelongsToProjectHandlerStub>();
+                    services.AddTransient<IGeofencesHttpClient>((_) => mockClient.Object);
+                    services.AddAuthentication("Test")
+                        .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
+                            "Test", options => {});
+                });
+            }).CreateClient();
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
+            client.DefaultRequestHeaders.Add("api-version", "1.0");
+
+            var response = await client.GetAsync($"/{Guid.NewGuid()}/geofences&page=0");
+            var content = await response.Content.ReadAsStringAsync();
+
+            response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
             var result = JsonConvert.DeserializeObject<RangerApiResponse<IEnumerable<GeofenceResponseModel>>>(content);
        }

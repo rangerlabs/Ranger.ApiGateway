@@ -8,11 +8,11 @@ namespace Ranger.ApiGateway
             this.OrderByOption = orderByOption;
             this.Page = page;
             this.PageCount = pageCount;
-
         }
-        public string GeofenceSortOrder { get; }
-        public string OrderByOption { get; }
-        public int Page { get; }
-        public int PageCount { get; }
+
+        public string GeofenceSortOrder { get; set;}
+        public string OrderByOption { get; set;}
+        public int Page { get; set;}
+        public int PageCount { get; set; }
     }
 }

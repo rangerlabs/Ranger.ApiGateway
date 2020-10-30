@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoWrapper.Wrappers;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
 using Ranger.RabbitMQ.BusPublisher;
+using Ranger.Services.Geofences;
 
 namespace Ranger.ApiGateway
 {
@@ -17,20 +20,46 @@ namespace Ranger.ApiGateway
     [ApiVersion("1.0")]
     public class GeofencesProjectApiKeyController : GeofencesBaseController
     {
-        public GeofencesProjectApiKeyController(IBusPublisher busPublisher, IGeofencesHttpClient geofencesClient, IProjectsHttpClient projectsClient, ILogger<GeofencesProjectApiKeyController> logger)
+        private readonly IValidator<GeofenceRequestParams> paramValidator;
+
+        public GeofencesProjectApiKeyController(
+            IBusPublisher busPublisher,
+            IGeofencesHttpClient geofencesClient,
+            IProjectsHttpClient projectsClient,
+            IValidator<GeofenceRequestParams> paramValidator,
+            ILogger<GeofencesProjectApiKeyController> logger)
         : base(busPublisher, geofencesClient, projectsClient, logger)
-        { }
+        {
+            this.paramValidator = paramValidator;
+        }
 
         ///<summary>
         /// Gets all geofences for a tenant's project
         ///</summary>
+        ///<param name="projectId">The unique identifier of the project</param>
+        /// <param name="orderBy">The field to order by. One of ExternalId, Shape, Enabled, CreatedDate, UpdatedDate. Defaults to CreatedDate.</param>
+        /// <param name="sortOrder">The order to sort by. One of Asc or Desc. Defaults to Desc.</param>
+        /// <param name="page">The page to return. Defaults to 1.</param>
+        /// <param name="pageCount">The number of geofences per page. Defaults to 100. Less than or equal to 1000</param>
         /// <param name="cancellationToken"></param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("/geofences")]
         [Authorize(Policy = AuthorizationPolicyNames.ValidProjectApiKey)]
-        public async Task<ApiResponse> GetAllGeofencesForProjectApiKey(CancellationToken cancellationToken)
+        public async Task<ApiResponse> GetGeofencesForProjectApiKey(
+            Guid projectId,
+            CancellationToken cancellationToken,
+            [FromQuery] string orderBy = OrderByOptions.CreatedDateLowerInvariant,
+            [FromQuery] string sortOrder = GeofenceSortOrders.DescendingLowerInvariant,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageCount = 100)
         {
-            return await base.GetAllGeofences(ProjectId, cancellationToken);
+            var validationResult = paramValidator.Validate(new GeofenceRequestParams(sortOrder, orderBy, page, pageCount), options => options.IncludeRuleSets("Get"));
+            if (!validationResult.IsValid)
+            {
+                var validationErrors = validationResult.Errors.Select(f => new ValidationError(f.PropertyName, f.ErrorMessage));
+                throw new ApiException(validationErrors);
+            }
+            return await base.GetGeofences(ProjectId, orderBy, sortOrder, page, pageCount, cancellationToken);
         }
 
         ///<summary>
