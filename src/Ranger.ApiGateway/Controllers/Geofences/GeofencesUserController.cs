@@ -50,7 +50,7 @@ namespace Ranger.ApiGateway
             CancellationToken cancellationToken,
             [FromQuery] string orderBy = OrderByOptions.CreatedDateLowerInvariant,
             [FromQuery] string sortOrder = GeofenceSortOrders.DescendingLowerInvariant,
-            [FromQuery] int page = 1,
+            [FromQuery] int page = 0,
             [FromQuery] int pageCount = 100)
         {
             var validationResult = paramValidator.Validate(new GeofenceRequestParams(sortOrder, orderBy, page, pageCount), options => options.IncludeRuleSets("Get"));
