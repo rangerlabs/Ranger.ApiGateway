@@ -25,10 +25,17 @@ namespace Ranger.ApiGateway
             this.geofencesClient = geofencesClient;
         }
 
-        protected async Task<ApiResponse> GetGeofences(Guid projectId, string orderBy, string sortOrder, int page, int pageCount, CancellationToken cancellationToken)
+        protected async Task<ApiResponse> GetGeofences(Guid projectId, string orderBy, string sortOrder, int page, int pageCount, IEnumerable<LngLat> bounds, CancellationToken cancellationToken)
         {
-            var apiResponse = await geofencesClient.GetGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(TenantId, projectId, orderBy, sortOrder, page, pageCount, cancellationToken);
-            return new ApiResponse("Successfully retrieved geofences", apiResponse.Result);
+            if (bounds is null)
+            {
+                var apiResponse = await geofencesClient.GetGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(TenantId, projectId, orderBy, sortOrder, page, pageCount, cancellationToken);
+                return new ApiResponse("Successfully retrieved geofences", apiResponse.Result);
+            }
+            else {
+                var apiResponse = await geofencesClient.GetGeofencesByBounds<IEnumerable<GeofenceResponseModel>>(TenantId, projectId, orderBy, sortOrder, bounds, cancellationToken);
+                return new ApiResponse("Successfully retrieved geofences", apiResponse.Result);
+            }
         }
 
         protected async Task<ApiResponse> Post(Guid projectId, bool isFrontendRequest, string commandingUser, GeofenceRequestModel geofenceModel)

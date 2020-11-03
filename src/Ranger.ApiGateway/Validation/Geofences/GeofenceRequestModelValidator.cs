@@ -58,11 +58,11 @@ namespace Ranger.ApiGateway
                 {
                     if ((c.InstanceToValidate as GeofenceRequestModel).Shape == GeofenceShapeEnum.Circle)
                     {
-                        if (r < 0 || (r > 0 && r < 50))
+                        if (r < 0 || (r > 0 && r < 50) || r > 10000)
                         {
-                            c.AddFailure("Radius must be greater than or equal to 50 meters for Circular geofences");
+                            c.AddFailure("Radius must be beween to 50 and 10,000 meters for Circular geofences");
                         }
-                    }
+                   }
                 });
             RuleFor(g => g.IntegrationIds).Custom((m, c) =>
             {

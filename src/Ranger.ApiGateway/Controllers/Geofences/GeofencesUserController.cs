@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Ranger.ApiUtilities;
+using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
 using Ranger.RabbitMQ.BusPublisher;
@@ -41,6 +43,7 @@ namespace Ranger.ApiGateway
         /// <param name="sortOrder">The order to sort by. One of Asc or Desc. Defaults to Desc.</param>
         /// <param name="page">The page to return. Defaults to 1.</param>
         /// <param name="pageCount">The number of geofences per page. Defaults to 100. Less than or equal to 1000</param>
+        /// <param name="bounds">The bounding rectangle to retrieve geofences within</param>
         /// <param name="cancellationToken"></param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("/{projectId}/geofences")]
@@ -51,16 +54,18 @@ namespace Ranger.ApiGateway
             [FromQuery] string orderBy = OrderByOptions.CreatedDateLowerInvariant,
             [FromQuery] string sortOrder = GeofenceSortOrders.DescendingLowerInvariant,
             [FromQuery] int page = 0,
-            [FromQuery] int pageCount = 100)
+            [FromQuery] int pageCount = 100,
+            [FromQuery] [ModelBinder(typeof(SemicolonDelimitedLngLatArrayModelBinder))] IEnumerable<LngLat> bounds = null)
         {
-            var validationResult = paramValidator.Validate(new GeofenceRequestParams(sortOrder, orderBy, page, pageCount), options => options.IncludeRuleSets("Get"));
+            var validationResult = paramValidator.Validate(new GeofenceRequestParams(sortOrder, orderBy, page, pageCount, bounds), options => options.IncludeRuleSets("Get"));
             if (!validationResult.IsValid)
             {
                 var validationErrors = validationResult.Errors.Select(f => new ValidationError(f.PropertyName, f.ErrorMessage));
                 throw new ApiException(validationErrors);
             }
-            return await base.GetGeofences(projectId, orderBy, sortOrder, page, pageCount, cancellationToken);
-        }
+                
+            return await base.GetGeofences(projectId, orderBy, sortOrder, page, pageCount, bounds, cancellationToken);
+       }
 
         ///<summary>
         /// Initiates the creation of a new geofence within a project 

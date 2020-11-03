@@ -108,12 +108,8 @@ namespace Ranger.ApiGateway.Tests
         }
 
         [Fact]
-        public void Page_HasValidationError_WhenLessThanEqualTo0()
+        public void Page_HasValidationError_WhenLessThan0()
         {
-            var geofenceRequestParams = new GeofenceRequestParams("", "", 0, 0);
-            var result = paramsValidator.TestValidate(geofenceRequestParams, "Get");
-            result.ShouldHaveValidationErrorFor(r => r.Page);
-
             var geofenceRequestParams2 = new GeofenceRequestParams("", "", -1, 0);
             var result2 = paramsValidator.TestValidate(geofenceRequestParams2, "Get");
             result2.ShouldHaveValidationErrorFor(r => r.Page);
@@ -128,11 +124,14 @@ namespace Ranger.ApiGateway.Tests
         }
 
         [Fact]
-        public void PageCount_HasValidationError_WhenLessThan()
+        public void PageCount_HasValidationError_WhenLessThanEqualTo0()
         {
-           
+            var geofenceRequestParams = new GeofenceRequestParams("", "", 0, 0);
+            var result = paramsValidator.TestValidate(geofenceRequestParams, "Get");
+            result.ShouldHaveValidationErrorFor(r => r.PageCount);
+
             var geofenceRequestParams2 = new GeofenceRequestParams("", "", 0, -1);
-            var result2 = paramsValidator.TestValidate(geofenceRequestParams2, "Get");
+            var result2 = paramsValidator.TestValidate(geofenceRequestParams, "Get");
             result2.ShouldHaveValidationErrorFor(r => r.PageCount);
         }
 
@@ -151,6 +150,56 @@ namespace Ranger.ApiGateway.Tests
             var geofenceRequestParams = new GeofenceRequestParams("", "", 1, 1);
             var result = paramsValidator.TestValidate(geofenceRequestParams, "Get");
             result.ShouldNotHaveValidationErrorFor(r => r.PageCount);
+        }
+
+        [Fact]
+        public void Bounds_HasNoValidationError_When4LngLats()
+        {
+            var geofenceRequestParams = new GeofenceRequestParams("", "", 1, 1, new List<LngLat>
+                {
+                    new LngLat(-81.61998, 41.54433),
+                    new LngLat(-81.61724, 41.45489),
+                    new LngLat(-81.47300, 41.45386),
+                    new LngLat(-81.46888, 41.56693)
+                });
+            var result = paramsValidator.TestValidate(geofenceRequestParams, "Get");
+            result.ShouldNotHaveValidationErrorFor(r => r.Bounds);
+        }
+
+        [Fact]
+        public void Bounds_HasNoValidationError_WhenBoundsIsNull()
+        {
+            var geofenceRequestParams = new GeofenceRequestParams("", "", 1, 1, null);
+            var result = paramsValidator.TestValidate(geofenceRequestParams, "Get");
+            result.ShouldNotHaveValidationErrorFor(r => r.Bounds);
+        }
+
+        [Fact]
+        public void Bounds_HasValidationError_WhenGreaterThan4LngLats()
+        {
+            var geofenceRequestParams = new GeofenceRequestParams("", "", 1, 1, new List<LngLat>
+                {
+                    new LngLat(-81.61998, 41.54433),
+                    new LngLat(-81.61724, 41.45489),
+                    new LngLat(-81.47300, 41.45386),
+                    new LngLat(-81.46888, 41.56693),
+                    new LngLat(-81.46888, 41.56693)
+                });
+            var result = paramsValidator.TestValidate(geofenceRequestParams, "Get");
+            result.ShouldHaveValidationErrorFor(r => r.Bounds);
+        }
+
+        [Fact]
+        public void Bounds_HasValidationError_WhenLessThan4LngLats()
+        {
+            var geofenceRequestParams = new GeofenceRequestParams("", "", 1, 1, new List<LngLat>
+                {
+                    new LngLat(-81.61998, 41.54433),
+                    new LngLat(-81.61724, 41.45489),
+                    new LngLat(-81.47300, 41.45386)
+                });
+            var result = paramsValidator.TestValidate(geofenceRequestParams, "Get");
+            result.ShouldHaveValidationErrorFor(r => r.Bounds);
         }
     }
 }
