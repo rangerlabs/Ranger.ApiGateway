@@ -99,7 +99,7 @@ namespace Ranger.ApiGateway.Tests
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Test");
             client.DefaultRequestHeaders.Add("api-version", "1.0");
 
-            var response = await client.GetAsync($"/{Guid.NewGuid()}/geofences?page=0");
+            var response = await client.GetAsync($"/{Guid.NewGuid()}/geofences?page=-1");
             var content = await response.Content.ReadAsStringAsync();
 
             response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);

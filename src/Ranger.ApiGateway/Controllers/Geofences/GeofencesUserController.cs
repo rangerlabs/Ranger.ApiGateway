@@ -12,7 +12,6 @@ using Microsoft.Extensions.Logging;
 using Ranger.ApiUtilities;
 using Ranger.Common;
 using Ranger.InternalHttpClient;
-using Ranger.RabbitMQ;
 using Ranger.RabbitMQ.BusPublisher;
 using Ranger.Services.Geofences;
 
