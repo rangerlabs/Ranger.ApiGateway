@@ -25,15 +25,20 @@ namespace Ranger.ApiGateway
             this.geofencesClient = geofencesClient;
         }
 
-        protected async Task<ApiResponse> GetGeofences(Guid projectId, string orderBy, string sortOrder, int page, int pageCount, IEnumerable<LngLat> bounds, CancellationToken cancellationToken)
+        protected async Task<ApiResponse> GetGeofences(Guid projectId,string externalId, string orderBy, string sortOrder, int page, int pageCount, IEnumerable<LngLat> bounds, CancellationToken cancellationToken)
         {
-            if (bounds is null)
+            if (!(externalId is null))
             {
-                var apiResponse = await geofencesClient.GetGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(TenantId, projectId, orderBy, sortOrder, page, pageCount, cancellationToken);
+                var apiResponse = await geofencesClient.GetGeofenceByExternalId<GeofenceResponseModel>(TenantId, projectId, externalId);
+                return new ApiResponse("Successfully retrieved geofence", apiResponse.Result);
+            }
+            if (!(bounds is null))
+            {
+                var apiResponse = await geofencesClient.GetGeofencesByBounds<IEnumerable<GeofenceResponseModel>>(TenantId, projectId, orderBy, sortOrder, bounds, cancellationToken);
                 return new ApiResponse("Successfully retrieved geofences", apiResponse.Result);
             }
             else {
-                var apiResponse = await geofencesClient.GetGeofencesByBounds<IEnumerable<GeofenceResponseModel>>(TenantId, projectId, orderBy, sortOrder, bounds, cancellationToken);
+                var apiResponse = await geofencesClient.GetGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(TenantId, projectId, orderBy, sortOrder, page, pageCount, cancellationToken);
                 return new ApiResponse("Successfully retrieved geofences", apiResponse.Result);
             }
         }
