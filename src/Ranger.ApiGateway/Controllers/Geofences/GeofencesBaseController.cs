@@ -35,11 +35,11 @@ namespace Ranger.ApiGateway
             if (!(bounds is null))
             {
                 var apiResponse = await geofencesClient.GetGeofencesByBounds<IEnumerable<GeofenceResponseModel>>(TenantId, projectId, orderBy, sortOrder, bounds, cancellationToken);
-                return new ApiResponse("Successfully retrieved geofences", apiResponse.Result);
+                return new ApiResponse("Successfully retrieved bounded geofences", apiResponse.Result);
             }
             else {
                 var apiResponse = await geofencesClient.GetGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(TenantId, projectId, orderBy, sortOrder, page, pageCount, cancellationToken);
-                return new ApiResponse("Successfully retrieved geofences", apiResponse.Result);
+                return new ApiResponse("Successfully retrieved paginated geofences", apiResponse.Result);
             }
         }
 
