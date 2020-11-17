@@ -43,6 +43,11 @@ namespace Ranger.ApiGateway
             }
         }
 
+        protected async Task<ApiResponse> GetGeofenceCount(Guid projectId, CancellationToken cancellationToken) {
+            var apiResponse = await geofencesClient.GetGeofencesCountForProject(TenantId, projectId);
+            return new ApiResponse("Successfully retrieved geofence count for project", apiResponse.Result);
+        }
+
         protected async Task<ApiResponse> Post(Guid projectId, bool isFrontendRequest, string commandingUser, GeofenceRequestModel geofenceModel)
         {
             var radius = getRadiusOrDefaultRadius(geofenceModel);

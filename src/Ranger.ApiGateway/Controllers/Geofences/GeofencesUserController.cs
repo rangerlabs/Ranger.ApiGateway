@@ -35,7 +35,7 @@ namespace Ranger.ApiGateway
         }
 
         ///<summary>
-        /// Gets all geofences for a tenant's project
+        /// Gets geofences for a tenant's project
         ///</summary>
         ///<param name="projectId">The unique identifier of the project</param>
         /// <param name="orderBy">The field to order by. One of ExternalId, Shape, Enabled, CreatedDate, UpdatedDate. Defaults to CreatedDate.</param>
@@ -66,6 +66,21 @@ namespace Ranger.ApiGateway
             }
                 
             return await base.GetGeofences(projectId, externalId, orderBy, sortOrder, page, pageCount, bounds, cancellationToken);
+       }
+
+        ///<summary>
+        /// Gets geofence count for a tenant's project
+        ///</summary>
+        ///<param name="projectId">The unique identifier of the project</param>
+        ///<param name="cancellationToken"></param>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpGet("/{projectId}/geofences/count")]
+        [Authorize(Policy = AuthorizationPolicyNames.BelongsToProject)]
+        public async Task<ApiResponse> GetGeofenceCountForProject(
+            Guid projectId,
+            CancellationToken cancellationToken)
+        {
+            return await base.GetGeofenceCount(projectId, cancellationToken);
        }
 
         ///<summary>

@@ -69,6 +69,19 @@ namespace Ranger.ApiGateway
         }
 
         ///<summary>
+        /// Gets geofence count for a tenant's project
+        ///</summary>
+        /// <param name="cancellationToken"></param>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpGet("/geofences")]
+        [Authorize(Policy = AuthorizationPolicyNames.ValidProjectApiKey)]
+        public async Task<ApiResponse> GetGeofencesForProjectApiKey(
+            CancellationToken cancellationToken)
+        {
+           return await base.GetGeofenceCount(ProjectId, cancellationToken);
+        }
+
+        ///<summary>
         /// Initiates the creation of a new geofence within a project 
         ///</summary>
         ///<param name="geofenceModel">The model necessary to create a new geofence</param>
