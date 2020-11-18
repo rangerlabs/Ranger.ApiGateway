@@ -40,7 +40,7 @@ namespace Ranger.ApiGateway.Tests
             var headers = new HttpResponseMessage().Headers;
             headers.Add("X-Total-Count", "1000");
             headers.Add("X-Pagination-Page", "0");
-            headers.Add("X-Pagination-Count", "100");
+            headers.Add("X-Pagination-Page-Count", "100");
             headers.Add("X-Pagination-OrderBy", "CreatedDate");
             headers.Add("X-Pagination-Sort", "desc");
 
