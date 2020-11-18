@@ -11,13 +11,19 @@ namespace Ranger.ApiGateway
     {
         public GeofenceRequestParamsValidator()
         {
-            RuleSet("Get", () => {
+            RuleSet("Get", () =>
+            {
                 RuleFor(x => x.ExternalId)
                     .MinimumLength(3)
                     .MaximumLength(128)
                     .Matches(RegularExpressions.GEOFENCE_INTEGRATION_NAME)
                     .WithMessage("Must begin, end, and contain lowercase alphanumeric characters. May contain ( - ).")
                     .When(x => !String.IsNullOrWhiteSpace(x.ExternalId));
+                RuleFor(x => x.Search)
+                    .MaximumLength(128)
+                    .Matches(RegularExpressions.GEOFENCE_SEARCH_NAME)
+                    .WithMessage("Search must contain lowercase alphanumeric characters. May contain ( - ).")
+                    .When(x => !String.IsNullOrWhiteSpace(x.Search));
                 RuleFor(x => x.GeofenceSortOrder)
                     .NotEmpty()
                     .Must((x) => GetGeofenceSortOrder().Contains(x, StringComparer.InvariantCultureIgnoreCase))
@@ -37,13 +43,21 @@ namespace Ranger.ApiGateway
                     {
                         if (!(x is null) && x?.Count() != 4)
                         {
-                            c.AddFailure("Bounds must contain exactly 4 LngLat objects.");
+                            c.AddFailure("'Bounds' must contain exactly 4 LngLat objects.");
                         }
                     });
+                RuleFor(x => x).Custom((x, c) =>
+                {
+                    if (!String.IsNullOrWhiteSpace(x.ExternalId) && !(x.Bounds is null))
+                    {
+                        c.AddFailure("Both 'ExternalId' and 'Bounds' cannot be present");
+                    }
+                });
             });
         }
 
-        private IEnumerable<string> GetOrderByOptions() {
+        private IEnumerable<string> GetOrderByOptions()
+        {
             return new List<string>{
                 OrderByOptions.CreatedDateLowerInvariant,
                 OrderByOptions.EnabledLowerInvariant,
@@ -53,7 +67,8 @@ namespace Ranger.ApiGateway
             };
         }
 
-        private IEnumerable<string> GetGeofenceSortOrder() {
+        private IEnumerable<string> GetGeofenceSortOrder()
+        {
             return new List<string> {
                 GeofenceSortOrders.AscendingLowerInvariant,
                 GeofenceSortOrders.DescendingLowerInvariant

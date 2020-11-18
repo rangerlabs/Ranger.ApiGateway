@@ -43,8 +43,9 @@ namespace Ranger.ApiGateway
         /// <param name="page">The page to return. Defaults to 1.</param>
         /// <param name="pageCount">The number of geofences per page. Defaults to 100. Less than or equal to 1000</param>
         /// <param name="bounds">The bounding rectangle to retrieve geofences within</param>
-        /// <param name="cancellationToken"></param>
         /// <param name="externalId">The external id to query for</param>
+        /// <param name="search">The external id to search for</param>
+        /// <param name="cancellationToken"></param>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("/{projectId}/geofences")]
         [Authorize(Policy = AuthorizationPolicyNames.BelongsToProject)]
@@ -52,21 +53,22 @@ namespace Ranger.ApiGateway
             Guid projectId,
             CancellationToken cancellationToken,
             [FromQuery] string externalId = null,
+            [FromQuery] string search = null,
             [FromQuery] string orderBy = OrderByOptions.CreatedDateLowerInvariant,
             [FromQuery] string sortOrder = GeofenceSortOrders.DescendingLowerInvariant,
             [FromQuery] int page = 0,
             [FromQuery] int pageCount = 100,
-            [FromQuery] [ModelBinder(typeof(SemicolonDelimitedLngLatArrayModelBinder))] IEnumerable<LngLat> bounds = null)
+            [FromQuery][ModelBinder(typeof(SemicolonDelimitedLngLatArrayModelBinder))] IEnumerable<LngLat> bounds = null)
         {
-            var validationResult = paramValidator.Validate(new GeofenceRequestParams(externalId, sortOrder, orderBy, page, pageCount, bounds), options => options.IncludeRuleSets("Get"));
+            var validationResult = paramValidator.Validate(new GeofenceRequestParams(externalId, search, sortOrder, orderBy, page, pageCount, bounds), options => options.IncludeRuleSets("Get"));
             if (!validationResult.IsValid)
             {
                 var validationErrors = validationResult.Errors.Select(f => new ValidationError(f.PropertyName, f.ErrorMessage));
                 throw new ApiException(validationErrors);
             }
-                
-            return await base.GetGeofences(projectId, externalId, orderBy, sortOrder, page, pageCount, bounds, cancellationToken);
-       }
+
+            return await base.GetGeofences(projectId, externalId, orderBy, sortOrder, page, pageCount, search, bounds, cancellationToken);
+        }
 
         ///<summary>
         /// Gets geofence count for a tenant's project
@@ -76,12 +78,10 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("/{projectId}/geofences/count")]
         [Authorize(Policy = AuthorizationPolicyNames.BelongsToProject)]
-        public async Task<ApiResponse> GetGeofenceCountForProject(
-            Guid projectId,
-            CancellationToken cancellationToken)
+        public async Task<ApiResponse> GetGeofenceCountForProject(Guid projectId, CancellationToken cancellationToken)
         {
             return await base.GetGeofenceCount(projectId, cancellationToken);
-       }
+        }
 
         ///<summary>
         /// Initiates the creation of a new geofence within a project 

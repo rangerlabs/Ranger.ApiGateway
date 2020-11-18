@@ -11,6 +11,6 @@ namespace Ranger.ApiGateway
         public static readonly string ORGANIZATION_DOMAIN = @"^[a-zA-Z0-9]{1}[a-zA-Z0-9\-]{1,26}[a-zA-Z0-9]{1}$";
         public static readonly string PROJECT_NAME = @"^[a-zA-Z0-9]+[a-zA-Z0-9_\-\'\,\.\s]{1,126}[a-z0-9]{1}$";
         public static readonly string GEOFENCE_INTEGRATION_NAME = @"^[a-z0-9]+[a-z0-9\-]{1,126}[a-z0-9]{1}$";
-
+        public static readonly string GEOFENCE_SEARCH_NAME = @"[A-Za-z0-9\-]{1,128}";
     }
 }
