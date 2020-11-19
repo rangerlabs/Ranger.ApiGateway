@@ -22,5 +22,6 @@ namespace Ranger.ApiGateway
         public bool Enabled { get; set; } = true;
         public Schedule Schedule { get; set; }
         public DateTime CreatedDate {get; set;}
+        public DateTime UpdatedDate {get; set;}
     }
 }
