@@ -41,11 +41,11 @@ namespace Ranger.ApiGateway
             else
             {
                 var apiResponse = await geofencesClient.GetGeofencesByProjectId<IEnumerable<GeofenceResponseModel>>(TenantId, projectId, orderBy, sortOrder, page, pageCount, search, cancellationToken);
-                Response.Headers.Add("X-Total-Count", apiResponse.Headers.GetValues("X-Total-Count").ElementAt(0));
+                Response.Headers.Add("X-Pagination-TotalCount", apiResponse.Headers.GetValues("X-Pagination-TotalCount").ElementAt(0));
                 Response.Headers.Add("X-Pagination-Page", apiResponse.Headers.GetValues("X-Pagination-Page").ElementAt(0));
-                Response.Headers.Add("X-Pagination-Page-Count", apiResponse.Headers.GetValues("X-Pagination-Page-Count").ElementAt(0));
+                Response.Headers.Add("X-Pagination-PageCount", apiResponse.Headers.GetValues("X-Pagination-PageCount").ElementAt(0));
                 Response.Headers.Add("X-Pagination-OrderBy", apiResponse.Headers.GetValues("X-Pagination-OrderBy").ElementAt(0));
-                Response.Headers.Add("X-Pagination-Sort", apiResponse.Headers.GetValues("X-Pagination-Sort").ElementAt(0));
+                Response.Headers.Add("X-Pagination-SortOrder", apiResponse.Headers.GetValues("X-Pagination-SortOrder").ElementAt(0));
                 return new ApiResponse("Successfully retrieved paginated geofences", apiResponse.Result);
             }
         }

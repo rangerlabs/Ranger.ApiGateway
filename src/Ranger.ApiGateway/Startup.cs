@@ -52,7 +52,7 @@ namespace Ranger.ApiGateway
 
             services.AddRangerApiVersioning();
 
-           
+
 
             services.ConfigureAutoWrapperModelStateResponseFactory();
 
@@ -159,7 +159,12 @@ namespace Ranger.ApiGateway
                 builder.AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowAnyOrigin()
-                    .WithExposedHeaders("X-Operation");
+                    .WithExposedHeaders("X-Operation")
+                    .WithExposedHeaders("X-Pagination-TotalCount")
+                    .WithExposedHeaders("X-Pagination-PageCount")
+                    .WithExposedHeaders("X-Pagination-Page")
+                    .WithExposedHeaders("X-Pagination-SortOrder")
+                    .WithExposedHeaders("X-Pagination-OrderBy");
             });
             app.UseAutoWrapper();
             app.UseUnhandedExceptionLogger();

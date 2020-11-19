@@ -38,11 +38,11 @@ namespace Ranger.ApiGateway.Tests
         public async Task GetAllGeofences_Returns200_WhenNoQueryParams()
         {
             var headers = new HttpResponseMessage().Headers;
-            headers.Add("X-Total-Count", "1000");
+            headers.Add("X-Pagination-TotalCount", "1000");
             headers.Add("X-Pagination-Page", "0");
-            headers.Add("X-Pagination-Page-Count", "100");
+            headers.Add("X-Pagination-PageCount", "100");
             headers.Add("X-Pagination-OrderBy", "CreatedDate");
-            headers.Add("X-Pagination-Sort", "desc");
+            headers.Add("X-Pagination-SortOrder", "desc");
 
             var mockClient = new Mock<IGeofencesHttpClient>();
             mockClient
