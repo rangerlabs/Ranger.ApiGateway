@@ -127,7 +127,7 @@ namespace Ranger.ApiGateway
         ///</summary>
         ///<param name="model">The model containing external ids to delete</param>
         [ProducesResponseType(StatusCodes.Status202Accepted)]
-        [HttpDelete("/geofences/bulk-delete")]
+        [HttpPost("/geofences/bulk-delete")]
         [Authorize(Policy = AuthorizationPolicyNames.ValidProjectApiKey)]
         public async Task<ApiResponse> BulkDeleteGeofences(GeofenceBulkDeleteModel model)
         {
