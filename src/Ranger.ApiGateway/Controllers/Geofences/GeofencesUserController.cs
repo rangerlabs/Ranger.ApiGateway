@@ -133,7 +133,7 @@ namespace Ranger.ApiGateway
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [HttpPost("/{projectId}/geofences/bulk-delete")]
         [Authorize(Policy = AuthorizationPolicyNames.BelongsToProject)]
-        public async Task<ApiResponse> DeleteGeofence(Guid projectId, GeofenceBulkDeleteModel model)
+        public async Task<ApiResponse> BulkDeleteGeofence(Guid projectId, GeofenceBulkDeleteModel model)
         {
             return await base.BulkDeleteGeofences(projectId, true, User.UserFromClaims().Email, model.ExternalIds);
         }
