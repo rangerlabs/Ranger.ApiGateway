@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoWrapper.Wrappers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Ranger.ApiGateway.Messages.Commands;
 using Ranger.Common;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
@@ -48,6 +49,12 @@ namespace Ranger.ApiGateway
                 Response.Headers.Add("X-Pagination-SortOrder", apiResponse.Headers.GetValues("X-Pagination-SortOrder").ElementAt(0));
                 return new ApiResponse("Successfully retrieved paginated geofences", apiResponse.Result);
             }
+        }
+
+        protected async Task<ApiResponse> BulkDeleteGeofences(Guid projectId, bool isFrontendRequest, string commandingUser, IEnumerable<string> externalIds)
+        {
+            var bulkDeleteGeofences = new BulkDeleteGeofencesSagaInitializer(isFrontendRequest, commandingUser, TenantId, projectId, externalIds);
+            return await Task.Run(() => base.SendAndAccept(bulkDeleteGeofences));
         }
 
         protected async Task<ApiResponse> GetGeofenceCount(Guid projectId, CancellationToken cancellationToken)

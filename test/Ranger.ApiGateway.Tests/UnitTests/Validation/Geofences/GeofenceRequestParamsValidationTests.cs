@@ -47,7 +47,7 @@ namespace Ranger.ApiGateway.Tests
         {
             var geofenceRequestParams = new GeofenceRequestParams(new string('a', 128), "", "", "", 0, 0);
             var result = paramsValidator.TestValidate(geofenceRequestParams, "Get");
-            result.ShouldHaveValidationErrorFor(r => r.GeofenceSortOrder);
+            result.ShouldNotHaveValidationErrorFor(r => r.ExternalId);
         }
 
         [Theory]

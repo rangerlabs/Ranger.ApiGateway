@@ -124,5 +124,18 @@ namespace Ranger.ApiGateway
         {
             return await base.DeleteGeofence(projectId, true, User.UserFromClaims().Email, externalId);
         }
+
+        ///<summary>
+        /// Bulk deletes existing geofences within a project
+        ///</summary>
+        ///<param name="projectId">The unique identifier of the project</param>
+        /// <param name="model">The model containing external ids to delete</param>
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        [HttpDelete("/{projectId}/geofences/bulk-delete")]
+        [Authorize(Policy = AuthorizationPolicyNames.BelongsToProject)]
+        public async Task<ApiResponse> DeleteGeofence(Guid projectId, GeofenceBulkDeleteModel model)
+        {
+            return await base.BulkDeleteGeofences(projectId, true, User.UserFromClaims().Email, model.ExternalIds);
+        }
     }
 }
