@@ -17,7 +17,7 @@ namespace Ranger.ApiGateway.Tests
         [Fact]
         public void ReCaptchaToken_ShouldNOTHaveError_WhenNOTEmpty()
         {
-            this.userFormModelValidator.ShouldHaveValidationErrorFor(x => x.ReCaptchaToken, "a");
+            this.userFormModelValidator.ShouldNotHaveValidationErrorFor(x => x.ReCaptchaToken, "a");
         }
 
         [Fact]
