@@ -42,9 +42,10 @@ namespace Ranger.ApiGateway.Controllers
 
             logger.LogDebug("Contact form received");
             var recaptcha = await this.recaptcha.Validate(contactFormModel.ReCaptchaToken);
+            logger.LogInformation("Received reCaptcha response. {Success}, {Score}", recaptcha.success, recaptcha.score);
             if (!recaptcha.success || recaptcha.score != 0 && recaptcha.score < 0.5)
             {
-                throw new ApiException("An error occurred validating the google recaptcha response. Please try again.");
+                throw new ApiException("An error occurred validating the reCaptcha response. Please try again shortly.");
             }
 
             return base.SendAndAccept(new SendContactFormEmail(contactFormModel.Organization, contactFormModel.Email, contactFormModel.Name, contactFormModel.Message),
