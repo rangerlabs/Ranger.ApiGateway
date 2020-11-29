@@ -22,9 +22,11 @@ namespace Ranger.ApiGateway
         private readonly ITenantsHttpClient tenantsClient;
         private readonly IBusPublisher busPublisher;
         private readonly IRecaptchaService recaptcha;
+        private readonly ILogger<TenantsController> logger;
 
         public TenantsController(ITenantsHttpClient tenantsClient, IBusPublisher busPublisher, IRecaptchaService recaptcha, ILogger<TenantsController> logger) : base(busPublisher, logger)
         {
+            this.logger = logger;
             this.recaptcha = recaptcha;
             this.busPublisher = busPublisher;
             this.tenantsClient = tenantsClient;
@@ -60,9 +62,10 @@ namespace Ranger.ApiGateway
             tenantModel.UserForm.Email = tenantModel.UserForm.Email.Trim();
 
             var recaptcha = await this.recaptcha.Validate(tenantModel.UserForm.ReCaptchaToken);
+            logger.LogInformation("Received reCaptcha response. {Success}, {Score}", recaptcha.success, recaptcha.score);
             if (!recaptcha.success || recaptcha.score != 0 && recaptcha.score < 0.5)
             {
-                throw new ApiException("An error occurred validating the google recaptcha response. Please try again.");
+                throw new ApiException("An error occurred validating the reCaptcha response. Please try again shortly.");
             }
 
             var createTenantMsg = new CreateTenant(tenantModel.OrganizationForm.Domain.ToLower(), tenantModel.OrganizationForm.OrganizationName, tenantModel.UserForm.Email, tenantModel.UserForm.FirstName, tenantModel.UserForm.LastName, tenantModel.UserForm.Password);
