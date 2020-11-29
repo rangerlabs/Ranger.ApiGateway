@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using reCAPTCHA.AspNetCore;
 using Ranger.ApiGateway.Messages.Commands.Tenants;
 using Ranger.InternalHttpClient;
 using Ranger.RabbitMQ;
@@ -20,9 +21,11 @@ namespace Ranger.ApiGateway
     {
         private readonly ITenantsHttpClient tenantsClient;
         private readonly IBusPublisher busPublisher;
+        private readonly IRecaptchaService recaptcha;
 
-        public TenantsController(ITenantsHttpClient tenantsClient, IBusPublisher busPublisher, ILogger<TenantsController> logger) : base(busPublisher, logger)
+        public TenantsController(ITenantsHttpClient tenantsClient, IBusPublisher busPublisher, IRecaptchaService recaptcha, ILogger<TenantsController> logger) : base(busPublisher, logger)
         {
+            this.recaptcha = recaptcha;
             this.busPublisher = busPublisher;
             this.tenantsClient = tenantsClient;
 
@@ -55,6 +58,12 @@ namespace Ranger.ApiGateway
             tenantModel.UserForm.FirstName = tenantModel.UserForm.FirstName.Trim();
             tenantModel.UserForm.LastName = tenantModel.UserForm.LastName.Trim();
             tenantModel.UserForm.Email = tenantModel.UserForm.Email.Trim();
+
+            var recaptcha = await this.recaptcha.Validate(tenantModel.UserForm.ReCaptchaToken);
+            if (!recaptcha.success || recaptcha.score != 0 && recaptcha.score < 0.5)
+            {
+                throw new ApiException("An error occurred validating the google recaptcha response. Please try again.");
+            }
 
             var createTenantMsg = new CreateTenant(tenantModel.OrganizationForm.Domain.ToLower(), tenantModel.OrganizationForm.OrganizationName, tenantModel.UserForm.Email, tenantModel.UserForm.FirstName, tenantModel.UserForm.LastName, tenantModel.UserForm.Password);
             return await Task.Run(() => SendAndAccept(createTenantMsg));

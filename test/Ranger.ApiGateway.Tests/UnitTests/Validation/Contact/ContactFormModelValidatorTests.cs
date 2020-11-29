@@ -14,6 +14,18 @@ namespace Ranger.ApiGateway.Tests.Validation.Users
         }
 
         [Fact]
+        public void ReCaptchaToken_ShouldNOTHaveError_WhenNOTEmpty()
+        {
+            this.contactFormModelValidator.ShouldHaveValidationErrorFor(x => x.ReCaptchaToken, "a");
+        }
+
+        [Fact]
+        public void ReCaptchaToken_Should_Have_Error_When_Empty()
+        {
+            this.contactFormModelValidator.ShouldHaveValidationErrorFor(x => x.ReCaptchaToken, "");
+        }
+
+        [Fact]
         public void Email_Should_Have_Error_When_Empty()
         {
             this.contactFormModelValidator.ShouldHaveValidationErrorFor(x => x.Email, "");

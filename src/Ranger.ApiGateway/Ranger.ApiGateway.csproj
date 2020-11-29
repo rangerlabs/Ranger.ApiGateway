@@ -35,6 +35,7 @@
     <PackageReference Include="Ranger.Monitoring" version="3.2.4" />
     <PackageReference Include="Ranger.Redis" version="1.0.4" />
     <PackageReference Include="MongoDB.Driver" Version="2.11.1" />
+    <PackageReference Include="reCAPTCHA.AspNetCore" Version="3.0.10" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ranger.ApiGateway.Data\Ranger.ApiGateway.Data.csproj" />

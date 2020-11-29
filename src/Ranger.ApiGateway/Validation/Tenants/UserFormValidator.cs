@@ -18,6 +18,7 @@ namespace Ranger.ApiGateway
                 .Matches(RegularExpressions.PASSWORD_LOWERCASE_LETTER).WithMessage("Must contain at least 1 lowercase letter")
                 .Matches(RegularExpressions.PASSWORD_UPPERCASE_LETTER).WithMessage("Must contain at least 1 uppercase letter");
             RuleFor(u => u.ConfirmPassword).Equal(u => u.Password);
+            RuleFor(u => u.ReCaptchaToken).NotEmpty();
         }
     }
 }

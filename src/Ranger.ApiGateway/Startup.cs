@@ -21,6 +21,7 @@ using Ranger.InternalHttpClient;
 using Ranger.Monitoring.HealthChecks;
 using Ranger.RabbitMQ;
 using Ranger.Redis;
+using reCAPTCHA.AspNetCore;
 
 namespace Ranger.ApiGateway
 {
@@ -51,8 +52,6 @@ namespace Ranger.ApiGateway
                 .AddRangerFluentValidation<Startup>();
 
             services.AddRangerApiVersioning();
-
-
 
             services.ConfigureAutoWrapperModelStateResponseFactory();
 
@@ -122,6 +121,13 @@ namespace Ranger.ApiGateway
                     .UnprotectKeysWithAnyCertificate(new X509Certificate2(configuration["DataProtectionCertPath:Path"]))
                     .PersistKeysToDbContext<ApiGatewayDbContext>();
             }
+
+            var recaptchaSettings = configuration.GetOptions<RangerRecaptchaOptions>("recaptchaSettings");
+            services.AddRecaptcha(options =>
+            {
+                options.SecretKey = recaptchaSettings.SecretKey;
+                options.SiteKey = recaptchaSettings.SiteKey;
+            });
 
             services.AddAuthentication("Bearer")
                 .AddIdentityServerAuthentication(options =>
