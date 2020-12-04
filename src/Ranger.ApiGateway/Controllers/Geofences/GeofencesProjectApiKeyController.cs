@@ -75,9 +75,9 @@ namespace Ranger.ApiGateway
         ///</summary>
         /// <param name="cancellationToken"></param>
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [HttpGet("/geofences")]
+        [HttpGet("/geofences/count")]
         [Authorize(Policy = AuthorizationPolicyNames.ValidProjectApiKey)]
-        public async Task<ApiResponse> GetGeofencesForProjectApiKey(
+        public async Task<ApiResponse> GetGeofenceCountForProjectApiKey(
             CancellationToken cancellationToken)
         {
             return await base.GetGeofenceCount(ProjectId, cancellationToken);
