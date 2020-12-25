@@ -1,4 +1,6 @@
 using System.Security.Cryptography.X509Certificates;
+using AspNetCoreRateLimit;
+using AspNetCoreRateLimit.Redis;
 using Autofac;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -138,6 +140,11 @@ namespace Ranger.ApiGateway
                     options.RequireHttpsMetadata = false;
                 });
 
+            services.AddOptions();
+            services.Configure<IpRateLimitOptions>(configuration.GetSection("IpRateLimiting"));
+            services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+            services.AddStackExchangeRedisStores();
+
             services.AddLiveHealthCheck();
             services.AddEntityFrameworkHealthCheck<ApiGatewayDbContext>();
             services.AddDockerImageTagHealthCheck();
@@ -172,6 +179,7 @@ namespace Ranger.ApiGateway
                     .WithExposedHeaders("X-Pagination-SortOrder")
                     .WithExposedHeaders("X-Pagination-OrderBy");
             });
+            app.UseIpRateLimiting();
             app.UseAutoWrapper();
             app.UseUnhandedExceptionLogger();
             app.UseRouting();
