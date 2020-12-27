@@ -179,8 +179,8 @@ namespace Ranger.ApiGateway
                     .WithExposedHeaders("X-Pagination-SortOrder")
                     .WithExposedHeaders("X-Pagination-OrderBy");
             });
-            app.UseIpRateLimiting();
             app.UseAutoWrapper();
+            app.UseIpRateLimiting();
             app.UseUnhandedExceptionLogger();
             app.UseRouting();
             app.UseAuthentication();
