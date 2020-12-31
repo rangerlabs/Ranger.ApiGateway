@@ -34,7 +34,7 @@
     <PackageReference Include="Ranger.ApiUtilities" Version="3.7.6" />
     <PackageReference Include="Ranger.Monitoring" Version="3.2.5" />
     <PackageReference Include="Ranger.Redis" version="1.0.4" />
-    <PackageReference Include="AspNetCoreRateLimitRedis" version="1.0.4" />
+    <PackageReference Include="AspNetCoreRateLimitRedis" version="1.0.5" />
     <PackageReference Include="MongoDB.Driver" Version="2.11.1" />
     <PackageReference Include="reCAPTCHA.AspNetCore" Version="3.0.10" />
   </ItemGroup>
