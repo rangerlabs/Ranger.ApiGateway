@@ -47,18 +47,20 @@ namespace Ranger.ApiGateway.Controllers
             {
                 using var streamReader = new StreamReader(Request.Body);
                 var content = JToken.Parse(await streamReader.ReadToEndAsync());
+                eventType = (string)content.SelectToken("event_type", true);
+                logger.LogInformation("Chargebee webhook was of event type {EventType}", eventType);
+
                 occurredAt = DateTimeOffset.FromUnixTimeSeconds((long)content.SelectToken("occurred_at", true)).UtcDateTime;
                 subscriptionId = (string)content.SelectToken("content.subscription.id", true);
                 planId = (string)content.SelectToken("content.subscription.plan_id", true);
-                eventType = (string)content.SelectToken("event_type", true);
                 subscriptionStatus = (string)content.SelectToken("content.subscription.status", true);
             }
             catch (Exception)
             {
-                return new ApiResponse("The event did not contain the necessary content for a subscription", statusCode: StatusCodes.Status200OK);
+                logger.LogDebug("The event did not contain the necessary content for a subscription");
+                return new ApiResponse(StatusCodes.Status200OK);
             }
 
-            logger.LogInformation("Chargebee webhook was of event type {EventType}", eventType);
 
             var isActive = subscriptionStatus switch
             {
